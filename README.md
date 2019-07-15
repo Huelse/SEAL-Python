@@ -34,3 +34,6 @@ cmake ..
 make
 ```
 
+5. Test
+
+`python3 test.py`
