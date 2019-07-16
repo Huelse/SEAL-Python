@@ -15,16 +15,17 @@ print(type(parms))
 context = SEALContext.Create(parms)
 print(type(context))
 
-#context_data = context.key_context_data()
+context_data = context.key_context_data()
 
-#print(type(context_data))
-#print(context_data.parms().scheme())
+print(context_data.parms())
+print(context_data.parms().scheme()==scheme_type.BFV)
 
 
 keygen = KeyGenerator(context)
 print(type(keygen))
 secret_key = keygen.secret_key()
 public_key = keygen.public_key()
+relin_keys = keygen.relin_keys()
 print(type(secret_key))
 print(type(public_key))
-
+print(type(relin_keys))

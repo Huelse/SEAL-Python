@@ -45,8 +45,7 @@ PYBIND11_MODULE(seal, m) {
 
 // SEALContext
 	py::class_<SEALContext, std::shared_ptr<SEALContext>>(m, "SEALContext")
-		.def("Create",
-		[](const EncryptionParameters &parms) { return SEALContext::Create(parms); }, py::return_value_policy::reference)
+		.def("Create", [](const EncryptionParameters &parms) { return SEALContext::Create(parms); })
 		
 		.def("key_parms_id", &SEALContext::key_parms_id, py::return_value_policy::reference)
 		
@@ -55,11 +54,11 @@ PYBIND11_MODULE(seal, m) {
 		.def("get_context_data", (void (SEALContext::*)(parms_id_type)) &SEALContext::get_context_data);
 
 // SEALContext::ContextData
-	py::class_<SEALContext::ContextData>(m, "SEALContext::ContextData")
-		.def("parms", &SEALContext::ContextData::parms, py::return_value_policy::reference)
-		.def("parms_id", &SEALContext::ContextData::parms_id, py::return_value_policy::reference)
+	py::class_<SEALContext::ContextData, std::shared_ptr<SEALContext::ContextData>>(m, "SEALContext::ContextData")
+		.def("parms", &SEALContext::ContextData::parms)
+		.def("parms_id", &SEALContext::ContextData::parms_id)
 		.def("total_coeff_modulus",
-		(std::uint64_t (SEALContext::ContextData::*)()) &SEALContext::ContextData::total_coeff_modulus);
+			(std::uint64_t (SEALContext::ContextData::*)()) &SEALContext::ContextData::total_coeff_modulus);
 	
 // SmallModulus
 	py::class_<SmallModulus>(m, "SmallModulus")
@@ -70,7 +69,7 @@ PYBIND11_MODULE(seal, m) {
 // CoeffModulus
 	py::class_<CoeffModulus>(m, "CoeffModulus")
 		.def("BFVDefault",
-		[](std::size_t poly_modulus_degree) { return CoeffModulus::BFVDefault(poly_modulus_degree); });
+			[](std::size_t poly_modulus_degree) { return CoeffModulus::BFVDefault(poly_modulus_degree); });
 
 // SecretKey
 	py::class_<SecretKey>(m, "SecretKey")
@@ -84,6 +83,14 @@ PYBIND11_MODULE(seal, m) {
 		.def("save", (void (PublicKey::*)(std::ostream &)) &PublicKey::save)
 		.def("load", (void (PublicKey::*)(std::shared_ptr<SEALContext>, std::istream &)) &PublicKey::load);
 
+// KSwitchKeys
+	py::class_<KSwitchKeys>(m, "KSwitchKeys")
+		.def(py::init<>());
+
+// RelinKeys
+	py::class_<RelinKeys, KSwitchKeys>(m, "RelinKeys")
+		.def(py::init<>());
+		
 // KeyGenerator
 	py::class_<KeyGenerator>(m, "KeyGenerator")
 		.def(py::init<std::shared_ptr<SEALContext>>())
@@ -93,8 +100,8 @@ PYBIND11_MODULE(seal, m) {
 		.def("public_key", &KeyGenerator::public_key)
 		.def("galois_keys", (GaloisKeys (KeyGenerator::*)(const std::vector<std::uint64_t> &)) &KeyGenerator::galois_keys)
 		.def("galois_keys", (GaloisKeys (KeyGenerator::*)(const std::vector<int> &)) &KeyGenerator::galois_keys)
-		.def("galois_keys", (GaloisKeys (KeyGenerator::*)()) &KeyGenerator::galois_keys);
-		// inline RelinKeys relin_keys()
+		.def("galois_keys", (GaloisKeys (KeyGenerator::*)()) &KeyGenerator::galois_keys)
+		.def("relin_keys", (RelinKeys (KeyGenerator::*)()) &KeyGenerator::relin_keys, py::return_value_policy::reference_internal);
 
 // MemoryPoolHandle
 	py::class_<MemoryPoolHandle>(m, "MemoryPoolHandle")
@@ -117,12 +124,21 @@ PYBIND11_MODULE(seal, m) {
 		.def("negate", (void (Evaluator::*)(const Ciphertext &, Ciphertext &)) &Evaluator::negate)
 		.def("add_inplace", (void (Evaluator::*)(Ciphertext &, const Ciphertext &)) &Evaluator::add_inplace)
 		.def("add", (void (Evaluator::*)(const Ciphertext &, const Ciphertext &, Ciphertext &)) &Evaluator::add)
+		.def("add_many", (void (Evaluator::*)(const std::vector<Ciphertext> &, Ciphertext &)) &Evaluator::add_many)
 		.def("sub_inplace", (void (Evaluator::*)(Ciphertext &, const Ciphertext &)) &Evaluator::sub_inplace)
 		.def("sub", (void (Evaluator::*)(const Ciphertext &, const Ciphertext &, Ciphertext &)) &Evaluator::sub)
 		.def("multiply_inplace", (void (Evaluator::*)(Ciphertext &, const Ciphertext &)) &Evaluator::multiply_inplace)
 		.def("multiply", (void (Evaluator::*)(Ciphertext &, const Ciphertext &, Ciphertext &)) &Evaluator::multiply)
 		.def("square_inplace", (void (Evaluator::*)(Ciphertext &)) &Evaluator::square_inplace)
-		.def("square", (void (Evaluator::*)(const Ciphertext &, Ciphertext &)) &Evaluator::square);
+		.def("square", (void (Evaluator::*)(const Ciphertext &, Ciphertext &)) &Evaluator::square)
+		.def("relinearize_inplace", (void (Evaluator::*)(Ciphertext &, const RelinKeys &)) &Evaluator::relinearize_inplace)
+		.def("relinearize", (void (Evaluator::*)(const Ciphertext &, const RelinKeys &, Ciphertext &)) &Evaluator::relinearize)
+		.def("mod_switch_to_next_inplace",
+			(void (Evaluator::*)(Ciphertext &, MemoryPoolHandle)) &Evaluator::mod_switch_to_next_inplace)
+		.def("mod_switch_to_next_inplace", (void (Evaluator::*)(Plaintext &)) &Evaluator::mod_switch_to_next_inplace)
+		.def("rescale_to_next_inplace", (void (Evaluator::*)(Ciphertext &)) &Evaluator::rescale_to_next_inplace)
+		.def("multiply_many",
+			(void (Evaluator::*)(std::vector<Ciphertext> &, const RelinKeys &, Ciphertext &)) &Evaluator::multiply_many);
 
 }
 
