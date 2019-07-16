@@ -33,3 +33,5 @@
 
 # Others
 build
+SEAL
+pybind11
