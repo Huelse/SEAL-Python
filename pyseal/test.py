@@ -1,5 +1,5 @@
 import seal
-from seal import EncryptionParameters, SEALContext, CoeffModulus, KeyGenerator, scheme_type
+from seal import EncryptionParameters, SEALContext, CoeffModulus, KeyGenerator, scheme_type, Encryptor, Evaluator, Decryptor, Plaintext, Ciphertext
 
 
 parms = EncryptionParameters(scheme_type.BFV)
@@ -29,3 +29,16 @@ relin_keys = keygen.relin_keys()
 print(type(secret_key))
 print(type(public_key))
 print(type(relin_keys))
+encryptor = Encryptor(context, public_key)
+print(encryptor)
+evaluator = Evaluator(context)
+print(evaluator)
+decryptor = Decryptor(context, secret_key)
+print(decryptor)
+x_plain = Plaintext("6")
+#print(x_plain.to_string())
+x_encrypted = Ciphertext()
+print(type(x_plain))
+print(type(x_encrypted))
+encryptor.encrypt(x_plain, x_encrypted)
+print(x_encrypted.size())

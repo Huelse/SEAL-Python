@@ -13,10 +13,10 @@ ext_modules = [
     Extension(
         'seal',
         ['wrapper.cpp'],
-        include_dirs=['/usr/include/python3.6', './pybind11/include', './SEAL/native/src'],
+        include_dirs=['/usr/include/python3.6', '../pybind11/include', '../SEAL/native/src'],
         language='c++',
         extra_compile_args = cpp_args,
-        extra_objects=['./SEAL/native/lib/libseal.a'],
+        extra_objects=['../SEAL/native/lib/libseal.a'],
     ),
 ]
 

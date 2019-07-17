@@ -10,7 +10,13 @@ using namespace seal;
 
 
 PYBIND11_MODULE(seal, m) {
-	m.doc() = "SEAL For Python!";
+	m.doc() = "SEAL For Python.";
+
+// BigUInt
+	py::class_<BigUInt>(m, "BigUInt")
+		.def(py::init<>())
+		.def("to_double", &BigUInt::to_double)
+		.def("significant_bit_count", (int (BigUInt::*)()) &BigUInt::significant_bit_count);
 
 // EncryptionParameters
 	py::class_<EncryptionParameters>(m, "EncryptionParameters")
@@ -90,7 +96,11 @@ PYBIND11_MODULE(seal, m) {
 // RelinKeys
 	py::class_<RelinKeys, KSwitchKeys>(m, "RelinKeys")
 		.def(py::init<>());
-		
+
+// GaloisKeys
+	py::class_<GaloisKeys>(m, "GaloisKeys")
+    	.def(py::init<>());
+
 // KeyGenerator
 	py::class_<KeyGenerator>(m, "KeyGenerator")
 		.def(py::init<std::shared_ptr<SEALContext>>())
@@ -101,7 +111,7 @@ PYBIND11_MODULE(seal, m) {
 		.def("galois_keys", (GaloisKeys (KeyGenerator::*)(const std::vector<std::uint64_t> &)) &KeyGenerator::galois_keys)
 		.def("galois_keys", (GaloisKeys (KeyGenerator::*)(const std::vector<int> &)) &KeyGenerator::galois_keys)
 		.def("galois_keys", (GaloisKeys (KeyGenerator::*)()) &KeyGenerator::galois_keys)
-		.def("relin_keys", (RelinKeys (KeyGenerator::*)()) &KeyGenerator::relin_keys, py::return_value_policy::reference_internal);
+		.def("relin_keys", (RelinKeys (KeyGenerator::*)()) &KeyGenerator::relin_keys);
 
 // MemoryPoolHandle
 	py::class_<MemoryPoolHandle>(m, "MemoryPoolHandle")
@@ -111,11 +121,30 @@ PYBIND11_MODULE(seal, m) {
 		.def_static("New", &MemoryPoolHandle::New)
 		.def_static("Global", &MemoryPoolHandle::Global);
 
+// Ciphertext
+	py::class_<Ciphertext>(m, "Ciphertext")
+		.def(py::init<>())
+		//.def(py::init<MemoryPoolHandle>())
+		.def(py::init<std::shared_ptr<SEALContext>>())
+		.def(py::init<std::shared_ptr<SEALContext>, parms_id_type>())
+		.def("size", &Ciphertext::size);
+
+// Plaintext
+	py::class_<Plaintext>(m, "Plaintext")
+		.def(py::init<>())
+		//.def(py::init<MemoryPoolHandle>())
+		.def(py::init<const std::string &>())
+		.def(py::init<const Plaintext &>())
+		.def("significant_coeff_count", &Plaintext::significant_coeff_count)
+		.def("to_string", &Plaintext::to_string)
+		.def("coeff_count", &Plaintext::coeff_count)
+		.def("save", (void (Plaintext::*)(std::ostream &)) &Plaintext::save)
+		.def("load", (void (Plaintext::*)(std::shared_ptr<SEALContext>, std::istream &)) &Plaintext::load);
+
 // Encryptor
 	py::class_<Encryptor>(m, "Encryptor")
 		.def(py::init<std::shared_ptr<SEALContext>, const PublicKey &>())
 		.def("encrypt", (void (Encryptor::*)(const Plaintext &, Ciphertext &)) &Encryptor::encrypt);
-		// void encrypt(const Plaintext &plain, Ciphertext &destination, MemoryPoolHandle pool = MemoryManager::GetPool());
 
 // Evaluator
 	py::class_<Evaluator>(m, "Evaluator")
@@ -133,12 +162,59 @@ PYBIND11_MODULE(seal, m) {
 		.def("square", (void (Evaluator::*)(const Ciphertext &, Ciphertext &)) &Evaluator::square)
 		.def("relinearize_inplace", (void (Evaluator::*)(Ciphertext &, const RelinKeys &)) &Evaluator::relinearize_inplace)
 		.def("relinearize", (void (Evaluator::*)(const Ciphertext &, const RelinKeys &, Ciphertext &)) &Evaluator::relinearize)
-		.def("mod_switch_to_next_inplace",
-			(void (Evaluator::*)(Ciphertext &, MemoryPoolHandle)) &Evaluator::mod_switch_to_next_inplace)
+		//.def("mod_switch_to_next_inplace",
+		//	(void (Evaluator::*)(Ciphertext &, MemoryPoolHandle)) &Evaluator::mod_switch_to_next_inplace)
 		.def("mod_switch_to_next_inplace", (void (Evaluator::*)(Plaintext &)) &Evaluator::mod_switch_to_next_inplace)
 		.def("rescale_to_next_inplace", (void (Evaluator::*)(Ciphertext &)) &Evaluator::rescale_to_next_inplace)
 		.def("multiply_many",
-			(void (Evaluator::*)(std::vector<Ciphertext> &, const RelinKeys &, Ciphertext &)) &Evaluator::multiply_many);
+			(void (Evaluator::*)(std::vector<Ciphertext> &, const RelinKeys &, Ciphertext &)) &Evaluator::multiply_many)
+		.def("exponentiate_inplace",
+			(void (Evaluator::*)(Ciphertext &, std::uint64_t, const RelinKeys &)) &Evaluator::exponentiate_inplace)
+		.def("exponentiate",
+			(void (Evaluator::*)(const Ciphertext &, std::uint64_t, const RelinKeys &, Ciphertext &)) &Evaluator::exponentiate)
+		.def("add_plain_inplace", (void (Evaluator::*)(Ciphertext &, const Plaintext &)) &Evaluator::add_plain_inplace)
+		.def("add_plain", (void (Evaluator::*)(const Ciphertext &, const Plaintext &)) &Evaluator::add_plain)
+		.def("sub_plain_inplace", (void (Evaluator::*)(Ciphertext &, const Plaintext &)) &Evaluator::sub_plain_inplace)
+		.def("sub_plain", (void (Evaluator::*)(const Ciphertext &, const Plaintext &)) &Evaluator::sub_plain)
+		.def("multiply_plain_inplace",
+			(void (Evaluator::*)(Ciphertext &, const Plaintext &)) &Evaluator::multiply_plain_inplace)
+		.def("multiply_plain",
+			(void (Evaluator::*)(const Ciphertext &, const Plaintext &, Ciphertext &)) &Evaluator::multiply_plain)
+		//.def("transform_to_ntt_inplace",
+		//	(void (Evaluator::*)(Plaintext &, parms_id_type, MemoryPoolHandle)) &Evaluator::transform_to_ntt_inplace)
+		//.def("transform_to_ntt",
+		//	(void (Evaluator::*)(const Plaintext &, parms_id_type, Plaintext &, MemoryPoolHandle)) &Evaluator::transform_to_ntt)
+		.def("transform_to_ntt_inplace", (void (Evaluator::*)(Ciphertext &)) &Evaluator::transform_to_ntt_inplace)
+		.def("transform_to_ntt", (void (Evaluator::*)(const Ciphertext &, Ciphertext &)) &Evaluator::transform_to_ntt)
+		.def("transform_from_ntt_inplace", (void (Evaluator::*)(Ciphertext &)) &Evaluator::transform_from_ntt_inplace)
+		.def("transform_from_ntt", (void (Evaluator::*)(const Ciphertext &, Ciphertext &)) &Evaluator::transform_from_ntt)
+		.def("apply_galois_inplace",
+			(void (Evaluator::*)(Ciphertext &, std::uint64_t, const GaloisKeys &)) &Evaluator::apply_galois_inplace)
+		.def("apply_galois",
+			(void (Evaluator::*)(const Ciphertext &, std::uint64_t, const GaloisKeys &, Ciphertext &)) &Evaluator::apply_galois)
+		.def("rotate_rows_inplace", (void (Evaluator::*)(Ciphertext &, int, GaloisKeys)) &Evaluator::rotate_rows_inplace)
+		.def("rotate_rows",
+			(void (Evaluator::*)(const Ciphertext &, int, const GaloisKeys &, Ciphertext &)) &Evaluator::rotate_rows)
+		.def("rotate_columns_inplace", (void (Evaluator::*)(Ciphertext &, const GaloisKeys &)) &Evaluator::rotate_columns_inplace)
+		.def("rotate_columns",
+			(void (Evaluator::*)(const Ciphertext &, const GaloisKeys &, Ciphertext &)) &Evaluator::rotate_columns)
+		.def("rotate_vector_inplace",
+			(void (Evaluator::*)(Ciphertext &, int, const GaloisKeys &)) &Evaluator::rotate_vector_inplace)
+		.def("rotate_vector",
+			(void (Evaluator::*)(const Ciphertext &, int, const GaloisKeys &, Ciphertext &)) &Evaluator::rotate_vector)
+		.def("complex_conjugate_inplace",
+			(void (Evaluator::*)(Ciphertext &, const GaloisKeys &)) &Evaluator::complex_conjugate_inplace)
+		.def("complex_conjugate",
+			(void (Evaluator::*)(const Ciphertext &, const GaloisKeys &,  Ciphertext &)) &Evaluator::complex_conjugate);
+
+//CKKSEncoder
+	py::class_<CKKSEncoder>(m, "CKKSEncoder")
+		.def(py::init<std::shared_ptr<SEALContext>>());
+
+//Decryptor
+	py::class_<Decryptor>(m, "Decryptor")
+		.def(py::init<std::shared_ptr<SEALContext>, const SecretKey &>());
+
 
 }
 
