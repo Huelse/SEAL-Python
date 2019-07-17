@@ -1,4 +1,4 @@
-# pySEAL
+# pyseal
 
 ### Microsoft SEAL For Python
 
