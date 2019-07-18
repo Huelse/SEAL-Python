@@ -8,7 +8,6 @@ namespace py = pybind11;
 using namespace std;
 using namespace seal;
 
-
 PYBIND11_MODULE(seal, m) {
 	m.doc() = "SEAL For Python.";
 
@@ -117,9 +116,13 @@ PYBIND11_MODULE(seal, m) {
 	py::class_<MemoryPoolHandle>(m, "MemoryPoolHandle")
 		.def(py::init<>())
 		.def(py::init<std::shared_ptr<util::MemoryPool>>())
-		.def(py::init<const MemoryPoolHandle &>())
+		//.def(py::init<const MemoryPoolHandle &>())
 		.def_static("New", &MemoryPoolHandle::New)
 		.def_static("Global", &MemoryPoolHandle::Global);
+
+// MemoryManager
+	py::class_<MemoryManager>(m, "MemoryManager")
+		.def(py::init<>());
 
 // Ciphertext
 	py::class_<Ciphertext>(m, "Ciphertext")
@@ -127,6 +130,8 @@ PYBIND11_MODULE(seal, m) {
 		//.def(py::init<MemoryPoolHandle>())
 		.def(py::init<std::shared_ptr<SEALContext>>())
 		.def(py::init<std::shared_ptr<SEALContext>, parms_id_type>())
+		.def(py::init<const Ciphertext &>())
+		//.def("reserve", (void (Ciphertext::*)(std::shared_ptr<SEALContext>, size_type)) &Ciphertext::reserve)
 		.def("size", &Ciphertext::size);
 
 // Plaintext
@@ -156,11 +161,14 @@ PYBIND11_MODULE(seal, m) {
 		.def("add_many", (void (Evaluator::*)(const std::vector<Ciphertext> &, Ciphertext &)) &Evaluator::add_many)
 		.def("sub_inplace", (void (Evaluator::*)(Ciphertext &, const Ciphertext &)) &Evaluator::sub_inplace)
 		.def("sub", (void (Evaluator::*)(const Ciphertext &, const Ciphertext &, Ciphertext &)) &Evaluator::sub)
-		.def("multiply_inplace", (void (Evaluator::*)(Ciphertext &, const Ciphertext &)) &Evaluator::multiply_inplace)
-		.def("multiply", (void (Evaluator::*)(Ciphertext &, const Ciphertext &, Ciphertext &)) &Evaluator::multiply)
-		.def("square_inplace", (void (Evaluator::*)(Ciphertext &)) &Evaluator::square_inplace)
-		.def("square", (void (Evaluator::*)(const Ciphertext &, Ciphertext &)) &Evaluator::square)
-		.def("relinearize_inplace", (void (Evaluator::*)(Ciphertext &, const RelinKeys &)) &Evaluator::relinearize_inplace)
+		.def("multiply_inplace",
+			(void (Evaluator::*)(Ciphertext &, const Ciphertext &)) &Evaluator::multiply_inplace)
+		.def("multiply",
+			(void (Evaluator::*)(Ciphertext &, const Ciphertext &, Ciphertext &, MemoryPoolHandle)) &Evaluator::multiply)
+		.def("square_inplace", (void (Evaluator::*)(Ciphertext &, MemoryPoolHandle)) &Evaluator::square_inplace)
+		.def("square", (void (Evaluator::*)(const Ciphertext &, Ciphertext &, MemoryPoolHandle)) &Evaluator::square)
+		.def("relinearize_inplace",
+			(void (Evaluator::*)(Ciphertext &, const RelinKeys &, MemoryPoolHandle)) &Evaluator::relinearize_inplace)
 		.def("relinearize", (void (Evaluator::*)(const Ciphertext &, const RelinKeys &, Ciphertext &)) &Evaluator::relinearize)
 		//.def("mod_switch_to_next_inplace",
 		//	(void (Evaluator::*)(Ciphertext &, MemoryPoolHandle)) &Evaluator::mod_switch_to_next_inplace)
@@ -173,11 +181,11 @@ PYBIND11_MODULE(seal, m) {
 		.def("exponentiate",
 			(void (Evaluator::*)(const Ciphertext &, std::uint64_t, const RelinKeys &, Ciphertext &)) &Evaluator::exponentiate)
 		.def("add_plain_inplace", (void (Evaluator::*)(Ciphertext &, const Plaintext &)) &Evaluator::add_plain_inplace)
-		.def("add_plain", (void (Evaluator::*)(const Ciphertext &, const Plaintext &)) &Evaluator::add_plain)
+		.def("add_plain", (void (Evaluator::*)(const Ciphertext &, const Plaintext &, Ciphertext &)) &Evaluator::add_plain)
 		.def("sub_plain_inplace", (void (Evaluator::*)(Ciphertext &, const Plaintext &)) &Evaluator::sub_plain_inplace)
 		.def("sub_plain", (void (Evaluator::*)(const Ciphertext &, const Plaintext &)) &Evaluator::sub_plain)
 		.def("multiply_plain_inplace",
-			(void (Evaluator::*)(Ciphertext &, const Plaintext &)) &Evaluator::multiply_plain_inplace)
+			(void (Evaluator::*)(Ciphertext &, const Plaintext &, MemoryPoolHandle)) &Evaluator::multiply_plain_inplace)
 		.def("multiply_plain",
 			(void (Evaluator::*)(const Ciphertext &, const Plaintext &, Ciphertext &)) &Evaluator::multiply_plain)
 		//.def("transform_to_ntt_inplace",
@@ -213,7 +221,9 @@ PYBIND11_MODULE(seal, m) {
 
 //Decryptor
 	py::class_<Decryptor>(m, "Decryptor")
-		.def(py::init<std::shared_ptr<SEALContext>, const SecretKey &>());
+		.def(py::init<std::shared_ptr<SEALContext>, const SecretKey &>())
+		.def("invariant_noise_budget", (int (Decryptor::*)(const Ciphertext &)) &Decryptor::invariant_noise_budget)
+		.def("decrypt", (int (Decryptor::*)(const Ciphertext &, Plaintext &)) &Decryptor::decrypt);
 
 
 }

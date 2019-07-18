@@ -2,6 +2,8 @@
 
 ### Microsoft SEAL For Python
 
+Tips: No matter how, the Path is very important.
+
 1. First, git clone the latest lib.
 
 SEAL( 3.3 ) `gti clone https://github.com/microsoft/SEAL.git`
