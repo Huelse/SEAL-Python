@@ -42,22 +42,22 @@ make
 
 ### Test
 
-​	`cd tests`
+`cd tests`
 
-​	`python3 [example_name].py`
+`python3 [example_name].py`
 
 
 
 ### Progress
 
-| C++               | Python            | Description                                                  | Progress |
-| ----------------- | ----------------- | ------------------------------------------------------------ | -------- |
-| 1_bfv_basics.cpp  | 1_bfv_basics.py   | Encrypted modular arithmetic using the BFV scheme            | Finished |
-| 2_encoders.cpp    | 2_encoders.cpp    | Encoding more complex data into Microsoft SEAL plaintext objects | Error    |
-| 3_levels.cpp      | 3_levels.cpp      | Introduces the concept of levels; prerequisite for using the CKKS scheme | Building |
-| 4_ckks_basics.cpp | 4_ckks_basics.cpp | Encrypted real number arithmetic using the CKKS scheme       | Building |
-| 5_rotation.cpp    | 5_rotation.cpp    | Performing cyclic rotations on encrypted vectors in the BFV and CKKS schemes | Building |
-| 6_performance.cpp | 6_performance.cpp | Performance tests for Microsoft SEAL                         | Building |
+| C++               | Python           | Description                                                  | Progress |
+| ----------------- | ---------------- | ------------------------------------------------------------ | -------- |
+| 1_bfv_basics.cpp  | 1_bfv_basics.py  | Encrypted modular arithmetic using the BFV scheme            | Finished |
+| 2_encoders.cpp    | 2_encoders.py    | Encoding more complex data into Microsoft SEAL plaintext objects | Error    |
+| 3_levels.cpp      | 3_levels.py      | Introduces the concept of levels; prerequisite for using the CKKS scheme | Building |
+| 4_ckks_basics.cpp | 4_ckks_basics.py | Encrypted real number arithmetic using the CKKS scheme       | Building |
+| 5_rotation.cpp    | 5_rotation.py    | Performing cyclic rotations on encrypted vectors in the BFV and CKKS schemes | Building |
+| 6_performance.cpp | 6_performance.py | Performance tests for Microsoft SEAL                         | Building |
 
 
 
