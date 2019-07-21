@@ -4,9 +4,11 @@
 
 namespace py = pybind11;
 
-//using namespace pybind11::literals;
 using namespace std;
 using namespace seal;
+
+using pt_coeff_type = std::uint64_t;
+using size_type = IntArray<pt_coeff_type>::size_type;
 
 PYBIND11_MODULE(seal, m) {
 	m.doc() = "SEAL For Python.";
@@ -47,34 +49,63 @@ PYBIND11_MODULE(seal, m) {
 		.value("BFV", scheme_type::BFV)
 		.value("CKKS", scheme_type::CKKS);
 
+// sec_level_type
+	py::enum_<sec_level_type>(m, "sec_level_type", py::arithmetic())
+		.value("none", sec_level_type::none)
+		.value("tc128", sec_level_type::tc128)
+		.value("tc192", sec_level_type::tc192)
+		.value("tc256", sec_level_type::tc256);
+
+// EncryptionParameterQualifiers
+	py::class_<EncryptionParameterQualifiers,
+		std::unique_ptr<EncryptionParameterQualifiers, py::nodelete>>(m, "EncryptionParameterQualifiers")
+		.def_readwrite("parameters_set", &EncryptionParameterQualifiers::parameters_set)
+		.def_readwrite("using_fft", &EncryptionParameterQualifiers::using_fft)
+		.def_readwrite("using_ntt", &EncryptionParameterQualifiers::using_ntt)
+		.def_readwrite("using_batching", &EncryptionParameterQualifiers::using_batching)
+		.def_readwrite("using_fast_plain_lift", &EncryptionParameterQualifiers::using_fast_plain_lift)
+		.def_readwrite("using_descending_modulus_chain", &EncryptionParameterQualifiers::using_descending_modulus_chain)
+		.def_readwrite("sec_level", &EncryptionParameterQualifiers::sec_level);
 
 // SEALContext
 	py::class_<SEALContext, std::shared_ptr<SEALContext>>(m, "SEALContext")
 		.def("Create", [](const EncryptionParameters &parms) { return SEALContext::Create(parms); })
-		
-		.def("key_parms_id", &SEALContext::key_parms_id, py::return_value_policy::reference)
-		
 		.def("key_context_data", &SEALContext::key_context_data, py::return_value_policy::reference)
-
-		.def("get_context_data", (void (SEALContext::*)(parms_id_type)) &SEALContext::get_context_data);
+		.def("first_context_data", &SEALContext::first_context_data, py::return_value_policy::reference);
+		//.def("key_parms_id", &SEALContext::key_parms_id, py::return_value_policy::reference)
+		//.def("get_context_data", (void (SEALContext::*)(parms_id_type)) &SEALContext::get_context_data)
 
 // SEALContext::ContextData
 	py::class_<SEALContext::ContextData, std::shared_ptr<SEALContext::ContextData>>(m, "SEALContext::ContextData")
 		.def("parms", &SEALContext::ContextData::parms)
 		.def("parms_id", &SEALContext::ContextData::parms_id)
+		.def("qualifiers", &SEALContext::ContextData::qualifiers)
 		.def("total_coeff_modulus",
-			(std::uint64_t (SEALContext::ContextData::*)()) &SEALContext::ContextData::total_coeff_modulus);
-	
+			(std::uint64_t (SEALContext::ContextData::*)()) &SEALContext::ContextData::total_coeff_modulus)
+		.def("total_coeff_modulus_bit_count", &SEALContext::ContextData::total_coeff_modulus_bit_count);
+
 // SmallModulus
 	py::class_<SmallModulus>(m, "SmallModulus")
       	.def(py::init<>())
       	.def(py::init<std::uint64_t>())
+		.def("bit_count", &SmallModulus::bit_count)
       	.def("value", (std::uint64_t (SmallModulus::*)()) &SmallModulus::value);
 
 // CoeffModulus
 	py::class_<CoeffModulus>(m, "CoeffModulus")
 		.def("BFVDefault",
-			[](std::size_t poly_modulus_degree) { return CoeffModulus::BFVDefault(poly_modulus_degree); });
+			[](std::size_t poly_modulus_degree) { return CoeffModulus::BFVDefault(poly_modulus_degree); })
+		.def("Create",
+			[](std::size_t poly_modulus_degree, std::vector<int> bit_sizes)
+			{ return CoeffModulus::Create(poly_modulus_degree, bit_sizes); });
+
+// PlainModulus
+	py::class_<PlainModulus>(m, "PlainModulus")
+		.def("Batching",
+			[](std::size_t poly_modulus_degree, int bit_size) { return  PlainModulus::Batching(poly_modulus_degree, bit_size); })
+		.def("Batching",
+			[](std::size_t poly_modulus_degree, std::vector<int> bit_sizes)
+			{ return  PlainModulus::Batching(poly_modulus_degree, bit_sizes); });	
 
 // SecretKey
 	py::class_<SecretKey>(m, "SecretKey")
@@ -97,7 +128,7 @@ PYBIND11_MODULE(seal, m) {
 		.def(py::init<>());
 
 // GaloisKeys
-	py::class_<GaloisKeys>(m, "GaloisKeys")
+	py::class_<GaloisKeys, KSwitchKeys>(m, "GaloisKeys")
     	.def(py::init<>());
 
 // KeyGenerator
@@ -116,30 +147,31 @@ PYBIND11_MODULE(seal, m) {
 	py::class_<MemoryPoolHandle>(m, "MemoryPoolHandle")
 		.def(py::init<>())
 		.def(py::init<std::shared_ptr<util::MemoryPool>>())
-		//.def(py::init<const MemoryPoolHandle &>())
 		.def_static("New", &MemoryPoolHandle::New)
 		.def_static("Global", &MemoryPoolHandle::Global);
 
 // MemoryManager
 	py::class_<MemoryManager>(m, "MemoryManager")
-		.def(py::init<>());
+		.def(py::init<>())
+		.def("GetPool", []() { return MemoryManager::GetPool(); });
 
 // Ciphertext
 	py::class_<Ciphertext>(m, "Ciphertext")
 		.def(py::init<>())
-		//.def(py::init<MemoryPoolHandle>())
 		.def(py::init<std::shared_ptr<SEALContext>>())
 		.def(py::init<std::shared_ptr<SEALContext>, parms_id_type>())
 		.def(py::init<const Ciphertext &>())
 		//.def("reserve", (void (Ciphertext::*)(std::shared_ptr<SEALContext>, size_type)) &Ciphertext::reserve)
+		.def("scale", (double &(Ciphertext::*)()) &Ciphertext::scale, py::return_value_policy::reference)
 		.def("size", &Ciphertext::size);
 
 // Plaintext
 	py::class_<Plaintext>(m, "Plaintext")
 		.def(py::init<>())
-		//.def(py::init<MemoryPoolHandle>())
+		.def(py::init<size_type>())
 		.def(py::init<const std::string &>())
 		.def(py::init<const Plaintext &>())
+		.def("data", (pt_coeff_type * (Plaintext::*)(size_type)) &Plaintext::data)
 		.def("significant_coeff_count", &Plaintext::significant_coeff_count)
 		.def("to_string", &Plaintext::to_string)
 		.def("coeff_count", &Plaintext::coeff_count)
@@ -162,7 +194,7 @@ PYBIND11_MODULE(seal, m) {
 		.def("sub_inplace", (void (Evaluator::*)(Ciphertext &, const Ciphertext &)) &Evaluator::sub_inplace)
 		.def("sub", (void (Evaluator::*)(const Ciphertext &, const Ciphertext &, Ciphertext &)) &Evaluator::sub)
 		.def("multiply_inplace",
-			(void (Evaluator::*)(Ciphertext &, const Ciphertext &)) &Evaluator::multiply_inplace)
+			(void (Evaluator::*)(Ciphertext &, const Ciphertext &, MemoryPoolHandle)) &Evaluator::multiply_inplace)
 		.def("multiply",
 			(void (Evaluator::*)(Ciphertext &, const Ciphertext &, Ciphertext &, MemoryPoolHandle)) &Evaluator::multiply)
 		.def("square_inplace", (void (Evaluator::*)(Ciphertext &, MemoryPoolHandle)) &Evaluator::square_inplace)
@@ -215,16 +247,37 @@ PYBIND11_MODULE(seal, m) {
 		.def("complex_conjugate",
 			(void (Evaluator::*)(const Ciphertext &, const GaloisKeys &,  Ciphertext &)) &Evaluator::complex_conjugate);
 
-//CKKSEncoder
+// CKKSEncoder !vector<T> exist problems
 	py::class_<CKKSEncoder>(m, "CKKSEncoder")
-		.def(py::init<std::shared_ptr<SEALContext>>());
+		.def(py::init<std::shared_ptr<SEALContext>>())
+		.def("encode", (void (CKKSEncoder::*)(const vector<double> &, double, Plaintext &, MemoryPoolHandle)) &CKKSEncoder::encode)
+		.def("decode", (void (CKKSEncoder::*)(const Plaintext &,std::vector<double> &, MemoryPoolHandle)) &CKKSEncoder::decode)
+		.def("slot_count", &CKKSEncoder::slot_count);
 
-//Decryptor
+// Decryptor
 	py::class_<Decryptor>(m, "Decryptor")
 		.def(py::init<std::shared_ptr<SEALContext>, const SecretKey &>())
 		.def("invariant_noise_budget", (int (Decryptor::*)(const Ciphertext &)) &Decryptor::invariant_noise_budget)
 		.def("decrypt", (int (Decryptor::*)(const Ciphertext &, Plaintext &)) &Decryptor::decrypt);
 
+// IntegerEncoder
+	py::class_<IntegerEncoder>(m, "IntegerEncoder")
+		.def(py::init<std::shared_ptr<SEALContext>>())
+		.def("encode", (Plaintext (IntegerEncoder::*)(std::uint64_t)) &IntegerEncoder::encode)
+		.def("encode", (Plaintext (IntegerEncoder::*)(std::int64_t)) &IntegerEncoder::encode)
+		.def("encode", (void (IntegerEncoder::*)(std::uint64_t, Plaintext &)) &IntegerEncoder::encode)
+		.def("decode_int32", (std::int32_t (IntegerEncoder::*)(const Plaintext &)) &IntegerEncoder::decode_int32);
+
+// BatchEncoder
+	py::class_<BatchEncoder>(m, "BatchEncoder")
+		.def(py::init<std::shared_ptr<SEALContext>>())
+		.def("encode", (void (BatchEncoder::*)(const std::vector<std::uint64_t> &, Plaintext &)) &BatchEncoder::encode)
+		.def("encode", (void (BatchEncoder::*)(const std::vector<std::int64_t> &, Plaintext &)) &BatchEncoder::encode)
+		.def("decode",
+			(void (BatchEncoder::*)(const Plaintext &, std::vector<std::uint64_t> &, MemoryPoolHandle)) &BatchEncoder::decode)
+		.def("decode",
+			(void (BatchEncoder::*)(const Plaintext &, std::vector<std::int64_t> &, MemoryPoolHandle)) &BatchEncoder::decode)
+		.def("slot_count", &BatchEncoder::slot_count);
 
 }
 
