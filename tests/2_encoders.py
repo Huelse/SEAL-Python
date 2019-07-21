@@ -20,8 +20,12 @@ def print_parameters(context):
     print("| scheme: " + scheme_name)
     print("| poly_modulus_degree: " +
           str(context_data.parms().poly_modulus_degree()))
-    print("| coeff_modulus size: (", end="")
+    print("| coeff_modulus size: ", end="")
     coeff_modulus = context_data.parms().coeff_modulus()
+    coeff_modulus_sum = 0
+    for j in coeff_modulus:
+        coeff_modulus_sum += j.bit_count()
+    print(str(coeff_modulus_sum) + "(", end="")
     for i in range(len(coeff_modulus) - 1):
         print(str(coeff_modulus[i].bit_count()) + " + ", end="")
     print(str(coeff_modulus[-1].bit_count()) + ") bits")

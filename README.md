@@ -8,9 +8,9 @@ Tips: No matter how, the Path is very important.
 
 1. First, git clone the latest lib.
 
-   SEAL( 3.3 ) `git clone https://github.com/microsoft/SEAL.git`
+   [SEAL](https://github.com/microsoft/SEAL)( 3.3 ) `git clone https://github.com/microsoft/SEAL.git`
 
-   pybind11( 2.3.0 ) `git clone https://github.com/pybind/pybind11.git`
+   [pybind11](https://github.com/pybind/pybind11)( 2.3.0 ) `git clone https://github.com/pybind/pybind11.git`
 
 2. Compiler the SEAL
 
@@ -54,7 +54,7 @@ make
 | ----------------- | ---------------- | ------------------------------------------------------------ | -------- |
 | 1_bfv_basics.cpp  | 1_bfv_basics.py  | Encrypted modular arithmetic using the BFV scheme            | Finished |
 | 2_encoders.cpp    | 2_encoders.py    | Encoding more complex data into Microsoft SEAL plaintext objects | Error    |
-| 3_levels.cpp      | 3_levels.py      | Introduces the concept of levels; prerequisite for using the CKKS scheme | Building |
+| 3_levels.cpp      | 3_levels.py      | Introduces the concept of levels; prerequisite for using the CKKS scheme | Finished |
 | 4_ckks_basics.cpp | 4_ckks_basics.py | Encrypted real number arithmetic using the CKKS scheme       | Building |
 | 5_rotation.cpp    | 5_rotation.py    | Performing cyclic rotations on encrypted vectors in the BFV and CKKS schemes | Building |
 | 6_performance.cpp | 6_performance.py | Performance tests for Microsoft SEAL                         | Building |
@@ -67,7 +67,7 @@ This is project is building now.
 
 If you have interest in this, come and join us.
 
-Email: [huelse@oini.top](mailto:huelse@oini.top)
+Email: [huelse@oini.top](mailto:huelse@oini.top?subject=Github-pyseal-Issues&cc=5956877@qq.com)
 
 
 

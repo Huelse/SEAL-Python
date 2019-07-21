@@ -70,10 +70,11 @@ PYBIND11_MODULE(seal, m) {
 // SEALContext
 	py::class_<SEALContext, std::shared_ptr<SEALContext>>(m, "SEALContext")
 		.def("Create", [](const EncryptionParameters &parms) { return SEALContext::Create(parms); })
+		.def("Create", [](const EncryptionParameters &parms, bool expand_mod_chain) { return SEALContext::Create(parms, expand_mod_chain); })
 		.def("key_context_data", &SEALContext::key_context_data, py::return_value_policy::reference)
-		.def("first_context_data", &SEALContext::first_context_data, py::return_value_policy::reference);
-		//.def("key_parms_id", &SEALContext::key_parms_id, py::return_value_policy::reference)
-		//.def("get_context_data", (void (SEALContext::*)(parms_id_type)) &SEALContext::get_context_data)
+		.def("first_context_data", &SEALContext::first_context_data, py::return_value_policy::reference)
+		.def("first_parms_id", &SEALContext::first_parms_id, py::return_value_policy::reference)
+		.def("last_parms_id", &SEALContext::last_parms_id, py::return_value_policy::reference);
 
 // SEALContext::ContextData
 	py::class_<SEALContext::ContextData, std::shared_ptr<SEALContext::ContextData>>(m, "SEALContext::ContextData")
@@ -82,7 +83,9 @@ PYBIND11_MODULE(seal, m) {
 		.def("qualifiers", &SEALContext::ContextData::qualifiers)
 		.def("total_coeff_modulus",
 			(std::uint64_t (SEALContext::ContextData::*)()) &SEALContext::ContextData::total_coeff_modulus)
-		.def("total_coeff_modulus_bit_count", &SEALContext::ContextData::total_coeff_modulus_bit_count);
+		.def("total_coeff_modulus_bit_count", &SEALContext::ContextData::total_coeff_modulus_bit_count)
+		.def("next_context_data", &SEALContext::ContextData::next_context_data)
+		.def("chain_index", &SEALContext::ContextData::chain_index);
 
 // SmallModulus
 	py::class_<SmallModulus>(m, "SmallModulus")
@@ -110,26 +113,31 @@ PYBIND11_MODULE(seal, m) {
 // SecretKey
 	py::class_<SecretKey>(m, "SecretKey")
 		.def(py::init<>())
+		.def("parms_id", (parms_id_type &(SecretKey::*)()) &SecretKey::parms_id, py::return_value_policy::reference)
 		.def("save", (void (SecretKey::*)(std::ostream &)) &SecretKey::save)
 		.def("load", (void (SecretKey::*)(std::shared_ptr<SEALContext>, std::istream &)) &SecretKey::load);
 
 // PublicKey
 	py::class_<PublicKey>(m, "PublicKey")
 		.def(py::init<>())
+		.def("parms_id", (parms_id_type &(PublicKey::*)()) &PublicKey::parms_id, py::return_value_policy::reference)
 		.def("save", (void (PublicKey::*)(std::ostream &)) &PublicKey::save)
 		.def("load", (void (PublicKey::*)(std::shared_ptr<SEALContext>, std::istream &)) &PublicKey::load);
 
 // KSwitchKeys
 	py::class_<KSwitchKeys>(m, "KSwitchKeys")
-		.def(py::init<>());
+		.def(py::init<>())
+		.def("parms_id", (parms_id_type &(KSwitchKeys::*)()) &KSwitchKeys::parms_id, py::return_value_policy::reference);
 
 // RelinKeys
 	py::class_<RelinKeys, KSwitchKeys>(m, "RelinKeys")
-		.def(py::init<>());
+		.def(py::init<>())
+		.def("parms_id", (parms_id_type &(RelinKeys::KSwitchKeys::*)()) &RelinKeys::KSwitchKeys::parms_id, py::return_value_policy::reference);
 
 // GaloisKeys
 	py::class_<GaloisKeys, KSwitchKeys>(m, "GaloisKeys")
-    	.def(py::init<>());
+    	.def(py::init<>())
+		.def("parms_id", (parms_id_type &(GaloisKeys::KSwitchKeys::*)()) &GaloisKeys::KSwitchKeys::parms_id, py::return_value_policy::reference);
 
 // KeyGenerator
 	py::class_<KeyGenerator>(m, "KeyGenerator")
@@ -161,9 +169,9 @@ PYBIND11_MODULE(seal, m) {
 		.def(py::init<std::shared_ptr<SEALContext>>())
 		.def(py::init<std::shared_ptr<SEALContext>, parms_id_type>())
 		.def(py::init<const Ciphertext &>())
-		//.def("reserve", (void (Ciphertext::*)(std::shared_ptr<SEALContext>, size_type)) &Ciphertext::reserve)
 		.def("scale", (double &(Ciphertext::*)()) &Ciphertext::scale, py::return_value_policy::reference)
-		.def("size", &Ciphertext::size);
+		.def("size", &Ciphertext::size)
+		.def("parms_id", (parms_id_type &(Ciphertext::*)()) &Ciphertext::parms_id, py::return_value_policy::reference);
 
 // Plaintext
 	py::class_<Plaintext>(m, "Plaintext")
@@ -176,7 +184,8 @@ PYBIND11_MODULE(seal, m) {
 		.def("to_string", &Plaintext::to_string)
 		.def("coeff_count", &Plaintext::coeff_count)
 		.def("save", (void (Plaintext::*)(std::ostream &)) &Plaintext::save)
-		.def("load", (void (Plaintext::*)(std::shared_ptr<SEALContext>, std::istream &)) &Plaintext::load);
+		.def("load", (void (Plaintext::*)(std::shared_ptr<SEALContext>, std::istream &)) &Plaintext::load)
+		.def("parms_id", (parms_id_type &(Plaintext::*)()) &Plaintext::parms_id, py::return_value_policy::reference);
 
 // Encryptor
 	py::class_<Encryptor>(m, "Encryptor")
@@ -202,8 +211,8 @@ PYBIND11_MODULE(seal, m) {
 		.def("relinearize_inplace",
 			(void (Evaluator::*)(Ciphertext &, const RelinKeys &, MemoryPoolHandle)) &Evaluator::relinearize_inplace)
 		.def("relinearize", (void (Evaluator::*)(const Ciphertext &, const RelinKeys &, Ciphertext &)) &Evaluator::relinearize)
-		//.def("mod_switch_to_next_inplace",
-		//	(void (Evaluator::*)(Ciphertext &, MemoryPoolHandle)) &Evaluator::mod_switch_to_next_inplace)
+		.def("mod_switch_to_next_inplace",
+			(void (Evaluator::*)(Ciphertext &, MemoryPoolHandle)) &Evaluator::mod_switch_to_next_inplace)
 		.def("mod_switch_to_next_inplace", (void (Evaluator::*)(Plaintext &)) &Evaluator::mod_switch_to_next_inplace)
 		.def("rescale_to_next_inplace", (void (Evaluator::*)(Ciphertext &)) &Evaluator::rescale_to_next_inplace)
 		.def("multiply_many",
