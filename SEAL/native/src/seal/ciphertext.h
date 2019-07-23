@@ -629,6 +629,14 @@ namespace seal
             return scale_;
         }
 
+		/**
+        Set the scale.
+        */
+		inline void set_scale( double scale)
+		{
+			scale_ = scale;
+		}
+
         /**
         Returns the currently used MemoryPoolHandle.
         */

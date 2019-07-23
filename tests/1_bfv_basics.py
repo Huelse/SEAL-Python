@@ -1,9 +1,14 @@
 from seal import *
 
 
-def print_example_banner(title, ch='*', length=78):
-    spaced_text = ' %s ' % title
-    print(spaced_text.center(length, ch))
+def print_example_banner(title):
+    title_length = len(title)
+    banner_length = title_length + 2 * 10
+    banner_top = "+" + "-" * (banner_length - 2) + "+"
+    banner_middle = "|" + ' ' * 9 + title + ' ' * 9 + "|"
+    print(banner_top)
+    print(banner_middle)
+    print(banner_top)
 
 
 def print_parameters(context):
@@ -81,7 +86,7 @@ def example_bfv_basics():
     decryptor.decrypt(x_encrypted, x_decrypted)
     print("0x" + x_decrypted.to_string() + " ...... Correct.")
 
-    print("-" * 50)
+    print("-"*50)
     print("Compute x_sq_plus_one (x^2+1).")
     #pool = MemoryPoolHandle().New(False)
     pool = MemoryManager.GetPool()
@@ -102,7 +107,7 @@ def example_bfv_basics():
     '''
 	Next, we compute (x + 1)^2.
 	'''
-    print("-" * 50)
+    print("-"*50)
     print("Compute x_plus_one_sq ((x+1)^2).")
     x_plus_one_sq = Ciphertext()
     evaluator.add_plain(x_encrypted, plain_one, x_plus_one_sq)
@@ -117,7 +122,7 @@ def example_bfv_basics():
     '''
 	Finally, we multiply (x^2 + 1) * (x + 1)^2 * 2.
 	'''
-    print("-" * 50)
+    print("-"*50)
     print("Compute encrypted_result (2(x^2+1)(x+1)^2).")
     encrypted_result = Ciphertext()
     plain_two = Plaintext("2")
@@ -129,16 +134,16 @@ def example_bfv_basics():
     print("NOTE: Decryption can be incorrect if noise budget is zero.")
     print("\n~~~~~~ A better way to calculate 2(x^2+1)(x+1)^2. ~~~~~~")
 
-    print("-" * 50)
+    print("-"*50)
     print("Generate relinearization keys.")
     relin_keys = keygen.relin_keys()
 
     '''
 	We now repeat the computation relinearizing after each multiplication.
 	'''
-    print("-" * 50)
+    print("-"*50)
     print("Compute and relinearize x_squared (x^2),")
-    print(" " * 13 + "then compute x_sq_plus_one (x^2+1)")
+    print(" "*13 + "then compute x_sq_plus_one (x^2+1)")
     x_squared = Ciphertext()
     evaluator.square(x_encrypted, x_squared, pool)
     print("    + size of x_squared: " + str(x_squared.size()))
@@ -151,10 +156,10 @@ def example_bfv_basics():
     print("    + decryption of x_sq_plus_one: 0x" +
           decrypted_result.to_string() + " ...... Correct.")
 
-    print("-" * 50)
+    print("-"*50)
     x_plus_one = Ciphertext()
     print("Compute x_plus_one (x+1),")
-    print(" " * 13 + "then compute and relinearize x_plus_one_sq ((x+1)^2).")
+    print(" "*13 + "then compute and relinearize x_plus_one_sq ((x+1)^2).")
     evaluator.add_plain(x_encrypted, plain_one, x_plus_one)
     evaluator.square(x_plus_one, x_plus_one_sq, pool)
     print("    + size of x_plus_one_sq: " + str(x_plus_one_sq.size()))
@@ -165,7 +170,7 @@ def example_bfv_basics():
     print("    + decryption of x_plus_one_sq: 0x" +
           decrypted_result.to_string() + " ...... Correct.")
 
-    print("-" * 50)
+    print("-"*50)
     print("Compute and relinearize encrypted_result (2(x^2+1)(x+1)^2).")
     evaluator.multiply_plain_inplace(x_sq_plus_one, plain_two, pool)
     evaluator.multiply(x_sq_plus_one, x_plus_one_sq, encrypted_result, pool)
@@ -177,7 +182,7 @@ def example_bfv_basics():
           str(decryptor.invariant_noise_budget(encrypted_result)) + " bits")
     print("\nNOTE: Notice the increase in remaining noise budget.")
 
-    print("-" * 50)
+    print("-"*50)
     print("Decrypt encrypted_result (2(x^2+1)(x+1)^2).")
     decryptor.decrypt(encrypted_result, decrypted_result)
     print("    + decryption of 2(x^2+1)(x+1)^2 = 0x" +

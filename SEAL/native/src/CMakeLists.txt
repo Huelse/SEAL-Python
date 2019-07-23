@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-project(SEAL VERSION 3.2.0 LANGUAGES CXX C)
+project(SEAL VERSION 3.3.1 LANGUAGES CXX C)
 
 if(DEFINED MSVC)
     if(DEFINED ALLOW_COMMAND_LINE_BUILD)
@@ -109,10 +109,6 @@ if(SEAL_LIB_BUILD_TYPE STREQUAL "Static")
 else()
   set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
-
-# Enforce at least 128-bit security level based on HomomorphicEncryption.org estimates
-set(SEAL_ENFORCE_HE_STD_SECURITY_STR "Enforce at least 128-bit security level from HomomorphicEncryption.org security standard")
-option(SEAL_ENFORCE_HE_STD_SECURITY ${SEAL_ENFORCE_HE_STD_SECURITY_STR} OFF)
 
 # Throw on multiply_plain by a zero plaintext
 set(SEAL_THROW_ON_TRANSPARENT_CIPHERTEXT_STR "Throw an exception when a member of Evaluator outputs a transparent ciphertext")
@@ -336,14 +332,14 @@ endif()
 if(SEAL_LIB_BUILD_TYPE STREQUAL "Shared")
     add_library(seal SHARED "")
 
-    # Set SOVERSION for shared library 
-    set_target_properties(seal PROPERTIES 
+    # Set SOVERSION for shared library
+    set_target_properties(seal PROPERTIES
         SOVERSION ${SEAL_VERSION_MAJOR}.${SEAL_VERSION_MINOR})
 else()
     add_library(seal STATIC "")
 endif()
 
-# Set VERSION for all library build types 
+# Set VERSION for all library build types
 set_target_properties(seal PROPERTIES VERSION ${SEAL_VERSION})
 
 # Add source files to library and header files to install
@@ -411,7 +407,7 @@ install(
 # Version file; we require exact version match for downstream
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
-    ${SEAL_CONFIG_VERSION_FILENAME} 
+    ${SEAL_CONFIG_VERSION_FILENAME}
     VERSION ${SEAL_VERSION}
     COMPATIBILITY ExactVersion)
 

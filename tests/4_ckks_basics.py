@@ -1,0 +1,241 @@
+import math
+from seal import *
+
+
+def print_example_banner(title):
+    title_length = len(title)
+    banner_length = title_length + 2 * 10
+    banner_top = "+" + "-" * (banner_length - 2) + "+"
+    banner_middle = "|" + ' ' * 9 + title + ' ' * 9 + "|"
+    print(banner_top)
+    print(banner_middle)
+    print(banner_top)
+
+
+def print_parameters(context):
+    context_data = context.key_context_data()
+    if context_data.parms().scheme() == scheme_type.BFV:
+        scheme_name = "BFV"
+    elif context_data.parms().scheme() == scheme_type.CKKS:
+        scheme_name = "CKKS"
+    else:
+        scheme_name = "unsupported scheme"
+    print("/")
+    print("| Encryption parameters:")
+    print("| scheme: " + scheme_name)
+    print("| poly_modulus_degree: " +
+          str(context_data.parms().poly_modulus_degree()))
+    print("| coeff_modulus size: ", end="")
+    coeff_modulus = context_data.parms().coeff_modulus()
+    coeff_modulus_sum = 0
+    for j in coeff_modulus:
+        coeff_modulus_sum += j.bit_count()
+    print(str(coeff_modulus_sum) + "(", end="")
+    for i in range(len(coeff_modulus) - 1):
+        print(str(coeff_modulus[i].bit_count()) + " + ", end="")
+    print(str(coeff_modulus[-1].bit_count()) + ") bits")
+    if context_data.parms().scheme() == scheme_type.BFV:
+        print("| plain_modulus: " +
+              str(context_data.parms().plain_modulus().value()))
+    print("\\")
+
+
+def print_vector(vec, print_size=4, prec=3):
+    slot_count = len(vec)
+    print()
+    if slot_count <= 2*print_size:
+        print("    [", end="")
+        for i in range(slot_count):
+            print(" " + (f"%.{prec}f" % vec[i]) + ("," if (i != slot_count - 1) else " ]\n"), end="")
+    else:
+        print("    [", end="")
+        for i in range(print_size):
+            print(" " + (f"%.{prec}f" % vec[i]) + ",", end="")
+        if len(vec) > 2*print_size:
+            print(" ...,", end="")
+        for i in range(slot_count - print_size, slot_count):
+            print(" " + (f"%.{prec}f" % vec[i]) + ("," if (i != slot_count - 1) else " ]\n"), end="")
+    print()
+
+
+def example_ckks_basics():
+    print_example_banner("Example: CKKS Basics")
+
+    parms = EncryptionParameters(scheme_type.CKKS)
+
+    poly_modulus_degree = 8192
+    parms.set_poly_modulus_degree(poly_modulus_degree)
+    parms.set_coeff_modulus(CoeffModulus.Create(
+        poly_modulus_degree, [60, 40, 40, 60]))
+
+    scale = pow(2.0, 40)
+    context = SEALContext.Create(parms)
+    print_parameters(context)
+
+    keygen = KeyGenerator(context)
+    public_key = keygen.public_key()
+    secret_key = keygen.secret_key()
+    relin_keys = keygen.relin_keys()
+
+    encryptor = Encryptor(context, public_key)
+    evaluator = Evaluator(context)
+    decryptor = Decryptor(context, secret_key)
+
+    encoder = CKKSEncoder(context)
+    slot_count = encoder.slot_count()
+    print("Number of slots: " + str(slot_count))
+
+    inputs = DoubleVector()
+    curr_point = 0.0
+    step_size = 1.0 / (slot_count - 1)
+
+    for i in range(slot_count):
+        inputs.push_back(curr_point)
+        curr_point += step_size
+
+    print("Input vector: ")
+    print_vector(inputs, 3, 7)
+
+    print("Evaluating polynomial PI*x^3 + 0.4x + 1 ...")
+
+    '''
+    We create plaintexts for PI, 0.4, and 1 using an overload of CKKSEncoder::encode
+    that encodes the given floating-point value to every slot in the vector.
+    '''
+    #pool = MemoryPoolHandle().New(False)
+    pool = MemoryManager.GetPool()
+    plain_coeff3 = Plaintext()
+    plain_coeff1 = Plaintext()
+    plain_coeff0 = Plaintext()
+    encoder.encode(3.14159265, scale, plain_coeff3, pool)
+    encoder.encode(0.4, scale, plain_coeff1, pool)
+    encoder.encode(1.0, scale, plain_coeff0, pool)
+
+    x_plain = Plaintext()
+    print("-" * 50)
+    print("Encode input vectors.")
+    encoder.encode(inputs, scale, x_plain, pool)
+    x1_encrypted = Ciphertext()
+    encryptor.encrypt(x_plain, x1_encrypted)
+
+    x3_encrypted = Ciphertext()
+    print("-" * 50)
+    print("Compute x^2 and relinearize:")
+    evaluator.square(x1_encrypted, x3_encrypted, pool)
+    evaluator.relinearize_inplace(x3_encrypted, relin_keys, pool)
+    print("    + Scale of x^2 before rescale: " +
+          "%.0f" % math.log(x3_encrypted.scale(), 2) + " bits")
+
+    print("-" * 50)
+    print("Rescale x^2.")
+    evaluator.rescale_to_next_inplace(x3_encrypted, pool)
+    print("    + Scale of x^2 after rescale: " +
+          "%.0f" % math.log(x3_encrypted.scale(), 2) + " bits")
+
+    print("-" * 50)
+    print("Compute and rescale PI*x.")
+    x1_encrypted_coeff3 = Ciphertext()
+    evaluator.multiply_plain(x1_encrypted, plain_coeff3,
+                             x1_encrypted_coeff3, pool)
+    print("    + Scale of PI*x before rescale: " +
+          "%.0f" % math.log(x1_encrypted_coeff3.scale(), 2) + " bits")
+    evaluator.rescale_to_next_inplace(x1_encrypted_coeff3, pool)
+    print("    + Scale of PI*x after rescale: " +
+          "%.0f" % math.log(x1_encrypted_coeff3.scale(), 2) + " bits")
+
+    print("-" * 50)
+    print("Compute, relinearize, and rescale (PI*x)*x^2.")
+    evaluator.multiply_inplace(x3_encrypted, x1_encrypted_coeff3, pool)
+    evaluator.relinearize_inplace(x3_encrypted, relin_keys, pool)
+    print("    + Scale of PI*x^3 before rescale: " +
+          "%.0f" % math.log(x3_encrypted.scale(), 2) + " bits")
+    evaluator.rescale_to_next_inplace(x3_encrypted, pool)
+    print("    + Scale of PI*x^3 after rescale: " +
+          "%.0f" % math.log(x3_encrypted.scale(), 2) + " bits")
+
+    print("-" * 50)
+    print("Compute and rescale 0.4*x.")
+    evaluator.multiply_plain_inplace(x1_encrypted, plain_coeff1, pool)
+    print("    + Scale of 0.4*x before rescale: " +
+          "%.0f" % math.log(x1_encrypted.scale(), 2) + " bits")
+    evaluator.rescale_to_next_inplace(x1_encrypted, pool)
+    print("    + Scale of 0.4*x after rescale: " +
+          "%.0f" % math.log(x1_encrypted.scale(), 2) + " bits")
+    print()
+
+    print("-" * 50)
+    print("Parameters used by all three terms are different.")
+    print("    + Modulus chain index for x3_encrypted: " +
+          str(context.get_context_data(x3_encrypted.parms_id()).chain_index()))
+    print("    + Modulus chain index for x1_encrypted: " +
+          str(context.get_context_data(x1_encrypted.parms_id()).chain_index()))
+    print("    + Modulus chain index for x1_encrypted: " +
+          str(context.get_context_data(plain_coeff0.parms_id()).chain_index()))
+    print()
+
+    print("-" * 50)
+    print("The exact scales of all three terms are different:")
+    print("    + Exact scale in PI*x^3: " + "%.10f" % x3_encrypted.scale())
+    print("    + Exact scale in  0.4*x: " + "%.10f" % x1_encrypted.scale())
+    print("    + Exact scale in      1: " + "%.10f" % plain_coeff0.scale())
+
+    print("-" * 50)
+    print("Normalize scales to 2^40.")
+
+    # set_scale() this function should be add to seal/ciphertext.h line 632
+    x3_encrypted.set_scale(pow(2.0, 40))
+    x1_encrypted.set_scale(pow(2.0, 40))
+
+    '''
+    We still have a problem with mismatching encryption parameters. This is easy
+        to fix by using traditional modulus switching (no rescaling). CKKS supports
+        modulus switching just like the BFV scheme, allowing us to switch away parts
+        of the coefficient modulus when it is simply not needed.
+    '''
+    print("-" * 50)
+    print("Normalize encryption parameters to the lowest level.")
+    last_parms_id = x3_encrypted.parms_id()
+    evaluator.mod_switch_to_inplace(x1_encrypted, last_parms_id, pool)
+    evaluator.mod_switch_to_inplace(plain_coeff0, last_parms_id)
+
+    '''
+    All three ciphertexts are now compatible and can be added.
+    '''
+    print("-" * 50)
+    print("Compute PI*x^3 + 0.4*x + 1.")
+
+    encrypted_result = Ciphertext()
+    evaluator.add(x3_encrypted, x1_encrypted, encrypted_result)
+    evaluator.add_plain_inplace(encrypted_result, plain_coeff0)
+
+    '''
+    First print the true result.
+    '''
+    plain_result = Plaintext()
+    print("-" * 50)
+    print("Decrypt and decode PI*x^3 + 0.4x + 1.")
+    print("    + Expected result:")
+    true_result = []
+    for x in inputs:
+        true_result.append((3.14159265 * x * x + 0.4) * x + 1)
+    print_vector(true_result, 3, 7)
+
+    '''
+    Decrypt, decode, and print the result.
+    '''
+
+    decryptor.decrypt(encrypted_result, plain_result)
+    result = DoubleVector()
+    encoder.decode(plain_result, result, pool)
+    print("    + Computed result ...... Correct.")
+    print_vector(result, 3, 7)
+
+    '''
+    While we did not show any computations on complex numbers in these examples,
+        the CKKSEncoder would allow us to have done that just as easily. Additions
+        and multiplications of complex numbers behave just as one would expect.
+    '''
+
+
+if __name__ == '__main__':
+    example_ckks_basics()

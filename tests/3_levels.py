@@ -1,9 +1,14 @@
 from seal import *
 
 
-def print_example_banner(title, ch='*', length=78):
-    spaced_text = ' %s ' % title
-    print(spaced_text.center(length, ch))
+def print_example_banner(title):
+    title_length = len(title)
+    banner_length = title_length + 2 * 10
+    banner_top = "+" + "-" * (banner_length - 2) + "+"
+    banner_middle = "|" + ' ' * 9 + title + ' ' * 9 + "|"
+    print(banner_top)
+    print(banner_middle)
+    print(banner_top)
 
 
 def print_parameters(context):
@@ -138,7 +143,7 @@ def example_levels():
         print("      parms_id of encrypted: ", end="")
         print_parms_id(encrypted.parms_id())
         print("      Noise budget at this level: " +
-              str(decryptor.invariant_noise_budget(encrypted)) + " bits")
+              "%.0f" % decryptor.invariant_noise_budget(encrypted) + " bits")
         print("\\\n \\-->", end="")
         evaluator.mod_switch_to_next_inplace(encrypted, pool)
         context_data = context_data.next_context_data()
@@ -146,7 +151,7 @@ def example_levels():
     print("      parms_id of encrypted: ", end="")
     print_parms_id(encrypted.parms_id())
     print("      Noise budget at this level: " +
-          str(decryptor.invariant_noise_budget(encrypted)) + " bits")
+          "%.0f" % decryptor.invariant_noise_budget(encrypted) + " bits")
     print("\\\n \\--> End of chain reached\n")
 
     '''
@@ -165,11 +170,11 @@ def example_levels():
     print("Compute the fourth power.")
     encryptor.encrypt(plain, encrypted)
     print("    + Noise budget before squaring:         " +
-          str(decryptor.invariant_noise_budget(encrypted)) + " bits")
+          "%.0f" % decryptor.invariant_noise_budget(encrypted) + " bits")
     evaluator.square_inplace(encrypted, pool)
     evaluator.relinearize_inplace(encrypted, relin_keys, pool)
     print("    + Noise budget after squaring:          " +
-          str(decryptor.invariant_noise_budget(encrypted)) + " bits")
+          "%.0f" % decryptor.invariant_noise_budget(encrypted) + " bits")
 
     '''
     	Surprisingly, in this case modulus switching has no effect at all on the
@@ -177,14 +182,14 @@ def example_levels():
     	'''
     evaluator.mod_switch_to_next_inplace(encrypted, pool)
     print("    + Noise budget after modulus switching: " +
-          str(decryptor.invariant_noise_budget(encrypted)) + " bits")
+          "%.0f" % decryptor.invariant_noise_budget(encrypted) + " bits")
 
     evaluator.square_inplace(encrypted, pool)
     print("    + Noise budget after squaring:          " +
-          str(decryptor.invariant_noise_budget(encrypted)) + " bits")
+          "%.0f" % decryptor.invariant_noise_budget(encrypted) + " bits")
     evaluator.mod_switch_to_next_inplace(encrypted, pool)
     print("    + Noise budget after modulus switching: " +
-          str(decryptor.invariant_noise_budget(encrypted)) + " bits")
+          "%.0f" % decryptor.invariant_noise_budget(encrypted) + " bits")
     decryptor.decrypt(encrypted, plain)
 
     print("    + Decryption of fourth power (hexadecimal) ...... Correct.")

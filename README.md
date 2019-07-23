@@ -2,9 +2,7 @@
 
 ## Microsoft SEAL For Python
 
-Tips: No matter how, the Path is very important.
-
-### Install
+### Build
 
 1. First, git clone the latest lib.
 
@@ -38,7 +36,22 @@ cmake ..
 make
 ```
 
+5. Others
 
+* If you clone a new SEAL lib from the Github, do not forget add a set_scale() function in `seal/ciphertext.h` line 632, like this:
+
+```c++
+/**
+Set the scale.
+*/
+inline void set_scale( double scale)
+{
+	scale_ = scale;
+}
+```
+
+* The CMake or setuptools will build a dynamic Link Library in project folder, named like `seal.cpython-36m-x86_64-linux-gnu.so`.
+* No matter how, the Path is very important.
 
 ### Test
 
@@ -46,24 +59,26 @@ make
 
 `python3 [example_name].py`
 
-
+* The `.so` file need in the folder.
 
 ### Progress
 
 | C++               | Python           | Description                                                  | Progress |
 | ----------------- | ---------------- | ------------------------------------------------------------ | -------- |
 | 1_bfv_basics.cpp  | 1_bfv_basics.py  | Encrypted modular arithmetic using the BFV scheme            | Finished |
-| 2_encoders.cpp    | 2_encoders.py    | Encoding more complex data into Microsoft SEAL plaintext objects | Error    |
+| 2_encoders.cpp    | 2_encoders.py    | Encoding more complex data into Microsoft SEAL plaintext objects | Finished |
 | 3_levels.cpp      | 3_levels.py      | Introduces the concept of levels; prerequisite for using the CKKS scheme | Finished |
-| 4_ckks_basics.cpp | 4_ckks_basics.py | Encrypted real number arithmetic using the CKKS scheme       | Building |
-| 5_rotation.cpp    | 5_rotation.py    | Performing cyclic rotations on encrypted vectors in the BFV and CKKS schemes | Building |
+| 4_ckks_basics.cpp | 4_ckks_basics.py | Encrypted real number arithmetic using the CKKS scheme       | Finished |
+| 5_rotation.cpp    | 5_rotation.py    | Performing cyclic rotations on encrypted vectors in the BFV and CKKS schemes | Finished |
 | 6_performance.cpp | 6_performance.py | Performance tests for Microsoft SEAL                         | Building |
 
 
 
 ### About
 
-This is project is building now.
+This is project is still testing now.
+
+If any errors occur, new an [issue](/issues) please.
 
 If you have interest in this, come and join us.
 
