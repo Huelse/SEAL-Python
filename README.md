@@ -78,7 +78,7 @@ inline void set_scale( double scale)
 
 This is project is still testing now.
 
-If any errors occur, new an [issue](/issues) please.
+If any errors occur, new an [issue](https://github.com/Huelse/pyseal/issues) please.
 
 If you have interest in this, come and join us.
 
