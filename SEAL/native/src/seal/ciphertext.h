@@ -620,6 +620,14 @@ namespace seal
             return scale_;
         }
 
+		/**
+		Set the scale.
+		*/
+		inline void set_scale(double scale)
+		{
+			scale_ = scale;
+		}
+
         /**
         Returns a constant reference to the scale. This is only needed when
         using the CKKS encryption scheme.
@@ -628,14 +636,6 @@ namespace seal
         {
             return scale_;
         }
-
-		/**
-        Set the scale.
-        */
-		inline void set_scale( double scale)
-		{
-			scale_ = scale;
-		}
 
         /**
         Returns the currently used MemoryPoolHandle.

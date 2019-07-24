@@ -2,58 +2,81 @@
 
 ## Microsoft SEAL For Python
 
-### Build
+Microsoft **SEAL** is an easy-to-use open-source ([MIT licensed](https://github.com/microsoft/SEAL/blob/master/LICENSE)) homomorphic encryption library developed by the Cryptography Research group at Microsoft. **pybind11** is a lightweight header-only library that exposes C++ types in Python and vice versa, mainly to create Python bindings of existing C++ code. We, **pyseal** use both of the above to make the homomorphic encryption works in Python.
 
-1. First, git clone the latest lib.
 
-   [SEAL](https://github.com/microsoft/SEAL)( 3.3 ) `git clone https://github.com/microsoft/SEAL.git`
 
-   [pybind11](https://github.com/pybind/pybind11)( 2.3.0 ) `git clone https://github.com/pybind/pybind11.git`
+## Contents
 
-2. Compiler the SEAL
+* [Build](https://github.com/Huelse/pyseal#build)
+  * [SEAL](https://github.com/Huelse/pyseal#seal)
+  * [pyseal](https://github.com/Huelse/pyseal#pyseal)
+* [Tests](https://github.com/Huelse/pyseal#tests)
+* [About](https://github.com/Huelse/pyseal#about)
+* [Contributors](https://github.com/Huelse/pyseal)
 
-```shell
-cd SEAL/native/src
-cmake .
-make
-sudo make install
-```
 
-3. Install the pybind11 with pip
 
-   `pip3 install -r requirements.txt`
+## Build
 
-4. Run the setup or make
+* ### Environment
 
-   `python3 setup.py build_ext -i`
+  Linux: Ubuntu 18.04 or Debian 9
 
-or
+  CMake (>= 3.10), GNU G++ (>= 6.0) or Clang++ (>= 5.0)
 
-```shell
-mkdir build
-cd build
-cmake ..
-make
-```
+  `apt-get update && apt-get install g++ make git python3 python3-pip`
 
-5. Others
+* ### SEAL
 
-* If you clone a new SEAL lib from the Github, do not forget add a set_scale() function in `seal/ciphertext.h` line 632, like this:
+  ```shell
+  cd SEAL/native/src
+  cmake .
+  make
+  ```
 
-```c++
-/**
-Set the scale.
-*/
-inline void set_scale( double scale)
-{
-	scale_ = scale;
-}
-```
+* ### pyseal
 
-* The CMake or setuptools will build a dynamic Link Library in project folder, named like `seal.cpython-36m-x86_64-linux-gnu.so`.
-* No matter how, the Path is very important.
+  * CMake
 
-### Test
+    ```
+    cd pyseal
+    mkdir build
+    cd build
+    cmake ..
+    make
+    ```
+
+  * Setuptools
+
+    ```
+    pip3 install --upgrade pip
+    pip3 install setuptools
+    pip3 install -r requirements.txt
+  python3 setup.py build_ext -i
+    ```
+
+  * Others
+
+    * If you clone a new SEAL lib from the Github, do not forget add a set_scale function in `seal/ciphertext.h` line 632, like this:
+  
+      ```c++
+      /**
+      Set the scale.
+      */
+      inline void set_scale(double scale)
+      {
+      	scale_ = scale;
+    }
+      ```
+
+    * The CMake or setuptools will build a dynamic Link Library in project folder, named like `seal.cpython-36m-x86_64-linux-gnu.so`.
+  
+    * The path is very important, please check it before you do anything.
+
+
+
+## Tests
 
 `cd tests`
 
@@ -61,7 +84,9 @@ inline void set_scale( double scale)
 
 * The `.so` file need in the folder.
 
-### Progress
+
+
+## Getting Started
 
 | C++               | Python           | Description                                                  | Progress |
 | ----------------- | ---------------- | ------------------------------------------------------------ | -------- |
@@ -74,7 +99,7 @@ inline void set_scale( double scale)
 
 
 
-### About
+## About
 
 This is project is still testing now.
 
@@ -86,5 +111,5 @@ Email: [huelse@oini.top](mailto:huelse@oini.top?subject=Github-pyseal-Issues&cc=
 
 
 
-### Contributors
+## Contributors
 * 指导老师：陈智罡
