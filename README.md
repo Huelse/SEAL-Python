@@ -22,11 +22,9 @@ Microsoft **SEAL** is an easy-to-use open-source ([MIT licensed](https://github.
 
 * ### Environment
 
-  Linux: Ubuntu 18.04 or Debian 9
+  CMake (>= 3.10), GNU G++ (>= 6.0) or Clang++ (>= 5.0), Python (>=3.6.8)
 
-  CMake (>= 3.10), GNU G++ (>= 6.0) or Clang++ (>= 5.0)
-
-  `sudo apt-get update && sudo apt-get install g++ cmake git python3.6 python3.6-dev python3.6-pip`
+  `sudo apt-get update && sudo apt-get install g++ cmake git python3 python3-dev python3.6-pip`
 
   `git clone https://github.com/Huelse/pyseal.git`
 
@@ -41,7 +39,7 @@ Microsoft **SEAL** is an easy-to-use open-source ([MIT licensed](https://github.
 * ### pybind11
 
   ```
-cd pyseal
+  cd pyseal
   pip3 install --upgrade pip
   pip3 install setuptools
   pip3 install -r requirements.txt
@@ -49,9 +47,10 @@ cd pyseal
   cd pybind11
   mkdir build
   cd build
-cmake ..
+  cmake ..
   make check -j 4
-```
+  ```
+  
   
 * ### pyseal
 
