@@ -13,7 +13,7 @@ Microsoft **SEAL** is an easy-to-use open-source ([MIT licensed](https://github.
   * [pyseal](https://github.com/Huelse/pyseal#pyseal)
 * [Tests](https://github.com/Huelse/pyseal#tests)
 * [About](https://github.com/Huelse/pyseal#about)
-* [Contributors](https://github.com/Huelse/pyseal)
+* [Contributors](https://github.com/Huelse/pyseal#contributors)
 
 
 
@@ -25,7 +25,9 @@ Microsoft **SEAL** is an easy-to-use open-source ([MIT licensed](https://github.
 
   CMake (>= 3.10), GNU G++ (>= 6.0) or Clang++ (>= 5.0)
 
-  `apt-get update && apt-get install g++ make git python3 python3-pip`
+  `sudo apt-get update && sudo apt-get install g++ make git python3 python3-pip`
+
+  `git clone https://github.com/Huelse/pyseal.git`
 
 * ### SEAL
 
@@ -53,7 +55,7 @@ Microsoft **SEAL** is an easy-to-use open-source ([MIT licensed](https://github.
     pip3 install --upgrade pip
     pip3 install setuptools
     pip3 install -r requirements.txt
-  python3 setup.py build_ext -i
+    python3 setup.py build_ext -i
     ```
 
   * Others
@@ -66,12 +68,12 @@ Microsoft **SEAL** is an easy-to-use open-source ([MIT licensed](https://github.
       */
       inline void set_scale(double scale)
       {
-      	scale_ = scale;
-    }
+        scale_ = scale;
+      }
       ```
 
     * The CMake or setuptools will build a dynamic Link Library in project folder, named like `seal.cpython-36m-x86_64-linux-gnu.so`.
-  
+
     * The path is very important, please check it before you do anything.
 
 
