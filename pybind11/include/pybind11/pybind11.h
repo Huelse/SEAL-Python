@@ -41,14 +41,15 @@
 #  endif
 #endif
 
+#if defined(__GNUG__) && !defined(__clang__)
+ #include <cxxabi.h>
+#endif
+
+
 #include "attr.h"
 #include "options.h"
 #include "detail/class.h"
 #include "detail/init.h"
-
-#if defined(__GNUG__) && !defined(__clang__)
-#  include <cxxabi.h>
-#endif
 
 NAMESPACE_BEGIN(PYBIND11_NAMESPACE)
 
@@ -1998,8 +1999,8 @@ class gil_scoped_release { };
 
 error_already_set::~error_already_set() {
     if (m_type) {
-        gil_scoped_acquire gil;
         error_scope scope;
+        gil_scoped_acquire gil;
         m_type.release().dec_ref();
         m_value.release().dec_ref();
         m_trace.release().dec_ref();

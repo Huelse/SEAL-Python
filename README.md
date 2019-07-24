@@ -10,6 +10,7 @@ Microsoft **SEAL** is an easy-to-use open-source ([MIT licensed](https://github.
 
 * [Build](https://github.com/Huelse/pyseal#build)
   * [SEAL](https://github.com/Huelse/pyseal#seal)
+  * [pybind11](https://github.com/Huelse/pyseal#pybind11)
   * [pyseal](https://github.com/Huelse/pyseal#pyseal)
 * [Tests](https://github.com/Huelse/pyseal#tests)
 * [About](https://github.com/Huelse/pyseal#about)
@@ -25,7 +26,7 @@ Microsoft **SEAL** is an easy-to-use open-source ([MIT licensed](https://github.
 
   CMake (>= 3.10), GNU G++ (>= 6.0) or Clang++ (>= 5.0)
 
-  `sudo apt-get update && sudo apt-get install g++ make git python3 python3-pip`
+  `sudo apt-get update && sudo apt-get install g++ cmake git python3.6 python3.6-dev python3.6-pip`
 
   `git clone https://github.com/Huelse/pyseal.git`
 
@@ -37,6 +38,21 @@ Microsoft **SEAL** is an easy-to-use open-source ([MIT licensed](https://github.
   make
   ```
 
+* ### pybind11
+
+  ```
+cd pyseal
+  pip3 install --upgrade pip
+  pip3 install setuptools
+  pip3 install -r requirements.txt
+  
+  cd pybind11
+  mkdir build
+  cd build
+cmake ..
+  make check -j 4
+```
+  
 * ### pyseal
 
   * CMake
@@ -52,23 +68,20 @@ Microsoft **SEAL** is an easy-to-use open-source ([MIT licensed](https://github.
   * Setuptools
 
     ```
-    pip3 install --upgrade pip
-    pip3 install setuptools
-    pip3 install -r requirements.txt
     python3 setup.py build_ext -i
     ```
-
+    
   * Others
 
     * If you clone a new SEAL lib from the Github, do not forget add a set_scale function in `seal/ciphertext.h` line 632, like this:
-  
+
       ```c++
       /**
       Set the scale.
       */
       inline void set_scale(double scale)
       {
-        scale_ = scale;
+          scale_ = scale;
       }
       ```
 
