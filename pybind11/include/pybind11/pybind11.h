@@ -41,15 +41,14 @@
 #  endif
 #endif
 
-#if defined(__GNUG__) && !defined(__clang__)
- #include <cxxabi.h>
-#endif
-
-
 #include "attr.h"
 #include "options.h"
 #include "detail/class.h"
 #include "detail/init.h"
+
+#if defined(__GNUG__) && !defined(__clang__)
+#  include <cxxabi.h>
+#endif
 
 NAMESPACE_BEGIN(PYBIND11_NAMESPACE)
 
@@ -496,7 +495,7 @@ protected:
 
                 function_call call(func, parent);
 
-                size_t args_to_copy = std::min(pos_args, n_args_in);
+                size_t args_to_copy = (std::min)(pos_args, n_args_in); // Protect std::min with parentheses
                 size_t args_copied = 0;
 
                 // 0. Inject new-style `self` argument
@@ -1999,8 +1998,8 @@ class gil_scoped_release { };
 
 error_already_set::~error_already_set() {
     if (m_type) {
-        error_scope scope;
         gil_scoped_acquire gil;
+        error_scope scope;
         m_type.release().dec_ref();
         m_value.release().dec_ref();
         m_trace.release().dec_ref();

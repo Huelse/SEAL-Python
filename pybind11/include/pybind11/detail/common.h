@@ -94,7 +94,7 @@
 
 #define PYBIND11_VERSION_MAJOR 2
 #define PYBIND11_VERSION_MINOR 3
-#define PYBIND11_VERSION_PATCH 0
+#define PYBIND11_VERSION_PATCH dev1
 
 /// Include Python header, disable linking to pythonX_d.lib on Windows in debug mode
 #if defined(_MSC_VER)
@@ -112,10 +112,6 @@
 #include <Python.h>
 #include <frameobject.h>
 #include <pythread.h>
-
-#if defined(_WIN32) && (defined(min) || defined(max))
-#  error Macro clash with min and max -- define NOMINMAX when compiling your program on Windows
-#endif
 
 #if defined(isalnum)
 #  undef isalnum

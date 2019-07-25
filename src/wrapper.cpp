@@ -268,8 +268,7 @@ PYBIND11_MODULE(seal, m)
 	// Encryptor
 	py::class_<Encryptor>(m, "Encryptor")
 		.def(py::init<std::shared_ptr<SEALContext>, const PublicKey &>())
-		.def("encrypt", (void (Encryptor::*)(const Plaintext &, Ciphertext &)) & Encryptor::encrypt)
-		.def("encrypt", (void (Encryptor::*)(const Plaintext &, Ciphertext &, MemoryPoolHandle)) & Encryptor::encrypt);
+		.def("encrypt", (void (Encryptor::*)(const Plaintext &, Ciphertext &)) & Encryptor::encrypt);
 
 	// Evaluator
 	py::class_<Evaluator>(m, "Evaluator")

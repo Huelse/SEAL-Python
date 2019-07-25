@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.0.0)
-SET(CMAKE_BUILD_TYPE "Release")
+cmake_minimum_required(VERSION 3.10.0)
 project(seal)
-set(PYBIND11_CPP_STANDARD -std=c++1z)
+SET(CMAKE_BUILD_TYPE "Release")
+SET(PYBIND11_CPP_STANDARD -std=c++1z)
 
 include_directories("/usr/include/python3.6")
 include_directories("../pybind11/include")
