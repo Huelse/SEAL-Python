@@ -27,6 +27,7 @@ PYBIND11_MODULE(seal, m)
 
 	m.doc() = "SEAL For Python. From https://github.com/Huelse/pyseal";
 
+	// ComplexDoubleVector
 	py::class_<ComplexDoubleVector>(m, "ComplexDoubleVector")
 		.def(py::init<>())
 		.def("pop_back", &ComplexDoubleVector::pop_back)
@@ -98,7 +99,6 @@ PYBIND11_MODULE(seal, m)
 
 	// EncryptionParameters
 	py::class_<EncryptionParameters>(m, "EncryptionParameters")
-		//.def(py::init<const EncryptionParameters &>())
 		.def(py::init<std::uint8_t>())
 
 		.def("set_poly_modulus_degree",
