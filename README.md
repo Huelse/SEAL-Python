@@ -1,4 +1,4 @@
-![](https://i.loli.net/2019/07/26/5d3a5f567189a12090.jpg)
+![](https://i.loli.net/2019/07/26/5d3abeb49f85016446.jpg)
 
 ## Microsoft SEAL For Python
 
