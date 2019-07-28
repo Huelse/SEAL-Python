@@ -152,7 +152,8 @@ PYBIND11_MODULE(seal, m)
 		.def("key_context_data", &SEALContext::key_context_data, py::return_value_policy::reference)
 		.def("first_context_data", &SEALContext::first_context_data, py::return_value_policy::reference)
 		.def("first_parms_id", &SEALContext::first_parms_id, py::return_value_policy::reference)
-		.def("last_parms_id", &SEALContext::last_parms_id, py::return_value_policy::reference);
+		.def("last_parms_id", &SEALContext::last_parms_id, py::return_value_policy::reference)
+		.def("using_keyswitching", &SEALContext::using_keyswitching);
 
 	// SEALContext::ContextData
 	py::class_<SEALContext::ContextData, std::shared_ptr<SEALContext::ContextData>>(m, "SEALContext::ContextData")
@@ -247,6 +248,7 @@ PYBIND11_MODULE(seal, m)
 		.def(py::init<const Ciphertext &>())
 		.def("size", &Ciphertext::size)
 		.def("scale", (double &(Ciphertext::*)()) & Ciphertext::scale)
+		.def("reserve", (void (Ciphertext::*)(size_type)) & Ciphertext::reserve)
 		.def("set_scale", (void (Ciphertext::*)(double)) & Ciphertext::set_scale)
 		.def("parms_id", (parms_id_type & (Ciphertext::*)()) & Ciphertext::parms_id, py::return_value_policy::reference);
 
@@ -254,6 +256,7 @@ PYBIND11_MODULE(seal, m)
 	py::class_<Plaintext>(m, "Plaintext")
 		.def(py::init<>())
 		.def(py::init<size_type>())
+		.def(py::init<size_type, size_type>())
 		.def(py::init<const std::string &>())
 		.def(py::init<const Plaintext &>())
 		.def("data", (pt_coeff_type * (Plaintext::*)(size_type)) & Plaintext::data)
@@ -280,67 +283,50 @@ PYBIND11_MODULE(seal, m)
 		.def("add_many", (void (Evaluator::*)(const std::vector<Ciphertext> &, Ciphertext &)) & Evaluator::add_many)
 		.def("sub_inplace", (void (Evaluator::*)(Ciphertext &, const Ciphertext &)) & Evaluator::sub_inplace)
 		.def("sub", (void (Evaluator::*)(const Ciphertext &, const Ciphertext &, Ciphertext &)) & Evaluator::sub)
-		.def("multiply_inplace",
-			 (void (Evaluator::*)(Ciphertext &, const Ciphertext &, MemoryPoolHandle)) & Evaluator::multiply_inplace)
-		.def("multiply",
-			 (void (Evaluator::*)(Ciphertext &, const Ciphertext &, Ciphertext &, MemoryPoolHandle)) & Evaluator::multiply)
-		.def("square_inplace", (void (Evaluator::*)(Ciphertext &, MemoryPoolHandle)) & Evaluator::square_inplace)
-		.def("square", (void (Evaluator::*)(const Ciphertext &, Ciphertext &, MemoryPoolHandle)) & Evaluator::square)
-		.def("relinearize_inplace",
-			 (void (Evaluator::*)(Ciphertext &, const RelinKeys &, MemoryPoolHandle)) & Evaluator::relinearize_inplace)
+		.def("multiply_inplace", (void (Evaluator::*)(Ciphertext &, const Ciphertext &, MemoryPoolHandle)) & Evaluator::multiply_inplace, py::arg(),py::arg(),py::arg()=MemoryManager::GetPool())
+		.def("multiply", (void (Evaluator::*)(Ciphertext &, const Ciphertext &, Ciphertext &, MemoryPoolHandle)) & Evaluator::multiply, py::arg(),py::arg(),py::arg(),py::arg()=MemoryManager::GetPool())
+		.def("square_inplace", (void (Evaluator::*)(Ciphertext &, MemoryPoolHandle)) & Evaluator::square_inplace, py::arg(),py::arg()=MemoryManager::GetPool())
+		.def("square", (void (Evaluator::*)(const Ciphertext &, Ciphertext &, MemoryPoolHandle)) & Evaluator::square, py::arg(),py::arg(),py::arg()=MemoryManager::GetPool())
+		.def("relinearize_inplace", (void (Evaluator::*)(Ciphertext &, const RelinKeys &, MemoryPoolHandle)) & Evaluator::relinearize_inplace, py::arg(),py::arg(),py::arg()=MemoryManager::GetPool())
 		.def("relinearize", (void (Evaluator::*)(const Ciphertext &, const RelinKeys &, Ciphertext &)) & Evaluator::relinearize)
-		.def("mod_switch_to_next_inplace",
-			 (void (Evaluator::*)(Ciphertext &, MemoryPoolHandle)) & Evaluator::mod_switch_to_next_inplace)
+		.def("mod_switch_to_next_inplace", (void (Evaluator::*)(Ciphertext &, MemoryPoolHandle)) & Evaluator::mod_switch_to_next_inplace, py::arg(),py::arg()=MemoryManager::GetPool())
 		.def("mod_switch_to_next_inplace", (void (Evaluator::*)(Plaintext &)) & Evaluator::mod_switch_to_next_inplace)
-		.def("mod_switch_to_inplace", (void (Evaluator::*)(Ciphertext &, parms_id_type, MemoryPoolHandle)) & Evaluator::mod_switch_to_inplace)
+		.def("mod_switch_to_inplace", (void (Evaluator::*)(Ciphertext &, parms_id_type, MemoryPoolHandle)) & Evaluator::mod_switch_to_inplace, py::arg(),py::arg(),py::arg()=MemoryManager::GetPool())
 		.def("mod_switch_to_inplace", (void (Evaluator::*)(Plaintext &, parms_id_type)) & Evaluator::mod_switch_to_inplace)
-		.def("rescale_to_next_inplace", (void (Evaluator::*)(Ciphertext &, MemoryPoolHandle)) & Evaluator::rescale_to_next_inplace)
-		.def("multiply_many",
-			 (void (Evaluator::*)(std::vector<Ciphertext> &, const RelinKeys &, Ciphertext &)) & Evaluator::multiply_many)
-		.def("exponentiate_inplace",
-			 (void (Evaluator::*)(Ciphertext &, std::uint64_t, const RelinKeys &)) & Evaluator::exponentiate_inplace)
-		.def("exponentiate",
-			 (void (Evaluator::*)(const Ciphertext &, std::uint64_t, const RelinKeys &, Ciphertext &)) & Evaluator::exponentiate)
+		.def("rescale_to_next_inplace", (void (Evaluator::*)(Ciphertext &, MemoryPoolHandle)) & Evaluator::rescale_to_next_inplace, py::arg(),py::arg()=MemoryManager::GetPool())
+		.def("multiply_many", (void (Evaluator::*)(std::vector<Ciphertext> &, const RelinKeys &, Ciphertext &)) & Evaluator::multiply_many)
+		.def("exponentiate_inplace", (void (Evaluator::*)(Ciphertext &, std::uint64_t, const RelinKeys &)) & Evaluator::exponentiate_inplace)
+		.def("exponentiate", (void (Evaluator::*)(const Ciphertext &, std::uint64_t, const RelinKeys &, Ciphertext &)) & Evaluator::exponentiate)
 		.def("add_plain_inplace", (void (Evaluator::*)(Ciphertext &, const Plaintext &)) & Evaluator::add_plain_inplace)
 		.def("add_plain", (void (Evaluator::*)(const Ciphertext &, const Plaintext &, Ciphertext &)) & Evaluator::add_plain)
 		.def("sub_plain_inplace", (void (Evaluator::*)(Ciphertext &, const Plaintext &)) & Evaluator::sub_plain_inplace)
 		.def("sub_plain", (void (Evaluator::*)(const Ciphertext &, const Plaintext &)) & Evaluator::sub_plain)
-		.def("multiply_plain_inplace",
-			 (void (Evaluator::*)(Ciphertext &, const Plaintext &, MemoryPoolHandle)) & Evaluator::multiply_plain_inplace)
-		.def("multiply_plain",
-			 (void (Evaluator::*)(const Ciphertext &, const Plaintext &, Ciphertext &, MemoryPoolHandle)) & Evaluator::multiply_plain)
+		.def("multiply_plain_inplace", (void (Evaluator::*)(Ciphertext &, const Plaintext &, MemoryPoolHandle)) & Evaluator::multiply_plain_inplace, py::arg(),py::arg(),py::arg()=MemoryManager::GetPool())
+		.def("multiply_plain", (void (Evaluator::*)(const Ciphertext &, const Plaintext &, Ciphertext &, MemoryPoolHandle)) & Evaluator::multiply_plain, py::arg(),py::arg(),py::arg(),py::arg()=MemoryManager::GetPool())
 		.def("transform_to_ntt_inplace", (void (Evaluator::*)(Ciphertext &)) & Evaluator::transform_to_ntt_inplace)
 		.def("transform_to_ntt", (void (Evaluator::*)(const Ciphertext &, Ciphertext &)) & Evaluator::transform_to_ntt)
 		.def("transform_from_ntt_inplace", (void (Evaluator::*)(Ciphertext &)) & Evaluator::transform_from_ntt_inplace)
 		.def("transform_from_ntt", (void (Evaluator::*)(const Ciphertext &, Ciphertext &)) & Evaluator::transform_from_ntt)
-		.def("apply_galois_inplace",
-			 (void (Evaluator::*)(Ciphertext &, std::uint64_t, const GaloisKeys &)) & Evaluator::apply_galois_inplace)
-		.def("apply_galois",
-			 (void (Evaluator::*)(const Ciphertext &, std::uint64_t, const GaloisKeys &, Ciphertext &)) & Evaluator::apply_galois)
-		.def("rotate_rows_inplace", (void (Evaluator::*)(Ciphertext &, int, GaloisKeys, MemoryPoolHandle)) & Evaluator::rotate_rows_inplace)
-		.def("rotate_rows",
-			 (void (Evaluator::*)(const Ciphertext &, int, const GaloisKeys &, Ciphertext &)) & Evaluator::rotate_rows)
-		.def("rotate_columns_inplace", (void (Evaluator::*)(Ciphertext &, const GaloisKeys &, MemoryPoolHandle)) & Evaluator::rotate_columns_inplace)
-		.def("rotate_columns",
-			 (void (Evaluator::*)(const Ciphertext &, const GaloisKeys &, Ciphertext &)) & Evaluator::rotate_columns)
-		.def("rotate_vector_inplace",
-			 (void (Evaluator::*)(Ciphertext &, int, const GaloisKeys &)) & Evaluator::rotate_vector_inplace)
-		.def("rotate_vector",
-			 (void (Evaluator::*)(const Ciphertext &, int, const GaloisKeys &, Ciphertext &, MemoryPoolHandle)) & Evaluator::rotate_vector)
-		.def("complex_conjugate_inplace",
-			 (void (Evaluator::*)(Ciphertext &, const GaloisKeys &)) & Evaluator::complex_conjugate_inplace)
-		.def("complex_conjugate",
-			 (void (Evaluator::*)(const Ciphertext &, const GaloisKeys &, Ciphertext &)) & Evaluator::complex_conjugate);
+		.def("apply_galois_inplace", (void (Evaluator::*)(Ciphertext &, std::uint64_t, const GaloisKeys &)) & Evaluator::apply_galois_inplace)
+		.def("apply_galois", (void (Evaluator::*)(const Ciphertext &, std::uint64_t, const GaloisKeys &, Ciphertext &)) & Evaluator::apply_galois)
+		.def("rotate_rows_inplace", (void (Evaluator::*)(Ciphertext &, int, GaloisKeys, MemoryPoolHandle)) & Evaluator::rotate_rows_inplace, py::arg(),py::arg(),py::arg(),py::arg()=MemoryManager::GetPool())
+		.def("rotate_rows",(void (Evaluator::*)(const Ciphertext &, int, const GaloisKeys &, Ciphertext &)) & Evaluator::rotate_rows)
+		.def("rotate_columns_inplace", (void (Evaluator::*)(Ciphertext &, const GaloisKeys &, MemoryPoolHandle)) & Evaluator::rotate_columns_inplace, py::arg(),py::arg(),py::arg()=MemoryManager::GetPool())
+		.def("rotate_columns",(void (Evaluator::*)(const Ciphertext &, const GaloisKeys &, Ciphertext &)) & Evaluator::rotate_columns)
+		.def("rotate_vector_inplace",(void (Evaluator::*)(Ciphertext &, int, const GaloisKeys &)) & Evaluator::rotate_vector_inplace)
+		.def("rotate_vector",(void (Evaluator::*)(const Ciphertext &, int, const GaloisKeys &, Ciphertext &, MemoryPoolHandle)) & Evaluator::rotate_vector, py::arg(),py::arg(),py::arg(),py::arg(),py::arg()=MemoryManager::GetPool())
+		.def("complex_conjugate_inplace",(void (Evaluator::*)(Ciphertext &, const GaloisKeys &)) & Evaluator::complex_conjugate_inplace)
+		.def("complex_conjugate",(void (Evaluator::*)(const Ciphertext &, const GaloisKeys &, Ciphertext &)) & Evaluator::complex_conjugate);
 
 	// CKKSEncoder
 	py::class_<CKKSEncoder>(m, "CKKSEncoder")
 		.def(py::init<std::shared_ptr<SEALContext>>())
-		.def("encode", (void (CKKSEncoder::*)(const DoubleVector &, double, Plaintext &, MemoryPoolHandle)) & CKKSEncoder::encode)
-		.def("encode", (void (CKKSEncoder::*)(const ComplexDoubleVector &, double, Plaintext &, MemoryPoolHandle)) & CKKSEncoder::encode)
-		.def("encode", (void (CKKSEncoder::*)(double, parms_id_type, double, Plaintext &, MemoryPoolHandle)) & CKKSEncoder::encode)
-		.def("encode", (void (CKKSEncoder::*)(double, double, Plaintext &, MemoryPoolHandle)) & CKKSEncoder::encode)
-		.def("decode", (void (CKKSEncoder::*)(const Plaintext &, DoubleVector &, MemoryPoolHandle)) & CKKSEncoder::decode)
-		.def("decode", (void (CKKSEncoder::*)(const Plaintext &, ComplexDoubleVector &, MemoryPoolHandle)) & CKKSEncoder::decode)
+		.def("encode", (void (CKKSEncoder::*)(const DoubleVector &, double, Plaintext &, MemoryPoolHandle)) & CKKSEncoder::encode, py::arg(),py::arg(),py::arg(),py::arg()=MemoryManager::GetPool())
+		.def("encode", (void (CKKSEncoder::*)(const ComplexDoubleVector &, double, Plaintext &, MemoryPoolHandle)) & CKKSEncoder::encode, py::arg(),py::arg(),py::arg(),py::arg()=MemoryManager::GetPool())
+		.def("encode", (void (CKKSEncoder::*)(double, parms_id_type, double, Plaintext &, MemoryPoolHandle)) & CKKSEncoder::encode, py::arg(),py::arg(),py::arg(),py::arg(),py::arg()=MemoryManager::GetPool())
+		.def("encode", (void (CKKSEncoder::*)(double, double, Plaintext &, MemoryPoolHandle)) & CKKSEncoder::encode, py::arg(),py::arg(),py::arg(),py::arg()=MemoryManager::GetPool())
+		.def("decode", (void (CKKSEncoder::*)(const Plaintext &, DoubleVector &, MemoryPoolHandle)) & CKKSEncoder::decode, py::arg(),py::arg(),py::arg()=MemoryManager::GetPool())
+		.def("decode", (void (CKKSEncoder::*)(const Plaintext &, ComplexDoubleVector &, MemoryPoolHandle)) & CKKSEncoder::decode, py::arg(),py::arg(),py::arg()=MemoryManager::GetPool())
 		.def("slot_count", &CKKSEncoder::slot_count);
 
 	// Decryptor
@@ -362,9 +348,7 @@ PYBIND11_MODULE(seal, m)
 		.def(py::init<std::shared_ptr<SEALContext>>())
 		.def("encode", (void (BatchEncoder::*)(const uIntVector &, Plaintext &)) & BatchEncoder::encode)
 		.def("encode", (void (BatchEncoder::*)(const IntVector &, Plaintext &)) & BatchEncoder::encode)
-		.def("decode",
-			 (void (BatchEncoder::*)(const Plaintext &, uIntVector &, MemoryPoolHandle)) & BatchEncoder::decode)
-		.def("decode",
-			 (void (BatchEncoder::*)(const Plaintext &, IntVector &, MemoryPoolHandle)) & BatchEncoder::decode)
+		.def("decode", (void (BatchEncoder::*)(const Plaintext &, uIntVector &, MemoryPoolHandle)) & BatchEncoder::decode,py::arg(),py::arg(),py::arg()=MemoryManager::GetPool())
+		.def("decode", (void (BatchEncoder::*)(const Plaintext &, IntVector &, MemoryPoolHandle)) & BatchEncoder::decode,py::arg(),py::arg(),py::arg()=MemoryManager::GetPool())
 		.def("slot_count", &BatchEncoder::slot_count);
 }

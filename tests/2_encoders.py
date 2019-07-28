@@ -125,14 +125,13 @@ def example_integer_encoder():
     print("    + Noise budget in encrypted2: " +
           "%.0f" % decryptor.invariant_noise_budget(encrypted2) + " bits")
 
-    pool = MemoryPoolHandle().New(False)
     encryptor.encrypt(plain2, encrypted2)
     encrypted_result = Ciphertext()
     print("-" * 50)
     print("Compute encrypted_result = (-encrypted1 + encrypted2) * encrypted2.")
     evaluator.negate(encrypted1, encrypted_result)
     evaluator.add_inplace(encrypted_result, encrypted2)
-    evaluator.multiply_inplace(encrypted_result, encrypted2, pool)
+    evaluator.multiply_inplace(encrypted_result, encrypted2)
     print("    + Noise budget in encrypted_result: " +
           "%.0f" % decryptor.invariant_noise_budget(encrypted_result) + " bits")
     plain_result = Plaintext()
@@ -196,9 +195,8 @@ def example_batch_encoder():
 
     pod_result = uIntVector()
     print("    + Decode plaintext matrix ...... Correct.")
-    # pool = MemoryPoolHandle().New(False)
-    pool = MemoryManager.GetPool()
-    batch_encoder.decode(plain_matrix, pod_result, pool)
+
+    batch_encoder.decode(plain_matrix, pod_result)
     print_matrix(pod_result, row_size)
 
     encrypted_matrix = Ciphertext()
@@ -220,8 +218,8 @@ def example_batch_encoder():
     print("-" * 50)
     print("Sum, square, and relinearize.")
     evaluator.add_plain_inplace(encrypted_matrix, plain_matrix2)
-    evaluator.square_inplace(encrypted_matrix, pool)
-    evaluator.relinearize_inplace(encrypted_matrix, relin_keys, pool)
+    evaluator.square_inplace(encrypted_matrix)
+    evaluator.relinearize_inplace(encrypted_matrix, relin_keys)
 
     print("    + Noise budget in result: " +
           "%.0f" % decryptor.invariant_noise_budget(encrypted_matrix) + " bits")
@@ -230,7 +228,7 @@ def example_batch_encoder():
     print("-" * 50)
     print("Decrypt and decode result.")
     decryptor.decrypt(encrypted_matrix, plain_result)
-    batch_encoder.decode(plain_result, pod_result, pool)
+    batch_encoder.decode(plain_result, pod_result)
     print("    + Result plaintext matrix ...... Correct.")
     print_matrix(pod_result, row_size)
 
@@ -336,10 +334,9 @@ def example_ckks_encoder():
     plain = Plaintext()
     scale = pow(2.0, 30)
     print("-" * 50)
-    #pool = MemoryPoolHandle().New(False)
-    pool = MemoryManager.GetPool()
+
     print("Encode input vector.")
-    encoder.encode(inputs, scale, plain, pool)
+    encoder.encode(inputs, scale, plain)
 
     '''
     We can instantly decode to check the correctness of encoding.
@@ -347,7 +344,7 @@ def example_ckks_encoder():
 
     output = DoubleVector()
     print("    + Decode input vector ...... Correct.")
-    encoder.decode(plain, output, pool)
+    encoder.decode(plain, output)
     print_vector(output)
 
     '''
@@ -366,8 +363,8 @@ def example_ckks_encoder():
     the implicit zero-padding mentioned above.
     '''
 
-    evaluator.square_inplace(encrypted, pool)
-    evaluator.relinearize_inplace(encrypted, relin_keys, pool)
+    evaluator.square_inplace(encrypted)
+    evaluator.relinearize_inplace(encrypted, relin_keys)
 
     '''
     We notice that the scale in the result has increased. In fact, it is now the
@@ -380,7 +377,7 @@ def example_ckks_encoder():
     print("-" * 50)
     print("Decrypt and decode.")
     decryptor.decrypt(encrypted, plain)
-    encoder.decode(plain, output, pool)
+    encoder.decode(plain, output)
     print("    + Result vector ...... Correct.")
     print_vector(output)
 

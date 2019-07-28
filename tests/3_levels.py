@@ -136,8 +136,7 @@ def example_levels():
     print("Perform modulus switching on encrypted and print.")
     context_data = context.first_context_data()
     print("---->", end="")
-    #pool = MemoryPoolHandle().New(False)
-    pool = MemoryManager.GetPool()
+
     while context_data.next_context_data():
         print(" Level (chain index): " + str(context_data.chain_index()))
         print("      parms_id of encrypted: ", end="")
@@ -145,7 +144,7 @@ def example_levels():
         print("      Noise budget at this level: " +
               "%.0f" % decryptor.invariant_noise_budget(encrypted) + " bits")
         print("\\\n \\-->", end="")
-        evaluator.mod_switch_to_next_inplace(encrypted, pool)
+        evaluator.mod_switch_to_next_inplace(encrypted)
         context_data = context_data.next_context_data()
     print(" Level (chain index): " + str(context_data.chain_index()))
     print("      parms_id of encrypted: ", end="")
@@ -171,8 +170,8 @@ def example_levels():
     encryptor.encrypt(plain, encrypted)
     print("    + Noise budget before squaring:         " +
           "%.0f" % decryptor.invariant_noise_budget(encrypted) + " bits")
-    evaluator.square_inplace(encrypted, pool)
-    evaluator.relinearize_inplace(encrypted, relin_keys, pool)
+    evaluator.square_inplace(encrypted)
+    evaluator.relinearize_inplace(encrypted, relin_keys)
     print("    + Noise budget after squaring:          " +
           "%.0f" % decryptor.invariant_noise_budget(encrypted) + " bits")
 
@@ -180,14 +179,14 @@ def example_levels():
     	Surprisingly, in this case modulus switching has no effect at all on the
     	noise budget.
     	'''
-    evaluator.mod_switch_to_next_inplace(encrypted, pool)
+    evaluator.mod_switch_to_next_inplace(encrypted)
     print("    + Noise budget after modulus switching: " +
           "%.0f" % decryptor.invariant_noise_budget(encrypted) + " bits")
 
-    evaluator.square_inplace(encrypted, pool)
+    evaluator.square_inplace(encrypted)
     print("    + Noise budget after squaring:          " +
           "%.0f" % decryptor.invariant_noise_budget(encrypted) + " bits")
-    evaluator.mod_switch_to_next_inplace(encrypted, pool)
+    evaluator.mod_switch_to_next_inplace(encrypted)
     print("    + Noise budget after modulus switching: " +
           "%.0f" % decryptor.invariant_noise_budget(encrypted) + " bits")
     decryptor.decrypt(encrypted, plain)

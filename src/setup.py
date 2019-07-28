@@ -22,7 +22,7 @@ ext_modules = [
 
 setup(
     name='seal',
-    version='3.3',
+    version='3.3.1',
     author='Huelse', 
     author_email='5956877@qq.com',
     description='Python wrapper for SEAL',

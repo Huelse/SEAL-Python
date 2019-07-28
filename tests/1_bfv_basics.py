@@ -88,10 +88,9 @@ def example_bfv_basics():
 
     print("-"*50)
     print("Compute x_sq_plus_one (x^2+1).")
-    #pool = MemoryPoolHandle().New(False)
-    pool = MemoryManager.GetPool()
+
     x_sq_plus_one = Ciphertext()
-    evaluator.square(x_encrypted, x_sq_plus_one, pool)
+    evaluator.square(x_encrypted, x_sq_plus_one)
     plain_one = Plaintext("1")
     evaluator.add_plain_inplace(x_sq_plus_one, plain_one)
 
@@ -111,7 +110,7 @@ def example_bfv_basics():
     print("Compute x_plus_one_sq ((x+1)^2).")
     x_plus_one_sq = Ciphertext()
     evaluator.add_plain(x_encrypted, plain_one, x_plus_one_sq)
-    evaluator.square_inplace(x_plus_one_sq, pool)
+    evaluator.square_inplace(x_plus_one_sq)
     print("    + size of x_plus_one_sq: " + str(x_plus_one_sq.size()))
     print("    + noise budget in x_plus_one_sq: " +
           str(decryptor.invariant_noise_budget(x_plus_one_sq)) + " bits")
@@ -126,8 +125,8 @@ def example_bfv_basics():
     print("Compute encrypted_result (2(x^2+1)(x+1)^2).")
     encrypted_result = Ciphertext()
     plain_two = Plaintext("2")
-    evaluator.multiply_plain_inplace(x_sq_plus_one, plain_two, pool)
-    evaluator.multiply(x_sq_plus_one, x_plus_one_sq, encrypted_result, pool)
+    evaluator.multiply_plain_inplace(x_sq_plus_one, plain_two)
+    evaluator.multiply(x_sq_plus_one, x_plus_one_sq, encrypted_result)
     print("    + size of encrypted_result: " + str(encrypted_result.size()))
     print("    + noise budget in encrypted_result: " +
           str(decryptor.invariant_noise_budget(encrypted_result)) + " bits")
@@ -145,9 +144,9 @@ def example_bfv_basics():
     print("Compute and relinearize x_squared (x^2),")
     print(" "*13 + "then compute x_sq_plus_one (x^2+1)")
     x_squared = Ciphertext()
-    evaluator.square(x_encrypted, x_squared, pool)
+    evaluator.square(x_encrypted, x_squared)
     print("    + size of x_squared: " + str(x_squared.size()))
-    evaluator.relinearize_inplace(x_squared, relin_keys, pool)
+    evaluator.relinearize_inplace(x_squared, relin_keys)
     print("    + size of x_squared (after relinearization): " + str(x_squared.size()))
     evaluator.add_plain(x_squared, plain_one, x_sq_plus_one)
     print("    + noise budget in x_sq_plus_one: " +
@@ -161,9 +160,9 @@ def example_bfv_basics():
     print("Compute x_plus_one (x+1),")
     print(" "*13 + "then compute and relinearize x_plus_one_sq ((x+1)^2).")
     evaluator.add_plain(x_encrypted, plain_one, x_plus_one)
-    evaluator.square(x_plus_one, x_plus_one_sq, pool)
+    evaluator.square(x_plus_one, x_plus_one_sq)
     print("    + size of x_plus_one_sq: " + str(x_plus_one_sq.size()))
-    evaluator.relinearize_inplace(x_plus_one_sq, relin_keys, pool)
+    evaluator.relinearize_inplace(x_plus_one_sq, relin_keys)
     print("    + noise budget in x_plus_one_sq: " +
           str(decryptor.invariant_noise_budget(x_plus_one_sq)) + " bits")
     decryptor.decrypt(x_plus_one_sq, decrypted_result)
@@ -172,10 +171,10 @@ def example_bfv_basics():
 
     print("-"*50)
     print("Compute and relinearize encrypted_result (2(x^2+1)(x+1)^2).")
-    evaluator.multiply_plain_inplace(x_sq_plus_one, plain_two, pool)
-    evaluator.multiply(x_sq_plus_one, x_plus_one_sq, encrypted_result, pool)
+    evaluator.multiply_plain_inplace(x_sq_plus_one, plain_two)
+    evaluator.multiply(x_sq_plus_one, x_plus_one_sq, encrypted_result)
     print("    + size of encrypted_result: " + str(encrypted_result.size()))
-    evaluator.relinearize_inplace(encrypted_result, relin_keys, pool)
+    evaluator.relinearize_inplace(encrypted_result, relin_keys)
     print("    + size of encrypted_result (after relinearization): " +
           str(encrypted_result.size()))
     print("    + noise budget in encrypted_result: " +

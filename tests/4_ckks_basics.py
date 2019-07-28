@@ -102,63 +102,60 @@ def example_ckks_basics():
     We create plaintexts for PI, 0.4, and 1 using an overload of CKKSEncoder::encode
     that encodes the given floating-point value to every slot in the vector.
     '''
-    #pool = MemoryPoolHandle().New(False)
-    pool = MemoryManager.GetPool()
     plain_coeff3 = Plaintext()
     plain_coeff1 = Plaintext()
     plain_coeff0 = Plaintext()
-    encoder.encode(3.14159265, scale, plain_coeff3, pool)
-    encoder.encode(0.4, scale, plain_coeff1, pool)
-    encoder.encode(1.0, scale, plain_coeff0, pool)
+    encoder.encode(3.14159265, scale, plain_coeff3)
+    encoder.encode(0.4, scale, plain_coeff1)
+    encoder.encode(1.0, scale, plain_coeff0)
 
     x_plain = Plaintext()
     print("-" * 50)
     print("Encode input vectors.")
-    encoder.encode(inputs, scale, x_plain, pool)
+    encoder.encode(inputs, scale, x_plain)
     x1_encrypted = Ciphertext()
     encryptor.encrypt(x_plain, x1_encrypted)
 
     x3_encrypted = Ciphertext()
     print("-" * 50)
     print("Compute x^2 and relinearize:")
-    evaluator.square(x1_encrypted, x3_encrypted, pool)
-    evaluator.relinearize_inplace(x3_encrypted, relin_keys, pool)
+    evaluator.square(x1_encrypted, x3_encrypted)
+    evaluator.relinearize_inplace(x3_encrypted, relin_keys)
     print("    + Scale of x^2 before rescale: " +
           "%.0f" % math.log(x3_encrypted.scale(), 2) + " bits")
 
     print("-" * 50)
     print("Rescale x^2.")
-    evaluator.rescale_to_next_inplace(x3_encrypted, pool)
+    evaluator.rescale_to_next_inplace(x3_encrypted)
     print("    + Scale of x^2 after rescale: " +
           "%.0f" % math.log(x3_encrypted.scale(), 2) + " bits")
 
     print("-" * 50)
     print("Compute and rescale PI*x.")
     x1_encrypted_coeff3 = Ciphertext()
-    evaluator.multiply_plain(x1_encrypted, plain_coeff3,
-                             x1_encrypted_coeff3, pool)
+    evaluator.multiply_plain(x1_encrypted, plain_coeff3, x1_encrypted_coeff3)
     print("    + Scale of PI*x before rescale: " +
           "%.0f" % math.log(x1_encrypted_coeff3.scale(), 2) + " bits")
-    evaluator.rescale_to_next_inplace(x1_encrypted_coeff3, pool)
+    evaluator.rescale_to_next_inplace(x1_encrypted_coeff3)
     print("    + Scale of PI*x after rescale: " +
           "%.0f" % math.log(x1_encrypted_coeff3.scale(), 2) + " bits")
 
     print("-" * 50)
     print("Compute, relinearize, and rescale (PI*x)*x^2.")
-    evaluator.multiply_inplace(x3_encrypted, x1_encrypted_coeff3, pool)
-    evaluator.relinearize_inplace(x3_encrypted, relin_keys, pool)
+    evaluator.multiply_inplace(x3_encrypted, x1_encrypted_coeff3)
+    evaluator.relinearize_inplace(x3_encrypted, relin_keys)
     print("    + Scale of PI*x^3 before rescale: " +
           "%.0f" % math.log(x3_encrypted.scale(), 2) + " bits")
-    evaluator.rescale_to_next_inplace(x3_encrypted, pool)
+    evaluator.rescale_to_next_inplace(x3_encrypted)
     print("    + Scale of PI*x^3 after rescale: " +
           "%.0f" % math.log(x3_encrypted.scale(), 2) + " bits")
 
     print("-" * 50)
     print("Compute and rescale 0.4*x.")
-    evaluator.multiply_plain_inplace(x1_encrypted, plain_coeff1, pool)
+    evaluator.multiply_plain_inplace(x1_encrypted, plain_coeff1)
     print("    + Scale of 0.4*x before rescale: " +
           "%.0f" % math.log(x1_encrypted.scale(), 2) + " bits")
-    evaluator.rescale_to_next_inplace(x1_encrypted, pool)
+    evaluator.rescale_to_next_inplace(x1_encrypted)
     print("    + Scale of 0.4*x after rescale: " +
           "%.0f" % math.log(x1_encrypted.scale(), 2) + " bits")
     print()
@@ -195,7 +192,7 @@ def example_ckks_basics():
     print("-" * 50)
     print("Normalize encryption parameters to the lowest level.")
     last_parms_id = x3_encrypted.parms_id()
-    evaluator.mod_switch_to_inplace(x1_encrypted, last_parms_id, pool)
+    evaluator.mod_switch_to_inplace(x1_encrypted, last_parms_id)
     evaluator.mod_switch_to_inplace(plain_coeff0, last_parms_id)
 
     '''
@@ -226,7 +223,7 @@ def example_ckks_basics():
 
     decryptor.decrypt(encrypted_result, plain_result)
     result = DoubleVector()
-    encoder.decode(plain_result, result, pool)
+    encoder.decode(plain_result, result)
     print("    + Computed result ...... Correct.")
     print_vector(result, 3, 7)
 
