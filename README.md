@@ -74,6 +74,8 @@ We, **pyseal** use both of the above to make the homomorphic encryption work in 
 
     The setuptools will build a dynamic Link Library in project folder, named like `seal.cpython-36m-x86_64-linux-gnu.so`.
 
+    You can use the CMake to build it, I have already written the `CMakelists.txt`. Make sure the SEAL and the pybind11 is correctly installed.
+    
     The path is very important, please check it before you do anything.
 
 
@@ -105,9 +107,9 @@ We, **pyseal** use both of the above to make the homomorphic encryption work in 
 
 This is project is still testing now.
 
-Here is a compiled dynamic link library [Download-Link](https://drive.google.com/file/d/1QZzKYjwI543gk1ltw11753zqN1OD83I3/view?usp=sharing)
+Here is a compiled dynamic link library [Download-Link](https://drive.google.com/file/d/1QZzKYjwI543gk1ltw11753zqN1OD83I3/view?usp=sharing).
 
-If any errors occurred, new an [issue](https://github.com/Huelse/pyseal/issues) please.
+If any errors occurred, new an [Issue](https://github.com/Huelse/pyseal/issues) please.
 
 If you have interest in this, come and join us.
 
@@ -116,4 +118,4 @@ Email: [huelse@oini.top](mailto:huelse@oini.top?subject=Github-pyseal-Issues&cc=
 
 
 ## Contributing
-* Instructor：[Mr. Chen](http://blog.sciencenet.cn/blog-411071-617182.html)
+* Instructor：[Mr. Chen](http://blog.sciencenet.cn/u/chzg99)
