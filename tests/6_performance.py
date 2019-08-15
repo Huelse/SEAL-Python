@@ -1,4 +1,5 @@
 import time
+import math
 import random
 from seal import *
 
@@ -303,8 +304,9 @@ def bfv_performance_test(context):
             time_rotate_columns_sum += (time_end-time_start)*1000000
 
         # Print a dot to indicate progress.
-        print(".", end="")
-    print(" Done")
+        print(".", end="", flush=True)
+    print(" Done", flush=True)
+
     avg_batch = time_batch_sum / count
     avg_unbatch = time_unbatch_sum / count
     avg_encrypt = time_encrypt_sum / count
@@ -317,28 +319,244 @@ def bfv_performance_test(context):
     avg_rotate_rows_one_step = time_rotate_rows_one_step_sum / (2 * count)
     avg_rotate_rows_random = time_rotate_rows_random_sum / count
     avg_rotate_columns = time_rotate_columns_sum / count
-    print("Average batch: " + "%.0f" % avg_batch + " microseconds")
-    print("Average unbatch: " + "%.0f" % avg_unbatch + " microseconds")
-    print("Average encrypt: " + "%.0f" % avg_encrypt + " microseconds")
-    print("Average decrypt: " + "%.0f" % avg_decrypt + " microseconds")
-    print("Average add: " + "%.0f" % avg_add + " microseconds")
-    print("Average multiply: " + "%.0f" % avg_multiply + " microseconds")
+
+    print("Average batch: " + "%.0f" % avg_batch + " microseconds", flush=True)
+    print("Average unbatch: " + "%.0f" %
+          avg_unbatch + " microseconds", flush=True)
+    print("Average encrypt: " + "%.0f" %
+          avg_encrypt + " microseconds", flush=True)
+    print("Average decrypt: " + "%.0f" %
+          avg_decrypt + " microseconds", flush=True)
+    print("Average add: " + "%.0f" % avg_add + " microseconds", flush=True)
+    print("Average multiply: " + "%.0f" %
+          avg_multiply + " microseconds", flush=True)
     print("Average multiply plain: " + "%.0f" %
-          avg_multiply_plain + " microseconds")
-    print("Average square: " + "%.0f" % avg_square + " microseconds")
+          avg_multiply_plain + " microseconds", flush=True)
+    print("Average square: " + "%.0f" %
+          avg_square + " microseconds", flush=True)
     if context.using_keyswitching():
         print("Average relinearize: " + "%.0f" %
-              avg_relinearize + " microseconds")
+              avg_relinearize + " microseconds", flush=True)
         print("Average rotate rows one step: " + "%.0f" %
-              avg_rotate_rows_one_step + " microseconds")
+              avg_rotate_rows_one_step + " microseconds", flush=True)
         print("Average rotate rows random: " + "%.0f" %
-              avg_rotate_rows_random + " microseconds")
+              avg_rotate_rows_random + " microseconds", flush=True)
         print("Average rotate columns: " + "%.0f" %
-              avg_rotate_columns + " microseconds")
+              avg_rotate_columns + " microseconds", flush=True)
 
 
 def ckks_performance_test(context):
-    return 0
+    print_parameters(context)
+
+    parms = context.first_context_data().parms()
+    plain_modulus = parms.plain_modulus()
+    poly_modulus_degree = parms.poly_modulus_degree()
+
+    print("Generating secret/public keys: ", end="")
+    keygen = KeyGenerator(context)
+    print("Done")
+
+    secret_key = keygen.secret_key()
+    public_key = keygen.public_key()
+    relin_keys = RelinKeys()
+    gal_keys = GaloisKeys()
+
+    if context.using_keyswitching():
+        print("Generating relinearization keys: ", end="")
+        time_start = time.time()
+        relin_keys = keygen.relin_keys()
+        time_end = time.time()
+        print("Done [" + "%.0f" %
+              ((time_end-time_start)*1000000) + " microseconds]")
+
+        if not context.key_context_data().qualifiers().using_batching:
+            print("Given encryption parameters do not support batching.")
+            return 0
+
+        print("Generating Galois keys: ", end="")
+        time_start = time.time()
+        gal_keys = keygen.galois_keys()
+        time_end = time.time()
+        print("Done [" + "%.0f" %
+              ((time_end-time_start)*1000000) + " microseconds]")
+
+    encryptor = Encryptor(context, public_key)
+    decryptor = Decryptor(context, secret_key)
+    evaluator = Evaluator(context)
+    ckks_encoder = CKKSEncoder(context)
+
+    time_encode_sum = 0
+    time_decode_sum = 0
+    time_encrypt_sum = 0
+    time_decrypt_sum = 0
+    time_add_sum = 0
+    time_multiply_sum = 0
+    time_multiply_plain_sum = 0
+    time_square_sum = 0
+    time_relinearize_sum = 0
+    time_rescale_sum = 0
+    time_rotate_one_step_sum = 0
+    time_rotate_random_sum = 0
+    time_conjugate_sum = 0
+
+    # How many times to run the test?
+    count = 10
+
+    # Populate a vector of floating-point values to batch.
+    pod_vector = DoubleVector()
+    slot_count = ckks_encoder.slot_count()
+    for i in range(slot_count):
+        pod_vector.push_back(1.001 * float(i))
+
+    print("Running tests ", end="")
+    for i in range(count):
+        '''
+        [Encoding]
+        For scale we use the square root of the last coeff_modulus prime
+        from parms.
+        '''
+        plain = Plaintext(parms.poly_modulus_degree() *
+                          len(parms.coeff_modulus()), 0)
+
+        # [Encoding]
+        scale = math.sqrt(parms.coeff_modulus()[-1].value())
+        time_start = time.time()
+        ckks_encoder.encode(pod_vector, scale, plain)
+        time_end = time.time()
+        time_encode_sum += (time_end-time_start)*1000000
+
+        # [Decoding]
+        pod_vector2 = DoubleVector()
+        time_start = time.time()
+        ckks_encoder.decode(plain, pod_vector2)
+        time_end = time.time()
+        time_decode_sum += (time_end-time_start)*1000000
+
+        # [Encryption]
+        encrypted = Ciphertext(context)
+        time_start = time.time()
+        encryptor.encrypt(plain, encrypted)
+        time_end = time.time()
+        time_encrypt_sum += (time_end-time_start)*1000000
+
+        # [Decryption]
+        plain2 = Plaintext(poly_modulus_degree, 0)
+        time_start = time.time()
+        decryptor.decrypt(encrypted, plain2)
+        time_end = time.time()
+        time_decrypt_sum += (time_end-time_start)*1000000
+
+        # [Add]
+        encrypted1 = Ciphertext(context)
+        ckks_encoder.encode(i + 1, plain)
+        encryptor.encrypt(plain, encrypted1)
+        encrypted2 = Ciphertext(context)
+        ckks_encoder.encode(i + 1, plain2)
+        encryptor.encrypt(plain2, encrypted2)
+        time_start = time.time()
+        evaluator.add_inplace(encrypted1, encrypted1)
+        evaluator.add_inplace(encrypted2, encrypted2)
+        evaluator.add_inplace(encrypted1, encrypted2)
+        time_end = time.time()
+        time_add_sum += (time_end-time_start)*1000000
+
+        # [Multiply]
+        encrypted1.reserve(3)
+        time_start = time.time()
+        evaluator.multiply_inplace(encrypted1, encrypted2)
+        time_end = time.time()
+        time_multiply_sum += (time_end-time_start)*1000000
+
+        # [Multiply Plain]
+        time_start = time.time()
+        evaluator.multiply_plain_inplace(encrypted2, plain)
+        time_end = time.time()
+        time_multiply_plain_sum += (time_end-time_start)*1000000
+
+        # [Square]
+        time_start = time.time()
+        evaluator.square_inplace(encrypted2)
+        time_end = time.time()
+        time_square_sum += (time_end-time_start)*1000000
+
+        if context.using_keyswitching():
+
+            # [Relinearize]
+            time_start = time.time()
+            evaluator.relinearize_inplace(encrypted1, relin_keys)
+            time_end = time.time()
+            time_relinearize_sum += (time_end-time_start)*1000000
+
+            # [Rescale]
+            time_start = time.time()
+            evaluator.rescale_to_next_inplace(encrypted1)
+            time_end = time.time()
+            time_rescale_sum += (time_end-time_start)*1000000
+
+            # [Rotate Vector]
+            time_start = time.time()
+            evaluator.rotate_vector_inplace(encrypted, 1, gal_keys)
+            evaluator.rotate_vector_inplace(encrypted, -1, gal_keys)
+            time_end = time.time()
+            time_rotate_one_step_sum += (time_end-time_start)*1000000
+
+            # [Rotate Vector Random]
+            random_rotation = int(rand_int() % ckks_encoder.slot_count())
+            time_start = time.time()
+            evaluator.rotate_vector_inplace(
+                encrypted, random_rotation, gal_keys)
+            time_end = time.time()
+            time_rotate_random_sum += (time_end-time_start)*1000000
+
+            # [Complex Conjugate]
+            time_start = time.time()
+            evaluator.complex_conjugate_inplace(encrypted, gal_keys)
+            time_end = time.time()
+            time_conjugate_sum += (time_end-time_start)*1000000
+        print(".", end="", flush=True)
+
+    print(" Done\n", flush=True)
+
+    avg_encode = time_encode_sum / count
+    avg_decode = time_decode_sum / count
+    avg_encrypt = time_encrypt_sum / count
+    avg_decrypt = time_decrypt_sum / count
+    avg_add = time_add_sum / (3 * count)
+    avg_multiply = time_multiply_sum / count
+    avg_multiply_plain = time_multiply_plain_sum / count
+    avg_square = time_square_sum / count
+    avg_relinearize = time_relinearize_sum / count
+    avg_rescale = time_rescale_sum / count
+    avg_rotate_one_step = time_rotate_one_step_sum / (2 * count)
+    avg_rotate_random = time_rotate_random_sum / count
+    avg_conjugate = time_conjugate_sum / count
+
+    print("Average encode: " + "%.0f" %
+          avg_encode + " microseconds", flush=True)
+    print("Average decode: " + "%.0f" %
+          avg_decode + " microseconds", flush=True)
+    print("Average encrypt: " + "%.0f" %
+          avg_encrypt + " microseconds", flush=True)
+    print("Average decrypt: " + "%.0f" %
+          avg_decrypt + " microseconds", flush=True)
+    print("Average add: " + "%.0f" % avg_add + " microseconds", flush=True)
+    print("Average multiply: " + "%.0f" %
+          avg_multiply + " microseconds", flush=True)
+    print("Average multiply plain: " + "%.0f" %
+          avg_multiply_plain + " microseconds", flush=True)
+    print("Average square: " + "%.0f" %
+          avg_square + " microseconds", flush=True)
+    if context.using_keyswitching():
+        print("Average relinearize: " + "%.0f" %
+              avg_relinearize + " microseconds", flush=True)
+        print("Average rescale: " + "%.0f" %
+              avg_rescale + " microseconds", flush=True)
+        print("Average rotate vector one step: " + "%.0f" %
+              avg_rotate_one_step + " microseconds", flush=True)
+        print("Average rotate vector random: " + "%.0f" %
+              avg_rotate_random + " microseconds", flush=True)
+        print("Average complex conjugate: " + "%.0f" %
+              avg_conjugate + " microseconds", flush=True)
 
 
 def example_bfv_performance_default():
@@ -367,22 +585,86 @@ def example_bfv_performance_default():
     bfv_performance_test(SEALContext.Create(parms))
 
     # Comment out the following to run the biggest example.
+    # poly_modulus_degree = 32768
 
 
 def example_bfv_performance_custom():
-    return 0
+    print("\nSet poly_modulus_degree (1024, 2048, 4096, 8192, 16384, or 32768): ")
+    poly_modulus_degree = input("Input the poly_modulus_degree: ").strip()
+
+    if len(poly_modulus_degree) < 4 or not poly_modulus_degree.isdigit():
+        print("Invalid option.")
+        return 0
+
+    poly_modulus_degree = int(poly_modulus_degree)
+
+    if poly_modulus_degree < 1024 or poly_modulus_degree > 32768 or (poly_modulus_degree & (poly_modulus_degree - 1) != 0):
+        print("Invalid option.")
+        return 0
+
+    print("BFV Performance Test with Degree: " + str(poly_modulus_degree))
+
+    parms = EncryptionParameters(scheme_type.BFV)
+    parms.set_poly_modulus_degree(poly_modulus_degree)
+    parms.set_coeff_modulus(CoeffModulus.BFVDefault(poly_modulus_degree))
+    if poly_modulus_degree == 1024:
+        parms.set_plain_modulus(12289)
+    else:
+        parms.set_plain_modulus(786433)
+    bfv_performance_test(SEALContext.Create(parms))
 
 
 def example_ckks_performance_default():
-    return 0
+    print_example_banner(
+        "CKKS Performance Test with Degrees: 4096, 8192, and 16384")
+
+    parms = EncryptionParameters(scheme_type.CKKS)
+    poly_modulus_degree = 4096
+    parms.set_poly_modulus_degree(poly_modulus_degree)
+    parms.set_coeff_modulus(CoeffModulus.BFVDefault(poly_modulus_degree))
+    ckks_performance_test(SEALContext.Create(parms))
+
+    print()
+    poly_modulus_degree = 8192
+    parms.set_poly_modulus_degree(poly_modulus_degree)
+    parms.set_coeff_modulus(CoeffModulus.BFVDefault(poly_modulus_degree))
+    ckks_performance_test(SEALContext.Create(parms))
+
+    poly_modulus_degree = 16384
+    parms.set_poly_modulus_degree(poly_modulus_degree)
+    parms.set_coeff_modulus(CoeffModulus.BFVDefault(poly_modulus_degree))
+    ckks_performance_test(SEALContext.Create(parms))
+
+    # Comment out the following to run the biggest example.
+    # poly_modulus_degree = 32768
 
 
 def example_ckks_performance_custom():
-    return 0
+    print("\nSet poly_modulus_degree (1024, 2048, 4096, 8192, 16384, or 32768): ")
+    poly_modulus_degree = input("Input the poly_modulus_degree: ").strip()
+
+    if len(poly_modulus_degree) < 4 or not poly_modulus_degree.isdigit():
+        print("Invalid option.")
+        return 0
+
+    poly_modulus_degree = int(poly_modulus_degree)
+
+    if poly_modulus_degree < 1024 or poly_modulus_degree > 32768 or (poly_modulus_degree & (poly_modulus_degree - 1) != 0):
+        print("Invalid option.")
+        return 0
+
+    print("CKKS Performance Test with Degree: " + str(poly_modulus_degree))
+
+    parms = EncryptionParameters(scheme_type.CKKS)
+    parms.set_poly_modulus_degree(poly_modulus_degree)
+    parms.set_coeff_modulus(CoeffModulus.BFVDefault(poly_modulus_degree))
+    ckks_performance_test(SEALContext.Create(parms))
 
 
 if __name__ == '__main__':
     print_example_banner("Example: Performance Test")
 
     example_bfv_performance_default()
-    # Building
+    example_bfv_performance_custom()
+    example_ckks_performance_default()
+    example_ckks_performance_custom()
