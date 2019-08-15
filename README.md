@@ -2,9 +2,9 @@
 
 ## Microsoft SEAL For Python
 
-Microsoft **SEAL** is an easy-to-use open-source ([MIT licensed](https://github.com/microsoft/SEAL/blob/master/LICENSE)) homomorphic encryption library developed by the Cryptography Research group at Microsoft.
+Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-source ([MIT licensed](https://github.com/microsoft/SEAL/blob/master/LICENSE)) homomorphic encryption library developed by the Cryptography Research group at Microsoft.
 
-**pybind11** is a lightweight header-only library that exposes C++ types in Python and vice versa, mainly to create Python bindings of existing C++ code.
+[**pybind11**](https://github.com/pybind/pybind11) is a lightweight header-only library that exposes C++ types in Python and vice versa, mainly to create Python bindings of existing C++ code.
 
 We, **pyseal** use both of the above to make the homomorphic encryption work in Python.
 
@@ -99,19 +99,17 @@ We, **pyseal** use both of the above to make the homomorphic encryption work in 
 | 3_levels.cpp      | 3_levels.py      | Introduces the concept of levels; prerequisite for using the CKKS scheme | Finished |
 | 4_ckks_basics.cpp | 4_ckks_basics.py | Encrypted real number arithmetic using the CKKS scheme       | Finished |
 | 5_rotation.cpp    | 5_rotation.py    | Performing cyclic rotations on encrypted vectors in the BFV and CKKS schemes | Finished |
-| 6_performance.cpp | 6_performance.py | Performance tests for Microsoft SEAL                         | Building |
+| 6_performance.cpp | 6_performance.py | Performance tests for Microsoft SEAL                         | Finished |
 
 
 
 ## About
 
-This is project is still testing now.
+This project is still testing now, if any errors occurred, new an [Issue](https://github.com/Huelse/pyseal/issues) please.
 
 Here is a compiled dynamic link library [Download-Link](https://drive.google.com/file/d/1QZzKYjwI543gk1ltw11753zqN1OD83I3/view?usp=sharing).
 
-If any errors occurred, new an [Issue](https://github.com/Huelse/pyseal/issues) please.
-
-If you have interest in this, come and join us.
+If you are interested, come and join us.
 
 Email: [huelse@oini.top](mailto:huelse@oini.top?subject=Github-pyseal-Issues&cc=5956877@qq.com)
 
