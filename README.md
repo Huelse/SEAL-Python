@@ -15,7 +15,7 @@ We, **pyseal** use both of the above to make the homomorphic encryption work in 
 * [Build](https://github.com/Huelse/pyseal#build)
 * [Tests](https://github.com/Huelse/pyseal#tests)
 * [About](https://github.com/Huelse/pyseal#about)
-* [Contributors](https://github.com/Huelse/pyseal#contributors)
+* [Contributing](https://github.com/Huelse/pyseal#contributing)
 
 
 
@@ -25,7 +25,7 @@ We, **pyseal** use both of the above to make the homomorphic encryption work in 
 
   CMake (>= 3.10), GNU G++ (>= 6.0) or Clang++ (>= 5.0), Python (>=3.6.8)
 
-  `sudo apt-get update && sudo apt-get install g++ cmake git python3 python3-dev python3.6-pip`
+  `sudo apt-get update && sudo apt-get install g++ make git python3 python3-dev python3.6-pip`
 
   `git clone https://github.com/Huelse/pyseal.git`
 
@@ -60,7 +60,7 @@ We, **pyseal** use both of the above to make the homomorphic encryption work in 
 
 * ### Others
 
-    If you clone a new SEAL lib from the Github, do not forget add a set_scale function in `seal/ciphertext.h` line 632, like this:
+    If you clone a new SEAL lib from the [Github](https://github.com/microsoft/SEAL), do not forget add a function set_scale in `seal/ciphertext.h` line 632, like this:
 
     ```c++
     /**
@@ -118,4 +118,5 @@ Email: [huelse@oini.top](mailto:huelse@oini.top?subject=Github-pyseal-Issues&cc=
 
 
 ## Contributing
-* Instructor：[Mr. Chen](http://blog.sciencenet.cn/u/chzg99)
+* Instructor: [Dr. Chen](http://blog.sciencenet.cn/u/chzg99)
+

@@ -24,7 +24,7 @@ setup(
     name='seal',
     version='3.3.1',
     author='Huelse', 
-    author_email='5956877@qq.com',
+    author_email='huelse@oini.top',
     description='Python wrapper for SEAL',
     ext_modules=ext_modules,
 )
