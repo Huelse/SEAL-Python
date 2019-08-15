@@ -107,7 +107,7 @@ We, **pyseal** use both of the above to make the homomorphic encryption work in 
 
 This project is still testing now, if any errors occurred, new an [Issue](https://github.com/Huelse/pyseal/issues) please.
 
-Here is a compiled dynamic link library [Download-Link](https://drive.google.com/file/d/1QZzKYjwI543gk1ltw11753zqN1OD83I3/view?usp=sharing).
+Here is a compiled dynamic link library [build in ubuntu18.04](https://drive.google.com/file/d/1QZzKYjwI543gk1ltw11753zqN1OD83I3/view?usp=sharing).
 
 If you are interested, come and join us.
 
