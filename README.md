@@ -1,5 +1,3 @@
-![](https://i.loli.net/2019/07/26/5d3abeb49f85016446.jpg)
-
 ## Microsoft SEAL For Python
 
 Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-source ([MIT licensed](https://github.com/microsoft/SEAL/blob/master/LICENSE)) homomorphic encryption library developed by the Cryptography Research group at Microsoft.
