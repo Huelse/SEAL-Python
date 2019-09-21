@@ -275,7 +275,7 @@ PYBIND11_MODULE(seal, m)
 	// Evaluator
 	py::class_<Evaluator>(m, "Evaluator")
 		.def(py::init<std::shared_ptr<SEALContext>>())
-		.def("negate_inplace", (void (Evaluator::*)(Ciphertext &)) & Evaluator::negate)
+		.def("negate_inplace", (void (Evaluator::*)(Ciphertext &)) & Evaluator::negate_inplace)
 		.def("negate", (void (Evaluator::*)(const Ciphertext &, Ciphertext &)) & Evaluator::negate)
 		.def("add_inplace", (void (Evaluator::*)(Ciphertext &, const Ciphertext &)) & Evaluator::add_inplace)
 		.def("add", (void (Evaluator::*)(const Ciphertext &, const Ciphertext &, Ciphertext &)) & Evaluator::add)

@@ -33,6 +33,7 @@ We, **pyseal** use both of the above to make the homomorphic encryption work in 
   cd SEAL/native/src
   cmake .
   make
+  sudo make install
   ```
 
 * ### pybind11
