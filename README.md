@@ -27,7 +27,7 @@ We, **pyseal** use both of the above to make the homomorphic encryption work in 
 
   `git clone https://github.com/Huelse/pyseal.git`
 
-* ### SEAL
+* ### SEAL 3.3.2
 
   ```shell
   cd SEAL/native/src
@@ -46,6 +46,7 @@ We, **pyseal** use both of the above to make the homomorphic encryption work in 
   cd build
   cmake ..
   make check -j 4
+  sudo make install
   ```
   
 * ### pyseal
