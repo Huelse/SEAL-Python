@@ -33,6 +33,14 @@ PYBIND11_MODULE(seal, m)
 		.def("push_back", (void (ComplexDoubleVector::*)(const std::complex<double> &)) & ComplexDoubleVector::push_back)
 		.def("back", (std::complex<double> & (ComplexDoubleVector::*)()) & ComplexDoubleVector::back)
 		.def("__len__", [](const ComplexDoubleVector &v) { return v.size(); })
+		.def("__setitem__", [](ComplexDoubleVector &v, const std::uint64_t i, const std::complex<double> &value) {
+			if (i >= v.size())
+				throw pybind11::index_error();
+			if (i >= 0)
+				v[i] = value;
+			else
+				v[v.size() - i] = value;
+		})
 		.def("__getitem__", [](const ComplexDoubleVector &v, int i) {
 			return v[i];
 		},
@@ -49,6 +57,14 @@ PYBIND11_MODULE(seal, m)
 		.def("push_back", (void (DoubleVector::*)(const double &)) & DoubleVector::push_back)
 		.def("back", (double &(DoubleVector::*)()) & DoubleVector::back)
 		.def("__len__", [](const DoubleVector &v) { return v.size(); })
+		.def("__setitem__", [](DoubleVector &v, const std::uint64_t i, const double &value) {
+			if (i >= v.size())
+				throw pybind11::index_error();
+			if (i >= 0)
+				v[i] = value;
+			else
+				v[v.size() - i] = value;
+		})
 		.def("__getitem__", [](const DoubleVector &v, int i) {
 			return v[i];
 		},
@@ -65,6 +81,14 @@ PYBIND11_MODULE(seal, m)
 		.def("push_back", (void (uIntVector::*)(const std::uint64_t &)) & uIntVector::push_back)
 		.def("back", (std::uint64_t & (uIntVector::*)()) & uIntVector::back)
 		.def("__len__", [](const uIntVector &v) { return v.size(); })
+		.def("__setitem__", [](uIntVector &v, const std::uint64_t i, const std::uint64_t &value) {
+			if (i >= v.size())
+				throw pybind11::index_error();
+			if (i >= 0)
+				v[i] = value;
+			else
+				v[v.size() - i] = value;
+		})
 		.def("__getitem__", [](const uIntVector &v, int i) {
 			return v[i];
 		},
@@ -81,6 +105,14 @@ PYBIND11_MODULE(seal, m)
 		.def("push_back", (void (IntVector::*)(const std::int64_t &)) & IntVector::push_back)
 		.def("back", (std::int64_t & (IntVector::*)()) & IntVector::back)
 		.def("__len__", [](const IntVector &v) { return v.size(); })
+		.def("__setitem__", [](IntVector &v, const std::uint64_t i, const std::int64_t &value) {
+			if (i >= v.size())
+				throw pybind11::index_error();
+			if (i >= 0)
+				v[i] = value;
+			else
+				v[v.size() - i] = value;
+		})
 		.def("__getitem__", [](const IntVector &v, int i) {
 			return v[i];
 		},
