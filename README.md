@@ -4,8 +4,6 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 
 [**pybind11**](https://github.com/pybind/pybind11) is a lightweight header-only library that exposes C++ types in Python and vice versa, mainly to create Python bindings of existing C++ code.
 
-We, **pyseal** use both of the above to make the homomorphic encryption work in Python.
-
 
 
 ## Contents
@@ -25,7 +23,7 @@ We, **pyseal** use both of the above to make the homomorphic encryption work in 
 
   `sudo apt-get update && sudo apt-get install g++ make git python3 python3-dev python3.6-pip`
 
-  `git clone https://github.com/Huelse/pyseal.git`
+  `git clone https://github.com/Huelse/SEAL-Python.git`
 
 * ### SEAL 3.3.2
 
@@ -46,10 +44,10 @@ We, **pyseal** use both of the above to make the homomorphic encryption work in 
   cd build
   cmake ..
   make check -j 4
-  sudo make install
+  sudo make install # or not
   ```
   
-* ### pyseal
+* ### SEAL-Python
 
   ```
   cd src
@@ -105,13 +103,13 @@ We, **pyseal** use both of the above to make the homomorphic encryption work in 
 
 ## About
 
-This project is still testing now, if any errors occurred, new an [Issue](https://github.com/Huelse/pyseal/issues) please.
+This project is still testing now, if any errors occurred, new an [Issue](https://github.com/Huelse/SEAL-Python/issues) please.
 
 Here is a compiled dynamic link library [build in ubuntu18.04](https://drive.google.com/file/d/1QZzKYjwI543gk1ltw11753zqN1OD83I3/view?usp=sharing).
 
 If you are interested, come and join us.
 
-Email: [huelse@oini.top](mailto:huelse@oini.top?subject=Github-pyseal-Issues&cc=5956877@qq.com)
+Email: [huelse@oini.top](mailto:huelse@oini.top?subject=Github-SEAL-Python-Issues&cc=5956877@qq.com)
 
 
 
