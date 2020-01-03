@@ -29,15 +29,14 @@ PYBIND11_MODULE(seal, m)
 	// ComplexDoubleVector
 	py::class_<ComplexDoubleVector>(m, "ComplexDoubleVector", py::buffer_protocol())
 		.def_buffer([](ComplexDoubleVector &v) -> py::buffer_info {
-            return py::buffer_info(
-                v.data(),
-                sizeof(std::complex<double>),
-                py::format_descriptor<std::complex<double>>::format(),
-                1,
-                { v.size() },
-                { sizeof(std::complex<double>) }
-            );
-        })
+			return py::buffer_info(
+				v.data(),
+				sizeof(std::complex<double>),
+				py::format_descriptor<std::complex<double>>::format(),
+				1,
+				{v.size()},
+				{sizeof(std::complex<double>)});
+		})
 		.def(py::init<>())
 		.def("pop_back", &ComplexDoubleVector::pop_back)
 		.def("push_back", (void (ComplexDoubleVector::*)(const std::complex<double> &)) & ComplexDoubleVector::push_back)
@@ -63,15 +62,14 @@ PYBIND11_MODULE(seal, m)
 	// DoubleVector
 	py::class_<DoubleVector>(m, "DoubleVector", py::buffer_protocol())
 		.def_buffer([](DoubleVector &v) -> py::buffer_info {
-            return py::buffer_info(
-                v.data(),
-                sizeof(double),
-                py::format_descriptor<double>::format(),
-                1,
-                { v.size() },
-                { sizeof(double) }
-            );
-        })
+			return py::buffer_info(
+				v.data(),
+				sizeof(double),
+				py::format_descriptor<double>::format(),
+				1,
+				{v.size()},
+				{sizeof(double)});
+		})
 		.def(py::init<>())
 		.def("pop_back", &DoubleVector::pop_back)
 		.def("push_back", (void (DoubleVector::*)(const double &)) & DoubleVector::push_back)
@@ -97,15 +95,14 @@ PYBIND11_MODULE(seal, m)
 	// uIntVector
 	py::class_<uIntVector>(m, "uIntVector", py::buffer_protocol())
 		.def_buffer([](uIntVector &v) -> py::buffer_info {
-            return py::buffer_info(
-                v.data(),
-                sizeof(std::uint64_t),
-                py::format_descriptor<std::uint64_t>::format(),
-                1,
-                { v.size() },
-                { sizeof(std::uint64_t) }
-            );
-        })
+			return py::buffer_info(
+				v.data(),
+				sizeof(std::uint64_t),
+				py::format_descriptor<std::uint64_t>::format(),
+				1,
+				{v.size()},
+				{sizeof(std::uint64_t)});
+		})
 		.def(py::init<>())
 		.def("pop_back", &uIntVector::pop_back)
 		.def("push_back", (void (uIntVector::*)(const std::uint64_t &)) & uIntVector::push_back)
@@ -131,15 +128,14 @@ PYBIND11_MODULE(seal, m)
 	// IntVector
 	py::class_<IntVector>(m, "IntVector", py::buffer_protocol())
 		.def_buffer([](IntVector &v) -> py::buffer_info {
-            return py::buffer_info(
-                v.data(),
-                sizeof(std::int64_t),
-                py::format_descriptor<std::int64_t>::format(),
-                1,
-                { v.size() },
-                { sizeof(std::int64_t) }
-            );
-        })
+			return py::buffer_info(
+				v.data(),
+				sizeof(std::int64_t),
+				py::format_descriptor<std::int64_t>::format(),
+				1,
+				{v.size()},
+				{sizeof(std::int64_t)});
+		})
 		.def(py::init<>())
 		.def("pop_back", &IntVector::pop_back)
 		.def("push_back", (void (IntVector::*)(const std::int64_t &)) & IntVector::push_back)

@@ -8,10 +8,10 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 
 ## Contents
 
-* [Build](https://github.com/Huelse/pyseal#build)
-* [Tests](https://github.com/Huelse/pyseal#tests)
-* [About](https://github.com/Huelse/pyseal#about)
-* [Contributing](https://github.com/Huelse/pyseal#contributing)
+* [Build](https://github.com/Huelse/SEAL-Python#build)
+* [Tests](https://github.com/Huelse/SEAL-Python#tests)
+* [About](https://github.com/Huelse/SEAL-Python#about)
+* [Contributing](https://github.com/Huelse/SEAL-Python#contributing)
 
 
 
@@ -21,7 +21,7 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 
   CMake (>= 3.10), GNU G++ (>= 6.0) or Clang++ (>= 5.0), Python (>=3.6.8)
 
-  `sudo apt-get update && sudo apt-get install g++ make git python3 python3-dev python3.6-pip`
+  `sudo apt-get update && sudo apt-get install g++ make cmake git python3 python3-dev python3.6-pip`
 
   `git clone https://github.com/Huelse/SEAL-Python.git`
 
@@ -114,5 +114,5 @@ Email: [huelse@oini.top](mailto:huelse@oini.top?subject=Github-SEAL-Python-Issue
 
 
 ## Contributing
-* Instructor: [Dr. Chen](http://blog.sciencenet.cn/u/chzg99)
+* Professor: [Dr. Chen](http://blog.sciencenet.cn/u/chzg99)
 
