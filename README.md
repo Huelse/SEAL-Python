@@ -70,9 +70,9 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
     }
     ```
 
-    The setuptools will build a dynamic Link Library in project folder, named like `seal.cpython-36m-x86_64-linux-gnu.so`.
+    The dynamic link library name: `seal.cpython-36m-x86_64-linux-gnu.so`.
 
-    You can use the CMake to build it, I have already written the `CMakelists.txt`. Make sure the SEAL and the pybind11 is correctly installed.
+    You can use the CMake to build it. Check the `CMakelists.txt`, make sure that the SEAL and the pybind11 is correctly installed.
     
     The path is very important, please check it before you do anything.
 
@@ -103,11 +103,9 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 
 ## About
 
-This project is still testing now, if any errors occurred, new an [Issue](https://github.com/Huelse/SEAL-Python/issues) please.
+This project is still testing now, if any problem, [Issue](https://github.com/Huelse/SEAL-Python/issues)
 
-Here is a compiled dynamic link library [build in ubuntu18.04](https://drive.google.com/file/d/1QZzKYjwI543gk1ltw11753zqN1OD83I3/view?usp=sharing).
-
-If you are interested, come and join us.
+Here is a compiled dynamic link library [build in ubuntu18.04](https://drive.google.com/file/d/1QZzKYjwI543gk1ltw11753zqN1OD83I3/view?usp=sharing)
 
 Email: [huelse@oini.top](mailto:huelse@oini.top?subject=Github-SEAL-Python-Issues&cc=5956877@qq.com)
 
