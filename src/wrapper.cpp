@@ -43,6 +43,16 @@ PYBIND11_MODULE(seal, m)
 		.def("pop_back", &ComplexDoubleVector::pop_back)
 		.def("push_back", (void (ComplexDoubleVector::*)(const std::complex<double> &)) & ComplexDoubleVector::push_back)
 		.def("back", (std::complex<double> & (ComplexDoubleVector::*)()) & ComplexDoubleVector::back)
+		.def("numpy", [](py::array_t<std::complex<double>> in) {
+			ComplexDoubleVector out;
+			py::buffer_info in_info = in.request();
+			std::complex<double> *in_ptr = (std::complex<double> *)in_info.ptr;
+			for (std::size_t i = 0; i < in_info.size; i++)
+			{
+				out.push_back(in_ptr[i]);
+			}
+			return out;
+		})
 		.def("__len__", [](const ComplexDoubleVector &v) { return v.size(); })
 		.def("__setitem__", [](ComplexDoubleVector &v, const std::uint64_t i, const std::complex<double> &value) {
 			if (i >= v.size())
@@ -78,6 +88,16 @@ PYBIND11_MODULE(seal, m)
 		.def("pop_back", &DoubleVector::pop_back)
 		.def("push_back", (void (DoubleVector::*)(const double &)) & DoubleVector::push_back)
 		.def("back", (double &(DoubleVector::*)()) & DoubleVector::back)
+		.def("numpy", [](py::array_t<double> in) {
+			DoubleVector out;
+			py::buffer_info in_info = in.request();
+			double *in_ptr = (double *)in_info.ptr;
+			for (std::size_t i = 0; i < in_info.size; i++)
+			{
+				out.push_back(in_ptr[i]);
+			}
+			return out;
+		})
 		.def("__len__", [](const DoubleVector &v) { return v.size(); })
 		.def("__setitem__", [](DoubleVector &v, const std::uint64_t i, const double &value) {
 			if (i >= v.size())
@@ -113,6 +133,16 @@ PYBIND11_MODULE(seal, m)
 		.def("pop_back", &uIntVector::pop_back)
 		.def("push_back", (void (uIntVector::*)(const std::uint64_t &)) & uIntVector::push_back)
 		.def("back", (std::uint64_t & (uIntVector::*)()) & uIntVector::back)
+		.def("numpy", [](py::array_t<std::uint64_t> in) {
+			uIntVector out;
+			py::buffer_info in_info = in.request();
+			std::uint64_t *in_ptr = (std::uint64_t *)in_info.ptr;
+			for (std::size_t i = 0; i < in_info.size; i++)
+			{
+				out.push_back(in_ptr[i]);
+			}
+			return out;
+		})
 		.def("__len__", [](const uIntVector &v) { return v.size(); })
 		.def("__setitem__", [](uIntVector &v, const std::uint64_t i, const std::uint64_t &value) {
 			if (i >= v.size())
@@ -148,6 +178,16 @@ PYBIND11_MODULE(seal, m)
 		.def("pop_back", &IntVector::pop_back)
 		.def("push_back", (void (IntVector::*)(const std::int64_t &)) & IntVector::push_back)
 		.def("back", (std::int64_t & (IntVector::*)()) & IntVector::back)
+		.def("numpy", [](py::array_t<std::int64_t> in) {
+			IntVector out;
+			py::buffer_info in_info = in.request();
+			std::int64_t *in_ptr = (std::int64_t *)in_info.ptr;
+			for (std::size_t i = 0; i < in_info.size; i++)
+			{
+				out.push_back(in_ptr[i]);
+			}
+			return out;
+		})
 		.def("__len__", [](const IntVector &v) { return v.size(); })
 		.def("__setitem__", [](IntVector &v, const std::uint64_t i, const std::int64_t &value) {
 			if (i >= v.size())
