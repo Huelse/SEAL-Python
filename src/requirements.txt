@@ -1,2 +1,3 @@
 pytest
 pybind11
+numpy

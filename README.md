@@ -37,7 +37,7 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 * ### pybind11
 
   ```
-  pip3 install pytest
+  pip3 install -r requirements.txt
   
   cd pybind11
   mkdir build
@@ -49,11 +49,14 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
   
 * ### SEAL-Python
 
-  ```
-  cd src
-  pip3 install -r requirements.txt
-  
+  ```shell
+  # Check the path at first
+  # Building with setuptools
   python3 setup.py build_ext -i
+  
+  # Building with CMake
+  cmake .
+  make
   ```
 
 * ### Others
@@ -72,8 +75,6 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 
     The dynamic link library name: `seal.cpython-36m-x86_64-linux-gnu.so`.
 
-    You can use the CMake to build it. Check the `CMakelists.txt`, make sure that the SEAL and the pybind11 is correctly installed.
-    
     The path is very important, please check it before you do anything.
 
 
@@ -84,7 +85,7 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 
 `python3 [example_name].py`
 
-* The `.so` file need in the same folder, or you had `make install` it already.
+* The `.so` file must be in the same folder, or you had `make install` it already.
 
 
 
@@ -112,5 +113,5 @@ Email: [huelse@oini.top](mailto:huelse@oini.top?subject=Github-SEAL-Python-Issue
 
 
 ## Contributing
-* Professor: [Dr. Chen](http://blog.sciencenet.cn/u/chzg99)
+* Professor: [Dr. Chen](https://zhigang-chen.github.io/)
 

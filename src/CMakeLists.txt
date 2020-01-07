@@ -10,6 +10,6 @@ include_directories("../SEAL/native/src")
 
 LINK_LIBRARIES("../SEAL/native/lib/libseal.a")
 
-add_subdirectory(pybind11) # or
+add_subdirectory(pybind11)
 # find_package(pybind11)
 pybind11_add_module(seal wrapper.cpp)
