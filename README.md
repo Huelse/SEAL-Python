@@ -19,13 +19,15 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 
 * ### Environment
 
+  SEAL (3.3.2), pybind11 (2.4.3)
+
   CMake (>= 3.10), GNU G++ (>= 6.0) or Clang++ (>= 5.0), Python (>=3.6.8)
 
   `sudo apt-get update && sudo apt-get install g++ make cmake git python3 python3-dev python3.6-pip`
 
   `git clone https://github.com/Huelse/SEAL-Python.git`
 
-* ### SEAL 3.3.2
+* ### SEAL
 
   ```shell
   cd SEAL/native/src
@@ -37,6 +39,7 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 * ### pybind11
 
   ```
+  cd src
   pip3 install -r requirements.txt
   
   cd pybind11
@@ -52,6 +55,7 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
   ```shell
   # Check the path at first
   # Building with setuptools
+  cd src
   python3 setup.py build_ext -i
   
   # Building with CMake
@@ -105,8 +109,6 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 ## About
 
 This project is still testing now, if any problem, [Issue](https://github.com/Huelse/SEAL-Python/issues)
-
-Here is a compiled dynamic link library [build in ubuntu18.04](https://drive.google.com/file/d/1QZzKYjwI543gk1ltw11753zqN1OD83I3/view?usp=sharing)
 
 Email: [huelse@oini.top](mailto:huelse@oini.top?subject=Github-SEAL-Python-Issues&cc=5956877@qq.com)
 
