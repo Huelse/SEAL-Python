@@ -4,6 +4,8 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 
 [**pybind11**](https://github.com/pybind/pybind11) is a lightweight header-only library that exposes C++ types in Python and vice versa, mainly to create Python bindings of existing C++ code.
 
+This is a python binding for MS SEAL library.
+
 
 
 ## Contents
@@ -89,7 +91,7 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 
 `python3 [example_name].py`
 
-* The `.so` file must be in the same folder, or you had `make install` it already.
+* The `.so` file must be in the same folder, or you had `install` it already.
 
 
 
@@ -103,6 +105,14 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 | 4_ckks_basics.cpp | 4_ckks_basics.py | Encrypted real number arithmetic using the CKKS scheme       | Finished |
 | 5_rotation.cpp    | 5_rotation.py    | Performing cyclic rotations on encrypted vectors in the BFV and CKKS schemes | Finished |
 | 6_performance.cpp | 6_performance.py | Performance tests for Microsoft SEAL                         | Finished |
+
+
+
+## Future
+
+* Visual Studio build (for windows)
+* SEAL 3.4 or higher support
+* Remove the dependency on wrapped data types (like IntVector)
 
 
 
