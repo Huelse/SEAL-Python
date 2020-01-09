@@ -12,6 +12,7 @@ This is a python binding for MS SEAL library.
 
 * [Build](https://github.com/Huelse/SEAL-Python#build)
 * [Tests](https://github.com/Huelse/SEAL-Python#tests)
+* [Future](https://github.com/Huelse/SEAL-Python#future)
 * [About](https://github.com/Huelse/SEAL-Python#about)
 * [Contributing](https://github.com/Huelse/SEAL-Python#contributing)
 
