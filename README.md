@@ -65,6 +65,8 @@ This is a python binding for MS SEAL library.
   make
   ```
 
+  Documents about the setuptools [docs](https://docs.python.org/3/distutils/configfile.html)
+
 * ### Others
 
     If you clone a new SEAL lib from the [Github](https://github.com/microsoft/SEAL), do not forget add a function set_scale in `seal/ciphertext.h` line 632, like this:
