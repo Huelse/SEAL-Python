@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
 #include <pybind11/complex.h>
 #include <pybind11/numpy.h>
+#include <pybind11/stl.h>
 #include "seal/seal.h"
 
 namespace py = pybind11;
@@ -12,14 +12,12 @@ using namespace seal;
 using pt_coeff_type = std::uint64_t;
 using size_type = IntArray<pt_coeff_type>::size_type;
 
-PYBIND11_MAKE_OPAQUE(std::vector<double>);
 PYBIND11_MAKE_OPAQUE(std::vector<std::complex<double>>);
-PYBIND11_MAKE_OPAQUE(std::vector<std::uint64_t>);
+PYBIND11_MAKE_OPAQUE(std::vector<double>);
 PYBIND11_MAKE_OPAQUE(std::vector<std::int64_t>);
 
-using DoubleVector = std::vector<double>;
 using ComplexDoubleVector = std::vector<std::complex<double>>;
-using uIntVector = std::vector<std::uint64_t>;
+using DoubleVector = std::vector<double>;
 using IntVector = std::vector<std::int64_t>;
 
 PYBIND11_MODULE(seal, m)
@@ -44,7 +42,7 @@ PYBIND11_MODULE(seal, m)
 		.def("pop_back", &ComplexDoubleVector::pop_back)
 		.def("push_back", (void (ComplexDoubleVector::*)(const std::complex<double> &)) & ComplexDoubleVector::push_back)
 		.def("back", (std::complex<double> & (ComplexDoubleVector::*)()) & ComplexDoubleVector::back)
-		.def("numpy", [](py::array_t<std::complex<double>> in) {
+		.def(py::init([](py::array_t<std::complex<double>> in) {
 			ComplexDoubleVector out;
 			py::buffer_info in_info = in.request();
 			std::complex<double> *in_ptr = (std::complex<double> *)in_info.ptr;
@@ -53,7 +51,7 @@ PYBIND11_MODULE(seal, m)
 				out.push_back(in_ptr[i]);
 			}
 			return out;
-		})
+		}))
 		.def("__len__", [](const ComplexDoubleVector &v) { return v.size(); })
 		.def("__setitem__", [](ComplexDoubleVector &v, const std::uint64_t i, const std::complex<double> &value) {
 			if (i >= v.size())
@@ -89,7 +87,7 @@ PYBIND11_MODULE(seal, m)
 		.def("pop_back", &DoubleVector::pop_back)
 		.def("push_back", (void (DoubleVector::*)(const double &)) & DoubleVector::push_back)
 		.def("back", (double &(DoubleVector::*)()) & DoubleVector::back)
-		.def("numpy", [](py::array_t<double> in) {
+		.def(py::init([](py::array_t<double> in) {
 			DoubleVector out;
 			py::buffer_info in_info = in.request();
 			double *in_ptr = (double *)in_info.ptr;
@@ -98,7 +96,7 @@ PYBIND11_MODULE(seal, m)
 				out.push_back(in_ptr[i]);
 			}
 			return out;
-		})
+		}))
 		.def("__len__", [](const DoubleVector &v) { return v.size(); })
 		.def("__setitem__", [](DoubleVector &v, const std::uint64_t i, const double &value) {
 			if (i >= v.size())
@@ -113,51 +111,6 @@ PYBIND11_MODULE(seal, m)
 		},
 			 py::keep_alive<1, 2>())
 		.def("__iter__", [](std::vector<double> &v) {
-			return py::make_iterator(v.begin(), v.end());
-		},
-			 py::keep_alive<0, 1>());
-
-	// uIntVector
-	py::class_<uIntVector>(m, "uIntVector", py::buffer_protocol())
-		.def_buffer([](uIntVector &v) -> py::buffer_info {
-			return py::buffer_info(
-				v.data(),
-				sizeof(std::uint64_t),
-				py::format_descriptor<std::uint64_t>::format(),
-				1,
-				{v.size()},
-				{sizeof(std::uint64_t)});
-		})
-		.def(py::init<>())
-		.def(py::init<std::size_t>())
-		.def(py::init<std::size_t, std::uint64_t>())
-		.def("pop_back", &uIntVector::pop_back)
-		.def("push_back", (void (uIntVector::*)(const std::uint64_t &)) & uIntVector::push_back)
-		.def("back", (std::uint64_t & (uIntVector::*)()) & uIntVector::back)
-		.def("numpy", [](py::array_t<std::uint64_t> in) {
-			uIntVector out;
-			py::buffer_info in_info = in.request();
-			std::uint64_t *in_ptr = (std::uint64_t *)in_info.ptr;
-			for (std::size_t i = 0; i < in_info.size; i++)
-			{
-				out.push_back(in_ptr[i]);
-			}
-			return out;
-		})
-		.def("__len__", [](const uIntVector &v) { return v.size(); })
-		.def("__setitem__", [](uIntVector &v, const std::uint64_t i, const std::uint64_t &value) {
-			if (i >= v.size())
-				throw py::index_error();
-			if (i >= 0)
-				v[i] = value;
-			else
-				v[v.size() - i] = value;
-		})
-		.def("__getitem__", [](const uIntVector &v, int i) {
-			return v[i];
-		},
-			 py::keep_alive<1, 2>())
-		.def("__iter__", [](std::vector<std::uint64_t> &v) {
 			return py::make_iterator(v.begin(), v.end());
 		},
 			 py::keep_alive<0, 1>());
@@ -179,7 +132,7 @@ PYBIND11_MODULE(seal, m)
 		.def("pop_back", &IntVector::pop_back)
 		.def("push_back", (void (IntVector::*)(const std::int64_t &)) & IntVector::push_back)
 		.def("back", (std::int64_t & (IntVector::*)()) & IntVector::back)
-		.def("numpy", [](py::array_t<std::int64_t> in) {
+		.def(py::init([](py::array_t<std::int64_t> in) {
 			IntVector out;
 			py::buffer_info in_info = in.request();
 			std::int64_t *in_ptr = (std::int64_t *)in_info.ptr;
@@ -188,7 +141,7 @@ PYBIND11_MODULE(seal, m)
 				out.push_back(in_ptr[i]);
 			}
 			return out;
-		})
+		}))
 		.def("__len__", [](const IntVector &v) { return v.size(); })
 		.def("__setitem__", [](IntVector &v, const std::uint64_t i, const std::int64_t &value) {
 			if (i >= v.size())
