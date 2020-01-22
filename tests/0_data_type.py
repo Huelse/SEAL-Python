@@ -3,6 +3,7 @@ import numpy as np
 
 a = [0.1, 0.3, 1.01, 0.2]
 b = DoubleVector(a)  # IntVector
+print(a)
 c = np.array(b)
 print(c)
 # [0.1  0.3  1.01 0.2 ]
