@@ -35,7 +35,7 @@ def example_ckks_basics():
     step_size = 1.0 / (slot_count - 1)
 
     for i in range(slot_count):
-        inputs.push_back(curr_point)
+        inputs.append(curr_point)
         curr_point += step_size
 
     print("Input vector: ")

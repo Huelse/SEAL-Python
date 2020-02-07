@@ -72,7 +72,7 @@ def bfv_performance_test(context):
     slot_count = batch_encoder.slot_count()
     pod_vector = uIntVector()
     for i in range(slot_count):
-        pod_vector.push_back(rand_int() % plain_modulus.value())
+        pod_vector.append(rand_int() % plain_modulus.value())
     print("Running tests ", end="")
 
     for i in range(count):
@@ -321,7 +321,7 @@ def ckks_performance_test(context):
     pod_vector = DoubleVector()
     slot_count = ckks_encoder.slot_count()
     for i in range(slot_count):
-        pod_vector.push_back(1.001 * float(i))
+        pod_vector.append(1.001 * float(i))
 
     print("Running tests ", end="")
     for i in range(count):

@@ -39,9 +39,7 @@ def example_rotation_bfv():
     pod_matrixs[row_size + 2] = 6
     pod_matrixs[row_size + 3] = 7
 
-    pod_matrix = uIntVector()
-    for i in range(slot_count):
-        pod_matrix.push_back(pod_matrixs[i])
+    pod_matrix = uIntVector(pod_matrixs)
 
     print("Input plaintext matrix:")
     print_matrix(pod_matrix, row_size)
@@ -137,13 +135,13 @@ def example_rotation_ckks():
     ckks_encoder = CKKSEncoder(context)
     slot_count = ckks_encoder.slot_count()
     print("Number of slots: " + str(slot_count))
-    # inputer = [0] * slot_count
+
     inputs = DoubleVector()
     curr_point = 0.0
     step_size = 1.0 / (slot_count - 1)
 
     for i in range(slot_count):
-        inputs.push_back(curr_point)
+        inputs.append(curr_point)
         curr_point += step_size
 
     print("Input vector:")
@@ -180,4 +178,4 @@ if __name__ == '__main__':
     print_example_banner("Example: Rotation")
 
     example_rotation_bfv()
-    # example_rotation_ckks()
+    example_rotation_ckks()

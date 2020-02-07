@@ -97,9 +97,7 @@ def example_batch_encoder():
     pod_matrixs[row_size + 2] = 6
     pod_matrixs[row_size + 3] = 7
 
-    pod_matrix = uIntVector()
-    for i in range(slot_count):
-        pod_matrix.push_back(pod_matrixs[i])
+    pod_matrix = uIntVector(pod_matrixs)
 
     print("Input plaintext matrix:")
     print_matrix(pod_matrix, row_size)
@@ -124,7 +122,7 @@ def example_batch_encoder():
 
     pod_matrix2 = uIntVector()
     for i in range(slot_count):
-        pod_matrix2.push_back((i % 2) + 1)
+        pod_matrix2.append((i % 2) + 1)
 
     plain_matrix2 = Plaintext()
     batch_encoder.encode(pod_matrix2, plain_matrix2)
@@ -223,11 +221,7 @@ def example_ckks_encoder():
     with zeros to full size (poly_modulus_degree / 2) when encoding.
     '''
 
-    inputs = DoubleVector()
-    inputs.push_back(0.0)
-    inputs.push_back(1.1)
-    inputs.push_back(2.2)
-    inputs.push_back(3.3)
+    inputs = DoubleVector([0.0, 1.1, 2.2, 3.3])
 
     print("Input vector: ")
     print_vector(inputs)
