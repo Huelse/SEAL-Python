@@ -1,4 +1,3 @@
-import os, sys
 from distutils.core import setup, Extension
 from distutils import sysconfig
 
@@ -15,7 +14,7 @@ ext_modules = [
         ['wrapper.cpp'],
         include_dirs=['/usr/include/python3.6', '../pybind11/include', '../SEAL/native/src'],
         language='c++',
-        extra_compile_args = cpp_args,
+        extra_compile_args=cpp_args,
         extra_objects=['../SEAL/native/lib/libseal.a'],
     ),
 ]
@@ -23,7 +22,7 @@ ext_modules = [
 setup(
     name='seal',
     version='3.3.2',
-    author='Huelse', 
+    author='Huelse',
     author_email='huelse@oini.top',
     description='Python wrapper for SEAL',
     ext_modules=ext_modules,
