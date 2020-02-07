@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include "seal/ciphertext.h"
@@ -66,7 +67,7 @@ namespace seal
         /**
         Returns a reference to the underlying data.
         */
-        inline auto &data() noexcept
+        SEAL_NODISCARD inline auto &data() noexcept
         {
             return pk_;
         }
@@ -74,7 +75,7 @@ namespace seal
         /**
         Returns a const reference to the underlying data.
         */
-        inline auto &data() const noexcept
+        SEAL_NODISCARD inline auto &data() const noexcept
         {
             return pk_;
         }
@@ -91,6 +92,13 @@ namespace seal
             pk_.save(stream);
         }
 
+        void python_save(std::string &path) const
+        {
+            std::ofstream out(path);
+            this->save(out);
+            out.close();
+        }
+
         /**
         Loads a PublicKey from an input stream overwriting the current PublicKey.
         No checking of the validity of the PublicKey data against encryption
@@ -105,6 +113,14 @@ namespace seal
             Ciphertext new_pk(pk_.pool());
             new_pk.unsafe_load(stream);
             std::swap(pk_, new_pk);
+        }
+
+        void python_load(std::shared_ptr<SEALContext> context,
+            std::string &path)
+        {
+            std::ifstream in(path);
+            this->load(context, in);
+            in.close();
         }
 
         /**
@@ -134,7 +150,7 @@ namespace seal
         /**
         Returns a reference to parms_id.
         */
-        inline auto &parms_id() noexcept
+        SEAL_NODISCARD inline auto &parms_id() noexcept
         {
             return pk_.parms_id();
         }
@@ -142,7 +158,7 @@ namespace seal
         /**
         Returns a const reference to parms_id.
         */
-        inline auto &parms_id() const noexcept
+        SEAL_NODISCARD inline auto &parms_id() const noexcept
         {
             return pk_.parms_id();
         }
@@ -150,7 +166,7 @@ namespace seal
         /**
         Returns the currently used MemoryPoolHandle.
         */
-        inline MemoryPoolHandle pool() const noexcept
+        SEAL_NODISCARD inline MemoryPoolHandle pool() const noexcept
         {
             return pk_.pool();
         }

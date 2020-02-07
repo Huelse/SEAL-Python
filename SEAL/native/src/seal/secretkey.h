@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "seal/util/defines.h"
 #include "seal/randomgen.h"
 #include "seal/plaintext.h"
 #include "seal/memorymanager.h"
@@ -90,7 +91,7 @@ namespace seal
         /**
         Returns a reference to the underlying polynomial.
         */
-        inline auto &data() noexcept
+        SEAL_NODISCARD inline auto &data() noexcept
         {
             return sk_;
         }
@@ -98,7 +99,7 @@ namespace seal
         /**
         Returns a const reference to the underlying polynomial.
         */
-        inline auto &data() const noexcept
+        SEAL_NODISCARD inline auto &data() const noexcept
         {
             return sk_;
         }
@@ -113,6 +114,13 @@ namespace seal
         inline void save(std::ostream &stream) const
         {
             sk_.save(stream);
+        }
+
+        void python_save(std::string &path) const
+        {
+            std::ofstream out(path);
+            this->save(out);
+            out.close();
         }
 
         /**
@@ -130,6 +138,14 @@ namespace seal
             Plaintext new_sk(MemoryManager::GetPool(mm_prof_opt::FORCE_NEW, true));
             new_sk.unsafe_load(stream);
             std::swap(sk_, new_sk);
+        }
+
+        void python_load(std::shared_ptr<SEALContext> context,
+            std::string &path)
+        {
+            std::ifstream in(path);
+            this->load(context, in);
+            in.close();
         }
 
         /**
@@ -161,7 +177,7 @@ namespace seal
 
         @see EncryptionParameters for more information about parms_id.
         */
-        inline auto &parms_id() noexcept
+        SEAL_NODISCARD inline auto &parms_id() noexcept
         {
             return sk_.parms_id();
         }
@@ -171,7 +187,7 @@ namespace seal
 
         @see EncryptionParameters for more information about parms_id.
         */
-        inline auto &parms_id() const noexcept
+        SEAL_NODISCARD inline auto &parms_id() const noexcept
         {
             return sk_.parms_id();
         }
@@ -179,7 +195,7 @@ namespace seal
         /**
         Returns the currently used MemoryPoolHandle.
         */
-        inline MemoryPoolHandle pool() const noexcept
+        SEAL_NODISCARD inline MemoryPoolHandle pool() const noexcept
         {
             return sk_.pool();
         }

@@ -5,6 +5,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <fstream>
 #include <iostream>
 #include <algorithm>
 #include <memory>
@@ -324,7 +325,7 @@ namespace seal
         /**
         Returns a pointer to the beginning of the ciphertext data.
         */
-        inline ct_coeff_type *data() noexcept
+        SEAL_NODISCARD inline ct_coeff_type *data() noexcept
         {
             return data_.begin();
         }
@@ -332,7 +333,7 @@ namespace seal
         /**
         Returns a const pointer to the beginning of the ciphertext data.
         */
-        inline const ct_coeff_type *data() const noexcept
+        SEAL_NODISCARD inline const ct_coeff_type *data() const noexcept
         {
             return data_.cbegin();
         }
@@ -340,11 +341,12 @@ namespace seal
         /**
         Returns the ciphertext data.
         */
-        inline gsl::multi_span<
-            ct_coeff_type,
-            gsl::dynamic_range,
-            gsl::dynamic_range,
-            gsl::dynamic_range> data_span()
+        SEAL_NODISCARD inline auto data_span()
+            -> gsl::multi_span<
+                ct_coeff_type,
+                gsl::dynamic_range,
+                gsl::dynamic_range,
+                gsl::dynamic_range> 
         {
             return gsl::as_multi_span<
                 ct_coeff_type,
@@ -360,11 +362,12 @@ namespace seal
         /**
         Returns the backing array storing all of the coefficient values.
         */
-        inline gsl::multi_span<
-            const ct_coeff_type,
-            gsl::dynamic_range,
-            gsl::dynamic_range,
-            gsl::dynamic_range> data_span() const
+        SEAL_NODISCARD inline auto data_span() const
+            -> gsl::multi_span<
+                const ct_coeff_type,
+                gsl::dynamic_range,
+                gsl::dynamic_range,
+                gsl::dynamic_range> 
         {
             return gsl::as_multi_span<
                 const ct_coeff_type,
@@ -388,7 +391,8 @@ namespace seal
         @throws std::out_of_range if poly_index is less than 0 or bigger
         than the size of the ciphertext
         */
-        inline ct_coeff_type *data(size_type poly_index)
+        SEAL_NODISCARD inline ct_coeff_type *data(
+            size_type poly_index)
         {
             auto poly_uint64_count = util::mul_safe(
                 poly_modulus_degree_, coeff_mod_count_);
@@ -414,7 +418,8 @@ namespace seal
         @param[in] poly_index The index of the polynomial in the ciphertext
         @throws std::out_of_range if poly_index is out of range
         */
-        inline const ct_coeff_type *data(size_type poly_index) const
+        SEAL_NODISCARD inline const ct_coeff_type *data(
+            size_type poly_index) const
         {
             auto poly_uint64_count = util::mul_safe(
                 poly_modulus_degree_, coeff_mod_count_);
@@ -440,7 +445,8 @@ namespace seal
         @param[in] coeff_index The index of the coefficient
         @throws std::out_of_range if coeff_index is out of range
         */
-        inline ct_coeff_type &operator [](size_type coeff_index)
+        SEAL_NODISCARD inline ct_coeff_type &operator [](
+            size_type coeff_index)
         {
             return data_.at(coeff_index);
         }
@@ -455,7 +461,8 @@ namespace seal
         @param[in] coeff_index The index of the coefficient
         @throws std::out_of_range if coeff_index is out of range
         */
-        inline const ct_coeff_type &operator [](size_type coeff_index) const
+        SEAL_NODISCARD inline const ct_coeff_type &operator [](
+            size_type coeff_index) const
         {
             return data_.at(coeff_index);
         }
@@ -465,7 +472,7 @@ namespace seal
         associated encryption parameters. This directly affects the
         allocation size of the ciphertext.
         */
-        inline size_type coeff_mod_count() const noexcept
+        SEAL_NODISCARD inline size_type coeff_mod_count() const noexcept
         {
             return coeff_mod_count_;
         }
@@ -475,7 +482,7 @@ namespace seal
         encryption parameters. This directly affects the allocation size
         of the ciphertext.
         */
-        inline size_type poly_modulus_degree() const noexcept
+        SEAL_NODISCARD inline size_type poly_modulus_degree() const noexcept
         {
             return poly_modulus_degree_;
         }
@@ -483,7 +490,7 @@ namespace seal
         /**
         Returns the size of the ciphertext.
         */
-        inline size_type size() const noexcept
+        SEAL_NODISCARD inline size_type size() const noexcept
         {
             return size_;
         }
@@ -491,7 +498,7 @@ namespace seal
         /**
         Returns the total size of the current allocation in 64-bit words.
         */
-        inline size_type uint64_count_capacity() const noexcept
+        SEAL_NODISCARD inline size_type uint64_count_capacity() const noexcept
         {
             return data_.capacity();
         }
@@ -501,7 +508,7 @@ namespace seal
         of the ciphertext that can be stored in the current allocation with
         the current encryption parameters.
         */
-        inline size_type size_capacity() const noexcept
+        SEAL_NODISCARD inline size_type size_capacity() const noexcept
         {
             size_type poly_uint64_count = poly_modulus_degree_ * coeff_mod_count_;
             return poly_uint64_count ?
@@ -511,7 +518,7 @@ namespace seal
         /**
         Returns the total size of the current ciphertext in 64-bit words.
         */
-        inline size_type uint64_count() const noexcept
+        SEAL_NODISCARD inline size_type uint64_count() const noexcept
         {
             return data_.size();
         }
@@ -523,7 +530,7 @@ namespace seal
         polynomial in the current ciphertext, this function returns true if all
         following coefficients are identically zero. Otherwise, returns false.
         */
-        inline bool is_transparent() const
+        SEAL_NODISCARD inline bool is_transparent() const
         {
             return (!uint64_count() ||
                 (size_ < SEAL_CIPHERTEXT_SIZE_MIN) ||
@@ -539,6 +546,13 @@ namespace seal
         */
         void save(std::ostream &stream) const;
 
+        void python_save(std::string &path) const
+        {
+            std::ofstream out(path);
+            this->save(out);
+            out.close();
+        }
+
         /**
         Loads a ciphertext from an input stream overwriting the current ciphertext.
         No checking of the validity of the ciphertext data against encryption
@@ -549,6 +563,14 @@ namespace seal
         @throws std::exception if a valid ciphertext could not be read from stream
         */
         void unsafe_load(std::istream &stream);
+
+        void python_load(std::shared_ptr<SEALContext> context,
+            std::string &path)
+        {
+            std::ifstream in(path);
+            this->load(context, in);
+            in.close();
+        }
 
         /**
         Loads a ciphertext from an input stream overwriting the current ciphertext.
@@ -577,7 +599,7 @@ namespace seal
         /**
         Returns whether the ciphertext is in NTT form.
         */
-        inline bool is_ntt_form() const noexcept
+        SEAL_NODISCARD inline bool is_ntt_form() const noexcept
         {
             return is_ntt_form_;
         }
@@ -585,7 +607,7 @@ namespace seal
         /**
         Returns whether the ciphertext is in NTT form.
         */
-        inline bool &is_ntt_form() noexcept
+        SEAL_NODISCARD inline bool &is_ntt_form() noexcept
         {
             return is_ntt_form_;
         }
@@ -595,7 +617,7 @@ namespace seal
 
         @see EncryptionParameters for more information about parms_id.
         */
-        inline auto &parms_id() noexcept
+        SEAL_NODISCARD inline auto &parms_id() noexcept
         {
             return parms_id_;
         }
@@ -605,7 +627,7 @@ namespace seal
 
         @see EncryptionParameters for more information about parms_id.
         */
-        inline auto &parms_id() const noexcept
+        SEAL_NODISCARD inline auto &parms_id() const noexcept
         {
             return parms_id_;
         }
@@ -615,32 +637,32 @@ namespace seal
         CKKS encryption scheme. The user should have little or no reason to ever
         change the scale by hand.
         */
-        inline auto &scale() noexcept
+        SEAL_NODISCARD inline auto &scale() noexcept
         {
             return scale_;
         }
-
-		/**
-		Set the scale.
-		*/
-		inline void set_scale(double scale)
-		{
-			scale_ = scale;
-		}
 
         /**
         Returns a constant reference to the scale. This is only needed when
         using the CKKS encryption scheme.
         */
-        inline auto &scale() const noexcept
+        SEAL_NODISCARD inline auto &scale() const noexcept
         {
             return scale_;
         }
 
         /**
+        Set the scale.
+        */
+        inline void set_scale(double scale)
+        {
+          scale_ = scale;
+        }
+
+        /**
         Returns the currently used MemoryPoolHandle.
         */
-        inline MemoryPoolHandle pool() const noexcept
+        SEAL_NODISCARD inline MemoryPoolHandle pool() const noexcept
         {
             return data_.pool();
         }
