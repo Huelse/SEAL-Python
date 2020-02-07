@@ -4,7 +4,7 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 
 [**pybind11**](https://github.com/pybind/pybind11) is a lightweight header-only library that exposes C++ types in Python and vice versa, mainly to create Python bindings of existing C++ code.
 
-This is a python binding for MS SEAL library.
+This is a python binding for Microsoft SEAL library.
 
 
 
@@ -21,7 +21,7 @@ This is a python binding for MS SEAL library.
 
 * ### Environment
 
-  SEAL (3.3.2), pybind11 (2.4.3)
+  SEAL (3.3.2), pybind11 (2.4.3), Ubuntu(18.04)
 
   CMake (>= 3.10), GNU G++ (>= 6.0) or Clang++ (>= 5.0), Python (>=3.6.8)
 
@@ -35,7 +35,8 @@ This is a python binding for MS SEAL library.
   cd SEAL/native/src
   cmake .
   make
-  sudo make install
+  
+  sudo make install # or not
   ```
 
 * ### pybind11
@@ -49,7 +50,8 @@ This is a python binding for MS SEAL library.
   cd build
   cmake ..
   make check -j 4
-  sudo make install # or not
+  
+  sudo make install # if you compile with cmake, it's required.
   ```
   
 * ### SEAL-Python
@@ -59,6 +61,8 @@ This is a python binding for MS SEAL library.
   # Building with setuptools
   cd src
   python3 setup.py build_ext -i
+  # or instal, make the IDE run it
+  python3 setup.py install
   
   # Building with CMake
   cmake .
@@ -69,19 +73,7 @@ This is a python binding for MS SEAL library.
 
 * ### Others
 
-    If you clone a new SEAL lib from the [Github](https://github.com/microsoft/SEAL), do not forget add a function set_scale in `seal/ciphertext.h` line 632, like this:
-
-    ```c++
-    /**
-    Set the scale.
-    */
-    inline void set_scale(double scale)
-    {
-      scale_ = scale;
-    }
-    ```
-
-    The dynamic link library name: `seal.cpython-36m-x86_64-linux-gnu.so`.
+    There are some changes in the SEAL lib's header file, so you can't clone a new SEAL lib.
 
     The path is very important, please check it before you do anything.
 
@@ -114,13 +106,12 @@ This is a python binding for MS SEAL library.
 
 * Visual Studio build (for windows)
 * SEAL 3.4 or higher support
-* Remove the dependency on wrapped data types (like IntVector)
 
 
 
 ## About
 
-This project is still testing now, if any problem, [Issue](https://github.com/Huelse/SEAL-Python/issues)
+This project is still testing now, if any problems(bugs), [Issue](https://github.com/Huelse/SEAL-Python/issues) please.
 
 Email: [huelse@oini.top](mailto:huelse@oini.top?subject=Github-SEAL-Python-Issues&cc=5956877@qq.com)
 
