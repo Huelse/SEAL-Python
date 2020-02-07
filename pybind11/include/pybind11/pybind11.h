@@ -1469,9 +1469,17 @@ struct enum_base {
                 },                                                                     \
                 is_method(m_base))
 
+        #define PYBIND11_ENUM_OP_CONV_LHS(op, expr)                                    \
+            m_base.attr(op) = cpp_function(                                            \
+                [](object a_, object b) {                                              \
+                    int_ a(a_);                                                        \
+                    return expr;                                                       \
+                },                                                                     \
+                is_method(m_base))
+
         if (is_convertible) {
-            PYBIND11_ENUM_OP_CONV("__eq__", !b.is_none() &&  a.equal(b));
-            PYBIND11_ENUM_OP_CONV("__ne__",  b.is_none() || !a.equal(b));
+            PYBIND11_ENUM_OP_CONV_LHS("__eq__", !b.is_none() &&  a.equal(b));
+            PYBIND11_ENUM_OP_CONV_LHS("__ne__",  b.is_none() || !a.equal(b));
 
             if (is_arithmetic) {
                 PYBIND11_ENUM_OP_CONV("__lt__",   a <  b);
@@ -1484,6 +1492,8 @@ struct enum_base {
                 PYBIND11_ENUM_OP_CONV("__ror__",  a |  b);
                 PYBIND11_ENUM_OP_CONV("__xor__",  a ^  b);
                 PYBIND11_ENUM_OP_CONV("__rxor__", a ^  b);
+                m_base.attr("__invert__") = cpp_function(
+                    [](object arg) { return ~(int_(arg)); }, is_method(m_base));
             }
         } else {
             PYBIND11_ENUM_OP_STRICT("__eq__",  int_(a).equal(int_(b)), return false);
@@ -1499,6 +1509,7 @@ struct enum_base {
             }
         }
 
+        #undef PYBIND11_ENUM_OP_CONV_LHS
         #undef PYBIND11_ENUM_OP_CONV
         #undef PYBIND11_ENUM_OP_STRICT
 
@@ -1555,6 +1566,10 @@ public:
         #if PY_MAJOR_VERSION < 3
             def("__long__", [](Type value) { return (Scalar) value; });
         #endif
+        #if PY_MAJOR_VERSION > 3 || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION >= 8)
+            def("__index__", [](Type value) { return (Scalar) value; });
+        #endif
+
         cpp_function setstate(
             [](Type &value, Scalar arg) { value = static_cast<Type>(arg); },
             is_method(*this));
