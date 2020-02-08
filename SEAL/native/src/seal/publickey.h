@@ -94,9 +94,16 @@ namespace seal
 
         void python_save(std::string &path) const
         {
-            std::ofstream out(path);
-            this->save(out);
-            out.close();
+            try
+            {
+                std::ofstream out(path, std::ofstream::binary);
+                this->save(out);
+                out.close();
+            }
+            catch (const std::exception &)
+            {
+                throw "PublicKey write exception";
+            }
         }
 
         /**
@@ -118,9 +125,16 @@ namespace seal
         void python_load(std::shared_ptr<SEALContext> context,
             std::string &path)
         {
-            std::ifstream in(path);
-            this->load(context, in);
-            in.close();
+            try
+            {
+                std::ifstream in(path, std::ifstream::binary);
+                this->load(context, in);
+                in.close();
+            }
+            catch (const std::exception &)
+            {
+                throw "PublicKey read exception";
+            }
         }
 
         /**
