@@ -32,4 +32,5 @@
 *.app
 
 # Others
+*.zip
 build
