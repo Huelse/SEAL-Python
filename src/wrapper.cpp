@@ -26,7 +26,7 @@ py::tuple serialize(T &c)
 	std::stringstream output(std::ios::binary | std::ios::out);
 	c.save(output);
 	std::string cipherstr = output.str();
-	std::string base64_encoded_cipher = base64_encode(reinterpret_cast<const unsigned char *>(cipherstr.c_str()), cipherstr.length());
+	std::string base64_encoded_cipher = base64_encode(reinterpret_cast<const unsigned char *>(cipherstr.c_str()), (unsigned int)cipherstr.length());
 	return py::make_tuple(base64_encoded_cipher);
 }
 

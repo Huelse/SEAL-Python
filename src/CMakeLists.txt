@@ -11,5 +11,9 @@ include_directories("../SEAL/native/src")
 LINK_LIBRARIES("../SEAL/native/lib/libseal.a")
 
 find_package(pybind11 REQUIRED)
-aux_source_directory(. DIR_SRCS)
-pybind11_add_module(seal ${DIR_SRCS})
+
+pybind11_add_module(seal wrapper.cpp)
+target_sources(seal
+    PRIVATE
+        base64.cpp
+)
