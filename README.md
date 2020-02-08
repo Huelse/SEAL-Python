@@ -58,14 +58,16 @@ This is a python binding for Microsoft SEAL library.
 
   ```shell
   # Check the path at first
-  # Building with setup.py
+  # Building with setuptools
   cd src
   python3 setup.py build_ext -i
   # or instal, global use, suggest install in virtual environment
   python3 setup.py install
   
   # Building with CMake
-  cmake .
+  mkdir build
+  cd build
+  cmake ..
   make
   ```
 
@@ -83,7 +85,7 @@ This is a python binding for Microsoft SEAL library.
 
 Visual Studio 2017 version 15.3 or newer is required to build Microsoft SEAL.
 
-open the `SEAL/SEAL.sln` in VS, config in `x64, Release, WinSDK(17763 etc)` mode.
+Open the `SEAL/SEAL.sln` in VS, config in `x64, Release, WinSDK(17763 etc)` mode and generate it.
 
 ```shell
 cd src
@@ -122,7 +124,6 @@ Microsoft official video [SEAL in windows](https://www.microsoft.com/en-us/resea
 
 ## Future
 
-* Visual Studio build (for windows)
 * SEAL 3.4 or higher support
 
 
