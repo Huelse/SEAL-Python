@@ -18,10 +18,10 @@ This is a python binding for Microsoft SEAL library.
 
 
 ## Build
+### Linux
+* #### Environment
 
-* ### Environment
-
-  SEAL (3.3.2), pybind11 (2.4.3), Ubuntu(18.04)
+  SEAL (3.3.2), pybind11 (2.4.3)
 
   CMake (>= 3.10), GNU G++ (>= 6.0) or Clang++ (>= 5.0), Python (>=3.6.8)
 
@@ -29,7 +29,7 @@ This is a python binding for Microsoft SEAL library.
 
   `git clone https://github.com/Huelse/SEAL-Python.git`
 
-* ### SEAL
+* #### SEAL
 
   ```shell
   cd SEAL/native/src
@@ -39,7 +39,7 @@ This is a python binding for Microsoft SEAL library.
   sudo make install # or not
   ```
 
-* ### pybind11
+* #### pybind11
 
   ```
   cd src
@@ -54,14 +54,14 @@ This is a python binding for Microsoft SEAL library.
   sudo make install # if you compile with cmake, it's required.
   ```
   
-* ### SEAL-Python
+* #### SEAL-Python
 
   ```shell
   # Check the path at first
-  # Building with setuptools
+  # Building with setup.py
   cd src
   python3 setup.py build_ext -i
-  # or instal, make the IDE run it
+  # or instal, global use, suggest install in virtual environment
   python3 setup.py install
   
   # Building with CMake
@@ -76,6 +76,24 @@ This is a python binding for Microsoft SEAL library.
     There are some changes in the SEAL lib's header file, so you can't clone a new SEAL lib.
 
     The path is very important, please check it before you do anything.
+    
+    
+
+### Windows
+
+Visual Studio 2017 version 15.3 or newer is required to build Microsoft SEAL.
+
+open the `SEAL/SEAL.sln` in VS, config in `x64, Release, WinSDK(17763 etc)` mode.
+
+```shell
+cd src
+python3 setup.py build_ext -i
+# or install
+python3 setup.py install
+```
+
+Microsoft official video [SEAL in windows](https://www.microsoft.com/en-us/research/video/installing-microsoft-seal-on-windows/).
+
 
 
 
