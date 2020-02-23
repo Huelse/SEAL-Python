@@ -203,7 +203,6 @@ PYBIND11_MODULE(seal, m)
 
 	// MemoryManager
 	py::class_<MemoryManager>(m, "MemoryManager")
-		.def(py::init<>())
 		.def("GetPool", []() { return MemoryManager::GetPool(); });
 
 	// Ciphertext
