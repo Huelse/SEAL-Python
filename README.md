@@ -30,18 +30,17 @@ cd SEAL/native/src
 cmake .
 make
 
-# Check the path at first
-# Setuptools
-cd src
-python3 setup.py build_ext -i
-# or instal, global use, suggest install in virtual environment
-python3 setup.py install
-
-# CMake
-# pybind11 is need to be installed
 cd src
 pip3 install -r requirements.txt
 
+# Check the path at first
+# Setuptools (Recommend)
+cd src
+python3 setup.py build_ext -i
+# or instal, global use, suggest to install in virtual environment
+python3 setup.py install
+
+# CMake (Optional)
 mkdir build
 cd build
 cmake ..
