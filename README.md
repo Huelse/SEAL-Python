@@ -19,67 +19,38 @@ This is a python binding for Microsoft SEAL library.
 
 ## Build
 ### Linux
-* #### Environment
+CMake (>= 3.10), GNU G++ (>= 6.0) or Clang++ (>= 5.0), Python (>=3.6.8)
 
-  SEAL (3.3.2), pybind11 (2.4.3)
+`sudo apt-get update && sudo apt-get install g++ make cmake git python3 python3-dev python3.6-pip`
 
-  CMake (>= 3.10), GNU G++ (>= 6.0) or Clang++ (>= 5.0), Python (>=3.6.8)
+`git clone https://github.com/Huelse/SEAL-Python.git`
 
-  `sudo apt-get update && sudo apt-get install g++ make cmake git python3 python3-dev python3.6-pip`
+```shell
+cd SEAL/native/src
+cmake .
+make
 
-  `git clone https://github.com/Huelse/SEAL-Python.git`
+# Check the path at first
+# Setuptools
+cd src
+python3 setup.py build_ext -i
+# or instal, global use, suggest install in virtual environment
+python3 setup.py install
 
-* #### SEAL
+# CMake
+# pybind11 is need to be installed
+cd src
+pip3 install -r requirements.txt
 
-  ```shell
-  cd SEAL/native/src
-  cmake .
-  make
-  
-  sudo make install # or not
-  ```
+mkdir build
+cd build
+cmake ..
+make
+```
 
-* #### pybind11
+[setuptools docs](https://docs.python.org/3/distutils/configfile.html)
 
-  ```
-  cd src
-  pip3 install -r requirements.txt
-  
-  cd pybind11
-  mkdir build
-  cd build
-  cmake ..
-  make check -j 4
-  
-  sudo make install # if you compile with cmake, it's required.
-  ```
-  
-* #### SEAL-Python
-
-  ```shell
-  # Check the path at first
-  # Building with setuptools
-  cd src
-  python3 setup.py build_ext -i
-  # or instal, global use, suggest install in virtual environment
-  python3 setup.py install
-  
-  # Building with CMake
-  mkdir build
-  cd build
-  cmake ..
-  make
-  ```
-
-  Documents about the setuptools [docs](https://docs.python.org/3/distutils/configfile.html)
-
-* ### Others
-
-    There are some changes in the SEAL lib's header file, so you can't clone a new SEAL lib.
-
-    The path is very important, please check it before you do anything.
-    
-    
+[pybind11 docs]([pybind11 — Seamless operability between C++11 and Python — pybind11 2.3.dev0 documentation](https://pybind11.readthedocs.io/en/master/index.html))
 
 ### Windows
 

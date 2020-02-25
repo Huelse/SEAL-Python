@@ -4,6 +4,7 @@ import platform
 from distutils.core import setup, Extension
 from distutils.sysconfig import get_python_inc
 
+
 # python include dir
 incdir = os.path.join(get_python_inc())
 # cpp flags
@@ -38,5 +39,7 @@ setup(
     author='Huelse',
     author_email='huelse@oini.top',
     description='Python wrapper for SEAL',
+    url="https://github.com/Huelse/SEAL-Python",
+    license="MIT",
     ext_modules=ext_modules,
 )
