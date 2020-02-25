@@ -50,7 +50,7 @@ make
 
 [setuptools docs](https://docs.python.org/3/distutils/configfile.html)
 
-[pybind11 docs]([pybind11 — Seamless operability between C++11 and Python — pybind11 2.3.dev0 documentation](https://pybind11.readthedocs.io/en/master/index.html))
+[pybind11 docs](https://pybind11.readthedocs.io/en/master/index.html)
 
 ### Windows
 
