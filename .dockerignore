@@ -1,7 +1,3 @@
-# ignore everything using whitelist strategy
-# *
+# preventing .git files from entering context
 .git
 .github
-
-# you can selectiveley allow files using the ! at the beginning of the line
-#!lib/**/*.py # this would allow all python files in subdirectories of lib if enabled
