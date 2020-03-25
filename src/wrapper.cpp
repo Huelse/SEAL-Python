@@ -134,6 +134,8 @@ PYBIND11_MODULE(seal, m)
 			 [](std::size_t poly_modulus_degree) { return CoeffModulus::BFVDefault(poly_modulus_degree); })
 		.def("Create",
 			 [](std::size_t poly_modulus_degree, std::vector<int> bit_sizes) { return CoeffModulus::Create(poly_modulus_degree, bit_sizes); });
+		.def("MaxBitCount",
+			 [](std::size_t poly_modulus_degree) { return CoeffModulus::MaxBitCount(poly_modulus_degree); });
 
 	// PlainModulus
 	py::class_<PlainModulus>(m, "PlainModulus")
