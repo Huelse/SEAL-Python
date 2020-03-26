@@ -66,9 +66,9 @@ def example_bfv_basics():
     decryptor.decrypt(x_sq_plus_one, decrypted_result)
     print("0x" + decrypted_result.to_string() + " ...... Correct.")
 
-    '''
-	Next, we compute (x + 1)^2.
-	'''
+    """
+    Next, we compute (x + 1)^2.
+    """
     print("-"*50)
     print("Compute x_plus_one_sq ((x+1)^2).")
     x_plus_one_sq = Ciphertext()
@@ -81,28 +81,28 @@ def example_bfv_basics():
     print("    + decryption of x_plus_one_sq: 0x" +
           decrypted_result.to_string() + " ...... Correct.")
 
-    '''
-	Finally, we multiply (x^2 + 1) * (x + 1)^2 * 2.
-	'''
+    """
+    Finally, we multiply (x^2 + 1) * (x + 1)^2 *4.
+    """
     print("-"*50)
-    print("Compute encrypted_result (2(x^2+1)(x+1)^2).")
+    print("Compute encrypted_result (4(x^2+1)(x+1)^2).")
     encrypted_result = Ciphertext()
-    plain_two = Plaintext("2")
-    evaluator.multiply_plain_inplace(x_sq_plus_one, plain_two)
+    plain_four = Plaintext("4")
+    evaluator.multiply_plain_inplace(x_sq_plus_one, plain_four)
     evaluator.multiply(x_sq_plus_one, x_plus_one_sq, encrypted_result)
     print("    + size of encrypted_result: " + str(encrypted_result.size()))
     print("    + noise budget in encrypted_result: " +
           str(decryptor.invariant_noise_budget(encrypted_result)) + " bits")
     print("NOTE: Decryption can be incorrect if noise budget is zero.")
-    print("\n~~~~~~ A better way to calculate 2(x^2+1)(x+1)^2. ~~~~~~")
+    print("\n~~~~~~ A better way to calculate 4(x^2+1)(x+1)^2. ~~~~~~")
 
     print("-"*50)
     print("Generate relinearization keys.")
     relin_keys = keygen.relin_keys()
 
-    '''
-	We now repeat the computation relinearizing after each multiplication.
-	'''
+    """
+    We now repeat the computation relinearizing after each multiplication.
+    """
     print("-"*50)
     print("Compute and relinearize x_squared (x^2),")
     print(" "*13 + "then compute x_sq_plus_one (x^2+1)")
@@ -133,8 +133,8 @@ def example_bfv_basics():
           decrypted_result.to_string() + " ...... Correct.")
 
     print("-"*50)
-    print("Compute and relinearize encrypted_result (2(x^2+1)(x+1)^2).")
-    evaluator.multiply_plain_inplace(x_sq_plus_one, plain_two)
+    print("Compute and relinearize encrypted_result (4(x^2+1)(x+1)^2).")
+    evaluator.multiply_plain_inplace(x_sq_plus_one, plain_four)
     evaluator.multiply(x_sq_plus_one, x_plus_one_sq, encrypted_result)
     print("    + size of encrypted_result: " + str(encrypted_result.size()))
     evaluator.relinearize_inplace(encrypted_result, relin_keys)
@@ -145,10 +145,16 @@ def example_bfv_basics():
     print("\nNOTE: Notice the increase in remaining noise budget.")
 
     print("-"*50)
-    print("Decrypt encrypted_result (2(x^2+1)(x+1)^2).")
+    print("Decrypt encrypted_result (4(x^2+1)(x+1)^2).")
     decryptor.decrypt(encrypted_result, decrypted_result)
-    print("    + decryption of 2(x^2+1)(x+1)^2 = 0x" +
+    print("    + decryption of 4(x^2+1)(x+1)^2 = 0x" +
           decrypted_result.to_string() + " ...... Correct.")
+
+    """
+    For x=6, 4(x^2+1)(x+1)^2 = 7252. Since the plaintext modulus is set to 1024,
+    this result is computed in integers modulo 1024. Therefore the expected output
+    should be 7252 % 1024 == 84, or 0x54 in hexadecimal.
+    """
 
 
 if __name__ == '__main__':

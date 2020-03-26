@@ -43,10 +43,10 @@ def example_ckks_basics():
 
     print("Evaluating polynomial PI*x^3 + 0.4x + 1 ...")
 
-    '''
+    """
     We create plaintexts for PI, 0.4, and 1 using an overload of CKKSEncoder::encode
     that encodes the given floating-point value to every slot in the vector.
-    '''
+    """
     plain_coeff3 = Plaintext()
     plain_coeff1 = Plaintext()
     plain_coeff0 = Plaintext()
@@ -124,25 +124,24 @@ def example_ckks_basics():
     print("-" * 50)
     print("Normalize scales to 2^40.")
 
-    # set_scale() this function should be add to seal/ciphertext.h line 632
-    x3_encrypted.set_scale(pow(2.0, 40))
-    x1_encrypted.set_scale(pow(2.0, 40))
+    x3_encrypted.scale(pow(2.0, 40))
+    x1_encrypted.scale(pow(2.0, 40))
 
-    '''
+    """
     We still have a problem with mismatching encryption parameters. This is easy
-        to fix by using traditional modulus switching (no rescaling). CKKS supports
-        modulus switching just like the BFV scheme, allowing us to switch away parts
-        of the coefficient modulus when it is simply not needed.
-    '''
+    to fix by using traditional modulus switching (no rescaling). CKKS supports
+    modulus switching just like the BFV scheme, allowing us to switch away parts
+    of the coefficient modulus when it is simply not needed.
+    """
     print("-" * 50)
     print("Normalize encryption parameters to the lowest level.")
     last_parms_id = x3_encrypted.parms_id()
     evaluator.mod_switch_to_inplace(x1_encrypted, last_parms_id)
     evaluator.mod_switch_to_inplace(plain_coeff0, last_parms_id)
 
-    '''
+    """
     All three ciphertexts are now compatible and can be added.
-    '''
+    """
     print("-" * 50)
     print("Compute PI*x^3 + 0.4*x + 1.")
 
@@ -150,9 +149,9 @@ def example_ckks_basics():
     evaluator.add(x3_encrypted, x1_encrypted, encrypted_result)
     evaluator.add_plain_inplace(encrypted_result, plain_coeff0)
 
-    '''
+    """
     First print the true result.
-    '''
+    """
     plain_result = Plaintext()
     print("-" * 50)
     print("Decrypt and decode PI*x^3 + 0.4x + 1.")
@@ -162,9 +161,9 @@ def example_ckks_basics():
         true_result.append((3.14159265 * x * x + 0.4) * x + 1)
     print_vector(true_result, 3, 7)
 
-    '''
+    """
     Decrypt, decode, and print the result.
-    '''
+    """
 
     decryptor.decrypt(encrypted_result, plain_result)
     result = DoubleVector()
@@ -172,11 +171,11 @@ def example_ckks_basics():
     print("    + Computed result ...... Correct.")
     print_vector(result, 3, 7)
 
-    '''
+    """
     While we did not show any computations on complex numbers in these examples,
-        the CKKSEncoder would allow us to have done that just as easily. Additions
-        and multiplications of complex numbers behave just as one would expect.
-    '''
+    the CKKSEncoder would allow us to have done that just as easily. Additions
+    and multiplications of complex numbers behave just as one would expect.
+    """
 
 
 if __name__ == '__main__':

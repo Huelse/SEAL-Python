@@ -47,9 +47,7 @@ cmake ..
 make
 ```
 
-[setuptools docs](https://docs.python.org/3/distutils/configfile.html)
-
-[pybind11 docs](https://pybind11.readthedocs.io/en/master/index.html)
+[setuptools docs](https://docs.python.org/3/distutils/configfile.html) [pybind11 docs](https://pybind11.readthedocs.io/en/master/index.html)
 
 ### Windows
 
@@ -81,20 +79,21 @@ Microsoft official video [SEAL in windows](https://www.microsoft.com/en-us/resea
 
 ## Getting Started
 
-| C++               | Python           | Description                                                  | Progress |
-| ----------------- | ---------------- | ------------------------------------------------------------ | -------- |
-| 1_bfv_basics.cpp  | 1_bfv_basics.py  | Encrypted modular arithmetic using the BFV scheme            | Finished |
-| 2_encoders.cpp    | 2_encoders.py    | Encoding more complex data into Microsoft SEAL plaintext objects | Finished |
-| 3_levels.cpp      | 3_levels.py      | Introduces the concept of levels; prerequisite for using the CKKS scheme | Finished |
-| 4_ckks_basics.cpp | 4_ckks_basics.py | Encrypted real number arithmetic using the CKKS scheme       | Finished |
-| 5_rotation.cpp    | 5_rotation.py    | Performing cyclic rotations on encrypted vectors in the BFV and CKKS schemes | Finished |
-| 6_performance.cpp | 6_performance.py | Performance tests for Microsoft SEAL                         | Finished |
+| C++               | Python           | Description                                                  |
+| ----------------- | ---------------- | ------------------------------------------------------------ |
+| 1_bfv_basics.cpp  | 1_bfv_basics.py  | Encrypted modular arithmetic using the BFV scheme            |
+| 2_encoders.cpp    | 2_encoders.py    | Encoding more complex data into Microsoft SEAL plaintext objects |
+| 3_levels.cpp      | 3_levels.py      | Introduces the concept of levels; prerequisite for using the CKKS scheme |
+| 4_ckks_basics.cpp | 4_ckks_basics.py | Encrypted real number arithmetic using the CKKS scheme       |
+| 5_rotation.cpp    | 5_rotation.py    | Performing cyclic rotations on encrypted vectors in the BFV and CKKS schemes |
+| 6_performance.cpp | 6_performance.py | Performance tests for Microsoft SEAL                         |
 
 
 
 ## Future
 
-* SEAL 3.4 or higher support
+* pickle
+* microsoft gsl
 
 
 
