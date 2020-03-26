@@ -4,7 +4,7 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 
 [**pybind11**](https://github.com/pybind/pybind11) is a lightweight header-only library that exposes C++ types in Python and vice versa, mainly to create Python bindings of existing C++ code.
 
-This is a python binding for Microsoft SEAL library.
+This is a python binding for the Microsoft SEAL library.
 
 
 
@@ -37,7 +37,7 @@ pip3 install -r requirements.txt
 # Setuptools (Recommend)
 cd src
 python3 setup.py build_ext -i
-# or instal, global use, suggest to install in virtual environment
+# or install
 python3 setup.py install
 
 # CMake (Optional)
@@ -55,7 +55,7 @@ make
 
 Visual Studio 2017 version 15.3 or newer is required to build Microsoft SEAL.
 
-Open the `SEAL/SEAL.sln` in VS, config in `x64, Release, WinSDK(17763 etc)` mode and generate it.
+Open the `SEAL/SEAL.sln` in VS, config in `x64, Release, WinSDK(17763, etc)` mode and generate it.
 
 ```shell
 cd src
@@ -108,4 +108,6 @@ Email: [huelse@oini.top](mailto:huelse@oini.top?subject=Github-SEAL-Python-Issue
 
 ## Contributing
 * Professor: [Dr. Chen](https://zhigang-chen.github.io/)
+
+* [Contributors](https://github.com/Huelse/SEAL-Python/graphs/contributors)
 
