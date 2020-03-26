@@ -15,7 +15,7 @@ void example_levels()
     related objects that represent them in Microsoft SEAL.
 
     In Microsoft SEAL a set of encryption parameters (excluding the random number
-    generator) is identified uniquely by a SHA-3 hash of the parameters. This
+    generator) is identified uniquely by a 256-bit hash of the parameters. This
     hash is called the `parms_id' and can be easily accessed and printed at any
     time. The hash will change as soon as any of the parameters is changed.
 
@@ -54,14 +54,14 @@ void example_levels()
 
         CoeffModulus::MaxBitCount(poly_modulus_degree)
 
-    returns 218 (less than 50+30+30+50+50=210).
+    returns 218 (greater than 50+30+30+50+50=210).
 
     Due to the modulus switching chain, the order of the 5 primes is significant.
     The last prime has a special meaning and we call it the `special prime'. Thus,
     the first parameter set in the modulus switching chain is the only one that
     involves the special prime. All key objects, such as SecretKey, are created
     at this highest level. All data objects, such as Ciphertext, can be only at
-    lower levels. The special modulus should be as large as the largest of the
+    lower levels. The special prime should be as large as the largest of the
     other primes in the coeff_modulus, although this is not a strict requirement.
 
               special prime +---------+
@@ -88,7 +88,7 @@ void example_levels()
     In this example the plain_modulus does not play much of a role; we choose
     some reasonable value.
     */
-    parms.set_plain_modulus(1 << 20);
+    parms.set_plain_modulus(PlainModulus::Batching(poly_modulus_degree, 20));
 
     auto context = SEALContext::Create(parms);
     print_parameters(context);
@@ -239,20 +239,24 @@ void example_levels()
     parameters in the chain before sending it back to the secret key holder for
     decryption.
 
-    Also the lost noise budget is actually not as issue at all, if we do things
+    Also the lost noise budget is actually not an issue at all, if we do things
     right, as we will see below.
 
     First we recreate the original ciphertext and perform some computations.
     */
     cout << "Computation is more efficient with modulus switching." << endl;
     print_line(__LINE__);
-    cout << "Compute the fourth power." << endl;
+    cout << "Compute the 8th power." << endl;
     encryptor.encrypt(plain, encrypted);
-    cout << "    + Noise budget before squaring:         "
+    cout << "    + Noise budget fresh:                   "
         << decryptor.invariant_noise_budget(encrypted) << " bits" << endl;
     evaluator.square_inplace(encrypted);
     evaluator.relinearize_inplace(encrypted, relin_keys);
-    cout << "    + Noise budget after squaring:          "
+    cout << "    + Noise budget of the 2nd power:         "
+        << decryptor.invariant_noise_budget(encrypted) << " bits" << endl;
+    evaluator.square_inplace(encrypted);
+    evaluator.relinearize_inplace(encrypted, relin_keys);
+    cout << "    + Noise budget of the 4th power:         "
         << decryptor.invariant_noise_budget(encrypted) << " bits" << endl;
 
     /*
@@ -260,23 +264,22 @@ void example_levels()
     noise budget.
     */
     evaluator.mod_switch_to_next_inplace(encrypted);
-    cout << "    + Noise budget after modulus switching: "
+    cout << "    + Noise budget after modulus switching:  "
         << decryptor.invariant_noise_budget(encrypted) << " bits" << endl;
-
     /*
     This means that there is no harm at all in dropping some of the coefficient
     modulus after doing enough computations. In some cases one might want to
     switch to a lower level slightly earlier, actually sacrificing some of the
     noise budget in the process, to gain computational performance from having
     smaller parameters. We see from the print-out that the next modulus switch
-    should be done ideally when the noise budget is down to around 81 bits.
+    should be done ideally when the noise budget is down to around 25 bits.
     */
     evaluator.square_inplace(encrypted);
     evaluator.relinearize_inplace(encrypted, relin_keys);
-    cout << "    + Noise budget after squaring:          "
+    cout << "    + Noise budget of the 8th power:         "
         << decryptor.invariant_noise_budget(encrypted) << " bits" << endl;
     evaluator.mod_switch_to_next_inplace(encrypted);
-    cout << "    + Noise budget after modulus switching: "
+    cout << "    + Noise budget after modulus switching:  "
         << decryptor.invariant_noise_budget(encrypted) << " bits" << endl;
 
     /*
@@ -286,7 +289,7 @@ void example_levels()
     chain.
     */
     decryptor.decrypt(encrypted, plain);
-    cout << "    + Decryption of fourth power (hexadecimal) ...... Correct." << endl;
+    cout << "    + Decryption of the 8th power (hexadecimal) ...... Correct." << endl;
     cout << "    " << plain.to_string() << endl << endl;
 
     /*
