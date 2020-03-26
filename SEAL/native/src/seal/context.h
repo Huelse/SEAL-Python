@@ -296,15 +296,6 @@ namespace seal
             }
 
             /**
-            Return the non-RNS form of upppoer_half_increment which is q mod t.
-            */
-            SEAL_NODISCARD inline auto coeff_mod_plain_modulus() const noexcept
-                -> std::uint64_t
-            {
-                return coeff_mod_plain_modulus_;
-            }
-
-            /**
             Returns a shared_ptr to the context data corresponding to the previous parameters
             in the modulus switching chain. If the current data is the first one in the
             chain, then the result is nullptr.
@@ -368,8 +359,6 @@ namespace seal
             util::Pointer<std::uint64_t> upper_half_threshold_;
 
             util::Pointer<std::uint64_t> upper_half_increment_;
-
-            std::uint64_t coeff_mod_plain_modulus_ = 0;
 
             std::weak_ptr<const ContextData> prev_context_data_;
 

@@ -120,7 +120,7 @@ namespace seal
 
             // Generate secret key
             uint64_t *secret_key = secret_key_.data().data();
-            sample_poly_ternary(random, parms, secret_key);
+            sample_poly_ternary(secret_key, random, parms);
 
             auto &small_ntt_tables = context_data.small_ntt_tables();
             for (size_t i = 0; i < coeff_mod_count; i++)
@@ -170,7 +170,8 @@ namespace seal
 
         shared_ptr<UniformRandomGenerator> random(
             parms.random_generator()->create());
-        encrypt_zero_symmetric(secret_key_, context_, context_data.parms_id(), true, false, public_key_.data());
+        encrypt_zero_symmetric(secret_key_, context_, context_data.parms_id(),
+            random, true, public_key_.data(), pool_);
 
         // Set the parms_id for public key
         public_key_.parms_id() = context_data.parms_id();
@@ -179,7 +180,7 @@ namespace seal
         pk_generated_ = true;
     }
 
-    RelinKeys KeyGenerator::relin_keys(size_t count, bool save_seed)
+    RelinKeys KeyGenerator::relin_keys(size_t count)
     {
         // Check to see if secret key and public key have been generated
         if (!sk_generated_)
@@ -215,8 +216,7 @@ namespace seal
         generate_kswitch_keys(
             secret_key_array_.get() + coeff_mod_count * coeff_count,
             count,
-            static_cast<KSwitchKeys &>(relin_keys),
-            save_seed);
+            static_cast<KSwitchKeys &>(relin_keys));
 
         // Set the parms_id
         relin_keys.parms_id() = context_data.parms_id();
@@ -224,9 +224,7 @@ namespace seal
         return relin_keys;
     }
 
-    GaloisKeys KeyGenerator::galois_keys(
-        const vector<uint64_t> &galois_elts,
-        bool save_seed)
+    GaloisKeys KeyGenerator::galois_keys(const vector<uint64_t> &galois_elts)
     {
         // Check to see if secret key and public key have been generated
         if (!sk_generated_)
@@ -236,11 +234,6 @@ namespace seal
 
         // Extract encryption parameters.
         auto &context_data = *context_->key_context_data();
-        if (!context_data.qualifiers().using_batching)
-        {
-            throw logic_error("encryption parameters do not support batching");
-        }
-
         auto &parms = context_data.parms();
         auto &coeff_modulus = parms.coeff_modulus();
         size_t coeff_count = parms.poly_modulus_degree();
@@ -262,8 +255,7 @@ namespace seal
         for (uint64_t galois_elt : galois_elts)
         {
             // Verify coprime conditions.
-            if (!(galois_elt & 1) ||
-                (galois_elt >= static_cast<uint64_t>(coeff_count) << 1))
+            if (!(galois_elt & 1) || (galois_elt >= 2 * coeff_count))
             {
                 throw invalid_argument("Galois element is not valid");
             }
@@ -288,13 +280,13 @@ namespace seal
 
             // Initialize Galois key
             // This is the location in the galois_keys vector
-            size_t index = GaloisKeys::get_index(galois_elt);
+            uint64_t index = GaloisKeys::get_index(galois_elt);
             shared_ptr<UniformRandomGenerator> random(parms.random_generator()->create());
 
             // Create Galois keys.
             generate_one_kswitch_key(
                 rotated_secret_key.get(),
-                galois_keys.data()[index], save_seed);
+                galois_keys.data()[index]);
         }
 
         // Set the parms_id
@@ -303,28 +295,47 @@ namespace seal
         return galois_keys;
     }
 
-    vector<uint64_t> KeyGenerator::galois_elts_from_steps(const vector<int> &steps)
+    GaloisKeys KeyGenerator::galois_keys(const vector<int> &steps)
     {
+        // Check to see if secret key and public key have been generated
+        if (!sk_generated_)
+        {
+            throw logic_error("cannot generate Galois keys for unspecified secret key");
+        }
+
+        // Extract encryption parameters.
+        auto &context_data = *context_->key_context_data();
+        if (!context_data.qualifiers().using_batching)
+        {
+            throw logic_error("encryption parameters do not support batching");
+        }
+
+        auto &parms = context_data.parms();
+        size_t coeff_count = parms.poly_modulus_degree();
+
         vector<uint64_t> galois_elts;
-        size_t coeff_count = context_->key_context_data()->parms().poly_modulus_degree();
-
         transform(steps.begin(), steps.end(), back_inserter(galois_elts),
-            [&](auto s) { return galois_elt_from_step(s, coeff_count); });
+            [&](auto s) { return steps_to_galois_elt(s, coeff_count); });
 
-        return galois_elts;
+        return galois_keys(galois_elts);
     }
 
-    vector<uint64_t> KeyGenerator::galois_elts_all()
+    GaloisKeys KeyGenerator::galois_keys()
     {
-        size_t coeff_count = static_cast<size_t>(
-            context_->key_context_data()->parms().poly_modulus_degree());
-        uint64_t m = static_cast<uint64_t>(coeff_count) << 1;
+        // Check to see if secret key and public key have been generated
+        if (!sk_generated_)
+        {
+            throw logic_error("cannot generate Galois keys for unspecified secret key");
+        }
+
+        size_t coeff_count = context_->key_context_data()->parms().poly_modulus_degree();
+        uint64_t m = coeff_count << 1;
         int logn = get_power_of_two(static_cast<uint64_t>(coeff_count));
 
-        vector<uint64_t> galois_elts{};
+        vector<uint64_t> logn_galois_keys{};
 
         // Generate Galois keys for m - 1 (X -> X^{m-1})
-        galois_elts.push_back(m - 1);
+        logn_galois_keys.push_back(m - 1);
 
         // Generate Galois key for power of 3 mod m (X -> X^{3^k}) and
         // for negative power of 3 mod m (X -> X^{-3^k})
@@ -333,16 +344,16 @@ namespace seal
         try_mod_inverse(3, m, neg_two_power_of_three);
         for (int i = 0; i < logn - 1; i++)
         {
-            galois_elts.push_back(two_power_of_three);
+            logn_galois_keys.push_back(two_power_of_three);
             two_power_of_three *= two_power_of_three;
             two_power_of_three &= (m - 1);
 
-            galois_elts.push_back(neg_two_power_of_three);
+            logn_galois_keys.push_back(neg_two_power_of_three);
             neg_two_power_of_three *= neg_two_power_of_three;
             neg_two_power_of_three &= (m - 1);
         }
 
-        return galois_elts;
+        return galois_keys(logn_galois_keys);
     }
 
     const SecretKey &KeyGenerator::secret_key() const
@@ -449,14 +460,8 @@ namespace seal
 
     void KeyGenerator::generate_one_kswitch_key(
         const uint64_t *new_key,
-        std::vector<PublicKey> &destination,
-        bool save_seed)
+        std::vector<PublicKey> &destination)
     {
-        if (!context_->using_keyswitching())
-        {
-            throw logic_error("keyswitching is not supported by the context");
-        }
-
         size_t coeff_count = context_->key_context_data()->parms().poly_modulus_degree();
         size_t decomp_mod_count = context_->first_context_data()->parms().coeff_modulus().size();
         auto &key_context_data = *context_->key_context_data();
@@ -478,8 +483,9 @@ namespace seal
         for (size_t j = 0; j < decomp_mod_count; j++)
         {
             encrypt_zero_symmetric(secret_key_, context_,
-                key_context_data.parms_id(), true, save_seed,
-                destination[j].data());
+                key_context_data.parms_id(), random, true,
+                destination[j].data(), pool_);
+
             factor = key_modulus.back().value() % key_modulus[j].value();
             multiply_poly_scalar_coeffmod(
                 new_key + j * coeff_count,
@@ -499,8 +505,7 @@ namespace seal
     void KeyGenerator::generate_kswitch_keys(
         const uint64_t *new_keys,
         size_t num_keys,
-        KSwitchKeys &destination,
-        bool save_seed)
+        KSwitchKeys &destination)
     {
         size_t coeff_count = context_->key_context_data()->parms().poly_modulus_degree();
         auto &key_context_data = *context_->key_context_data();
@@ -519,7 +524,7 @@ namespace seal
         for (size_t l = 0; l < num_keys; l++)
         {
             const uint64_t *new_key_ptr = new_keys + l * coeff_mod_count * coeff_count;
-            generate_one_kswitch_key(new_key_ptr, destination.data()[l], save_seed);
+            generate_one_kswitch_key(new_key_ptr, destination.data()[l]);
         }
     }
 }

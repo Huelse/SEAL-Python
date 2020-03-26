@@ -8,48 +8,24 @@
 #include "seal/util/common.h"
 #include <stdexcept>
 #include <cstdint>
-#include <cmath>
 #include <vector>
 #include <tuple>
-#include <algorithm>
 
 namespace seal
 {
     namespace util
     {
-        SEAL_NODISCARD inline std::vector<int> naf(int value)
-        {
-          std::vector<int> res;
-
-          // Record the sign of the original value and compute abs
-          bool sign = value < 0;
-          value = std::abs(value);
-
-          // Transform to non-adjacent form (NAF)
-          for (int i = 0; value; i++)
-          {
-            int zi = (value % 2) ? 2 - (value % 4) : 0;
-            value = (value - zi) / 2;
-            if (zi)
-            {
-              res.push_back((sign ? -zi : zi) * (1 << i));
-            }
-          }
-
-          return res;
-        }
-
         SEAL_NODISCARD inline std::uint64_t gcd(
             std::uint64_t x, std::uint64_t y)
         {
 #ifdef SEAL_DEBUG
             if (x == 0)
             {
-                throw std::invalid_argument("x cannot be zero");
+                std::invalid_argument("x cannot be zero");
             }
             if (y == 0)
             {
-                throw std::invalid_argument("y cannot be zero");
+                std::invalid_argument("y cannot be zero");
             }
 #endif
             if (x < y)
@@ -84,11 +60,11 @@ namespace seal
 #ifdef SEAL_DEBUG
             if (x == 0)
             {
-                throw std::invalid_argument("x cannot be zero");
+                std::invalid_argument("x cannot be zero");
             }
             if (y == 0)
             {
-                throw std::invalid_argument("y cannot be zero");
+                std::invalid_argument("y cannot be zero");
             }
 #endif
             std::int64_t prev_a = 1;
@@ -118,15 +94,15 @@ namespace seal
             std::uint64_t modulus, std::uint64_t &result)
         {
 #ifdef SEAL_DEBUG
-            if (modulus <= 1)
-            {
-                throw std::invalid_argument("modulus must be at least 2");
-            }
-#endif
             if (value == 0)
             {
-                return false;
+                std::invalid_argument("value cannot be zero");
             }
+            if (modulus <= 1)
+            {
+                std::invalid_argument("modulus must be at least 2");
+            }
+#endif
             auto gcd_tuple = xgcd(value, modulus);
             if (std::get<0>(gcd_tuple) != 1)
             {

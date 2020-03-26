@@ -16,8 +16,8 @@ using namespace seal::util;
 
 namespace seal
 {
-    IntegerEncoder::IntegerEncoder(shared_ptr<SEALContext> context) :
-        context_(move(context))
+    IntegerEncoder::IntegerEncoder(std::shared_ptr<SEALContext> context) :
+        context_(std::move(context))
     {
         // Verify parameters
         if (!context_)

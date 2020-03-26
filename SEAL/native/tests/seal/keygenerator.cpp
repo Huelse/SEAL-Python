@@ -8,7 +8,6 @@
 #include "seal/encryptor.h"
 #include "seal/decryptor.h"
 #include "seal/evaluator.h"
-#include "seal/valcheck.h"
 
 using namespace seal;
 using namespace seal::util;
@@ -21,43 +20,26 @@ namespace SEALTest
         EncryptionParameters parms(scheme_type::BFV);
         {
             parms.set_poly_modulus_degree(64);
-            parms.set_plain_modulus(65537);
+            parms.set_plain_modulus(1 << 6);
             parms.set_coeff_modulus(CoeffModulus::Create(64, { 60 }));
-            auto context = SEALContext::Create(parms, false, sec_level_type::none);
-            KeyGenerator keygen(context);
-
-            ASSERT_THROW(RelinKeys evk = keygen.relin_keys(), logic_error);
-            ASSERT_THROW(GaloisKeys galk = keygen.galois_keys(), logic_error);
-        }
-        {
-            parms.set_poly_modulus_degree(64);
-            parms.set_plain_modulus(65537);
-            parms.set_coeff_modulus(CoeffModulus::Create(64, { 60, 60 }));
             auto context = SEALContext::Create(parms, false, sec_level_type::none);
             KeyGenerator keygen(context);
 
             RelinKeys evk = keygen.relin_keys();
             ASSERT_TRUE(evk.parms_id() == context->key_parms_id());
             ASSERT_EQ(1ULL, evk.key(2).size());
-            for (auto &a : evk.data())
+            for (size_t j = 0; j < evk.size(); j++)
             {
-                for (auto &b : a)
+                for (size_t i = 0; i < evk.key(j + 2).size(); i++)
                 {
-                    ASSERT_FALSE(b.data().is_transparent());
+                    for (size_t k = 0; k < evk.key(j + 2)[i].data().size(); k++)
+                    {
+                        ASSERT_FALSE(is_zero_poly(evk.key(j + 2)[i].data().data(k), evk.key(j + 2)[i].data().poly_modulus_degree(), evk.key(j + 2)[i].data().coeff_mod_count()));
+                    }
                 }
             }
-            ASSERT_TRUE(is_valid_for(evk, context));
 
             GaloisKeys galks = keygen.galois_keys();
-            for (auto& a : galks.data())
-            {
-                for (auto& b : a)
-                {
-                    ASSERT_FALSE(b.data().is_transparent());
-                }
-            }
-            ASSERT_TRUE(is_valid_for(galks, context));
-
             ASSERT_TRUE(galks.parms_id() == context->key_parms_id());
             ASSERT_EQ(1ULL, galks.key(3).size());
             ASSERT_EQ(10ULL, galks.size());
@@ -93,7 +75,7 @@ namespace SEALTest
         }
         {
             parms.set_poly_modulus_degree(256);
-            parms.set_plain_modulus(65537);
+            parms.set_plain_modulus(1 << 6);
             parms.set_coeff_modulus(CoeffModulus::Create(256, { 60, 30, 30 }));
 
             auto context = SEALContext::Create(parms, false, sec_level_type::none);
@@ -102,26 +84,18 @@ namespace SEALTest
             RelinKeys evk = keygen.relin_keys();
             ASSERT_TRUE(evk.parms_id() == context->key_parms_id());
             ASSERT_EQ(2ULL, evk.key(2).size());
-
-            for (auto& a : evk.data())
+            for (size_t j = 0; j < evk.size(); j++)
             {
-                for (auto& b : a)
+                for (size_t i = 0; i < evk.key(j + 2).size(); i++)
                 {
-                    ASSERT_FALSE(b.data().is_transparent());
+                    for (size_t k = 0; k < evk.key(j + 2)[i].data().size(); k++)
+                    {
+                        ASSERT_FALSE(is_zero_poly(evk.key(j + 2)[i].data().data(k), evk.key(j + 2)[i].data().poly_modulus_degree(), evk.key(j + 2)[i].data().coeff_mod_count()));
+                    }
                 }
             }
-            ASSERT_TRUE(is_valid_for(evk, context));
 
             GaloisKeys galks = keygen.galois_keys();
-            for (auto& a : galks.data())
-            {
-                for (auto& b : a)
-                {
-                    ASSERT_FALSE(b.data().is_transparent());
-                }
-            }
-            ASSERT_TRUE(is_valid_for(galks, context));
-
             ASSERT_TRUE(galks.parms_id() == context->key_parms_id());
             ASSERT_EQ(2ULL, galks.key(3).size());
             ASSERT_EQ(14ULL, galks.size());
@@ -163,15 +137,6 @@ namespace SEALTest
         {
             parms.set_poly_modulus_degree(64);
             parms.set_coeff_modulus(CoeffModulus::Create(64, { 60 }));
-            auto context = SEALContext::Create(parms, false, sec_level_type::none);
-            KeyGenerator keygen(context);
-
-            ASSERT_THROW(RelinKeys evk = keygen.relin_keys(), logic_error);
-            ASSERT_THROW(GaloisKeys galk = keygen.galois_keys(), logic_error);
-        }
-        {
-            parms.set_poly_modulus_degree(64);
-            parms.set_coeff_modulus(CoeffModulus::Create(64, { 60, 60 }));
 
             auto context = SEALContext::Create(parms, false, sec_level_type::none);
             KeyGenerator keygen(context);
@@ -179,25 +144,18 @@ namespace SEALTest
             RelinKeys evk = keygen.relin_keys();
             ASSERT_TRUE(evk.parms_id() == context->key_parms_id());
             ASSERT_EQ(1ULL, evk.key(2).size());
-            for (auto& a : evk.data())
+            for (size_t j = 0; j < evk.size(); j++)
             {
-                for (auto& b : a)
+                for (size_t i = 0; i < evk.key(j + 2).size(); i++)
                 {
-                    ASSERT_FALSE(b.data().is_transparent());
+                    for (size_t k = 0; k < evk.key(j + 2)[i].data().size(); k++)
+                    {
+                        ASSERT_FALSE(is_zero_poly(evk.key(j + 2)[i].data().data(k), evk.key(j + 2)[i].data().poly_modulus_degree(), evk.key(j + 2)[i].data().coeff_mod_count()));
+                    }
                 }
             }
-            ASSERT_TRUE(is_valid_for(evk, context));
 
             GaloisKeys galks = keygen.galois_keys();
-            for (auto& a : galks.data())
-            {
-                for (auto& b : a)
-                {
-                    ASSERT_FALSE(b.data().is_transparent());
-                }
-            }
-            ASSERT_TRUE(is_valid_for(galks, context));
-
             ASSERT_TRUE(galks.parms_id() == context->key_parms_id());
             ASSERT_EQ(1ULL, galks.key(3).size());
             ASSERT_EQ(10ULL, galks.size());
@@ -241,25 +199,18 @@ namespace SEALTest
             RelinKeys evk = keygen.relin_keys();
             ASSERT_TRUE(evk.parms_id() == context->key_parms_id());
             ASSERT_EQ(2ULL, evk.key(2).size());
-            for (auto& a : evk.data())
+            for (size_t j = 0; j < evk.size(); j++)
             {
-                for (auto& b : a)
+                for (size_t i = 0; i < evk.key(j + 2).size(); i++)
                 {
-                    ASSERT_FALSE(b.data().is_transparent());
+                    for (size_t k = 0; k < evk.key(j + 2)[i].data().size(); k++)
+                    {
+                        ASSERT_FALSE(is_zero_poly(evk.key(j + 2)[i].data().data(k), evk.key(j + 2)[i].data().poly_modulus_degree(), evk.key(j + 2)[i].data().coeff_mod_count()));
+                    }
                 }
             }
-            ASSERT_TRUE(is_valid_for(evk, context));
 
             GaloisKeys galks = keygen.galois_keys();
-            for (auto& a : galks.data())
-            {
-                for (auto& b : a)
-                {
-                    ASSERT_FALSE(b.data().is_transparent());
-                }
-            }
-            ASSERT_TRUE(is_valid_for(galks, context));
-
             ASSERT_TRUE(galks.parms_id() == context->key_parms_id());
             ASSERT_EQ(2ULL, galks.key(3).size());
             ASSERT_EQ(14ULL, galks.size());
@@ -299,7 +250,7 @@ namespace SEALTest
     {
         EncryptionParameters parms(scheme_type::BFV);
         parms.set_poly_modulus_degree(128);
-        parms.set_plain_modulus(65537);
+        parms.set_plain_modulus(1 << 6);
         parms.set_coeff_modulus(CoeffModulus::Create(128, { 60, 50, 40 }));
         auto context = SEALContext::Create(parms, false, sec_level_type::none);
         Evaluator evaluator(context);
@@ -348,7 +299,7 @@ namespace SEALTest
         auto sk3 = keygen3.secret_key();
         auto pk3 = keygen3.public_key();
         ASSERT_EQ(sk3.data(), sk2.data());
-        for (size_t i = 0; i < pk3.data().int_array().size(); i++)
+        for (size_t i = 0; i < pk3.data().uint64_count(); i++)
         {
             ASSERT_EQ(pk3.data().data()[i], pk2.data().data()[i]);
         }

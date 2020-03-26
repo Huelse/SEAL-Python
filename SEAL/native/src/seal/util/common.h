@@ -119,7 +119,7 @@ namespace seal
             {
                 if (in1 && (in2 > std::numeric_limits<T>::max() / in1))
                 {
-                    throw std::logic_error("unsigned overflow");
+                    throw std::out_of_range("unsigned overflow");
                 }
             }
             else
@@ -128,7 +128,7 @@ namespace seal
                 if ((in1 > 0) && (in2 > 0) &&
                     (in2 > std::numeric_limits<T>::max() / in1))
                 {
-                    throw std::logic_error("signed overflow");
+                    throw std::out_of_range("signed overflow");
                 }
 #if (SEAL_COMPILER == SEAL_COMPILER_MSVC) && !defined(SEAL_USE_IF_CONSTEXPR)
 #pragma warning(push)
@@ -138,13 +138,13 @@ namespace seal
                 else if ((in1 < 0) && (in2 < 0) &&
                     ((-in2) > std::numeric_limits<T>::max() / (-in1)))
                 {
-                    throw std::logic_error("signed overflow");
+                    throw std::out_of_range("signed overflow");
                 }
                 // Negative in1; positive in2
                 else if ((in1 < 0) && (in2 > 0) &&
                     (in2 > std::numeric_limits<T>::max() / (-in1)))
                 {
-                    throw std::logic_error("signed underflow");
+                    throw std::out_of_range("signed underflow");
                 }
 #if (SEAL_COMPILER == SEAL_COMPILER_MSVC) && !defined(SEAL_USE_IF_CONSTEXPR)
 #pragma warning(pop)
@@ -153,7 +153,7 @@ namespace seal
                 else if ((in1 > 0) && (in2 < 0) &&
                     (in2 < std::numeric_limits<T>::min() / in1))
                 {
-                    throw std::logic_error("signed underflow");
+                    throw std::out_of_range("signed underflow");
                 }
             }
             return in1 * in2;
@@ -182,7 +182,7 @@ namespace seal
                 T result = in1 + in2;
                 if (result < in1)
                 {
-                    throw std::logic_error("unsigned overflow");
+                    throw std::out_of_range("unsigned overflow");
                 }
                 return result;
             }
@@ -190,12 +190,12 @@ namespace seal
             {
                 if (in1 > 0 && (in2 > std::numeric_limits<T>::max() - in1))
                 {
-                    throw std::logic_error("signed overflow");
+                    throw std::out_of_range("signed overflow");
                 }
                 else if (in1 < 0 &&
                     (in2 < std::numeric_limits<T>::min() - in1))
                 {
-                    throw std::logic_error("signed underflow");
+                    throw std::out_of_range("signed underflow");
                 }
                 return in1 + in2;
             }
@@ -217,7 +217,7 @@ namespace seal
                 T result = in1 - in2;
                 if (result > in1)
                 {
-                    throw std::logic_error("unsigned underflow");
+                    throw std::out_of_range("unsigned underflow");
                 }
                 return result;
             }
@@ -225,12 +225,12 @@ namespace seal
             {
                 if (in1 < 0 && (in2 > std::numeric_limits<T>::max() + in1))
                 {
-                    throw std::logic_error("signed underflow");
+                    throw std::out_of_range("signed underflow");
                 }
                 else if (in1 > 0 &&
                     (in2 < std::numeric_limits<T>::min() + in1))
                 {
-                    throw std::logic_error("signed overflow");
+                    throw std::out_of_range("signed overflow");
                 }
                 return in1 - in2;
             }
@@ -349,7 +349,7 @@ namespace seal
             {
                 if(!fits_in<T>(value))
                 {
-                    throw std::logic_error("cast failed");
+                    throw std::out_of_range("cast failed");
                 }
             }
             return static_cast<T>(value);

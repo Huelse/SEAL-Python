@@ -13,7 +13,7 @@ using namespace std;
 
 namespace seal
 {
-    void SmallModulus::save_members(ostream &stream) const
+    void SmallModulus::save(ostream &stream) const
     {
         auto old_except_mask = stream.exceptions();
         try
@@ -23,20 +23,16 @@ namespace seal
 
             stream.write(reinterpret_cast<const char*>(&value_), sizeof(uint64_t));
         }
-        catch (const ios_base::failure &)
-        {
-            stream.exceptions(old_except_mask);
-            throw runtime_error("I/O error");
-        }
-        catch (...)
+        catch (const exception &)
         {
             stream.exceptions(old_except_mask);
             throw;
         }
+
         stream.exceptions(old_except_mask);
     }
 
-    void SmallModulus::load_members(istream &stream)
+    void SmallModulus::load(istream &stream)
     {
         auto old_except_mask = stream.exceptions();
         try
@@ -48,16 +44,12 @@ namespace seal
             stream.read(reinterpret_cast<char*>(&value), sizeof(uint64_t));
             set_value(value);
         }
-        catch (const ios_base::failure &)
-        {
-            stream.exceptions(old_except_mask);
-            throw runtime_error("I/O error");
-        }
-        catch (...)
+        catch (const exception &)
         {
             stream.exceptions(old_except_mask);
             throw;
         }
+
         stream.exceptions(old_except_mask);
     }
 

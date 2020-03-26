@@ -20,13 +20,6 @@ namespace seal
         ContextData context_data(parms, pool_);
         context_data.qualifiers_.parameters_set = true;
 
-        // Is a scheme set?
-        if (parms.scheme() == scheme_type::none)
-        {
-            context_data.qualifiers_.parameters_set = false;
-            return context_data;
-        }
-
         auto &coeff_modulus = parms.coeff_modulus();
         auto &plain_modulus = parms.plain_modulus();
 
@@ -91,8 +84,7 @@ namespace seal
         // Quick sanity check
         if (!product_fits_in(coeff_mod_count, poly_modulus_degree))
         {
-            context_data.qualifiers_.parameters_set = false;
-            return context_data;
+            throw logic_error("invalid parameters");
         }
 
         // Polynomial modulus X^(2^k) + 1 is guaranteed at this point
@@ -189,8 +181,7 @@ namespace seal
                 wide_plain_modulus.get(), coeff_mod_count,
                 context_data.coeff_div_plain_modulus_.get(),
                 context_data.upper_half_increment_.get(), pool_);
-            // store the non-RNS form of upper_half_increment for BFV encryption
-            context_data.coeff_mod_plain_modulus_ = context_data.upper_half_increment_[0];
+
             // Decompose coeff_div_plain_modulus into RNS factors
             for (size_t i = 0; i < coeff_mod_count; i++)
             {
@@ -272,8 +263,7 @@ namespace seal
         }
         else
         {
-            context_data.qualifiers_.parameters_set = false;
-            return context_data;
+            throw invalid_argument("unsupported scheme");
         }
 
         // Create BaseConverter
@@ -349,7 +339,7 @@ namespace seal
         if (!parms.random_generator())
         {
             parms.set_random_generator(
-                UniformRandomGeneratorFactory::DefaultFactory());
+                UniformRandomGeneratorFactory::default_factory());
         }
 
         // Validate parameters and add new ContextData to the map

@@ -5,7 +5,6 @@
 #include <cstdlib>
 #include <random>
 #include <limits>
-#include "seal/util/common.h"
 #include "seal/batchencoder.h"
 #include "seal/util/polycore.h"
 #include "seal/valcheck.h"
@@ -15,8 +14,8 @@ using namespace seal::util;
 
 namespace seal
 {
-    BatchEncoder::BatchEncoder(shared_ptr<SEALContext> context) :
-        context_(move(context))
+    BatchEncoder::BatchEncoder(std::shared_ptr<SEALContext> context) :
+        context_(std::move(context))
     {
         // Verify parameters
         if (!context_)
@@ -72,7 +71,7 @@ namespace seal
     void BatchEncoder::populate_matrix_reps_index_map()
     {
         int logn = get_power_of_two(slots_);
-        matrix_reps_index_map_ = allocate<size_t>(slots_, pool_);
+        matrix_reps_index_map_ = allocate_uint(slots_, pool_);
 
         // Copy from the matrix to the value vectors
         size_t row_size = slots_ >> 1;
@@ -86,10 +85,8 @@ namespace seal
             uint64_t index2 = (m - pos - 1) >> 1;
 
             // Set the bit-reversed locations
-            matrix_reps_index_map_[i] =
-                safe_cast<size_t>(util::reverse_bits(index1, logn));
-            matrix_reps_index_map_[row_size | i]
-                = safe_cast<size_t>(util::reverse_bits(index2, logn));
+            matrix_reps_index_map_[i] = util::reverse_bits(index1, logn);
+            matrix_reps_index_map_[row_size | i] = util::reverse_bits(index2, logn);
 
             // Next primitive root
             pos *= gen;

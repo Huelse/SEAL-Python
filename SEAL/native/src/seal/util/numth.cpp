@@ -15,8 +15,7 @@ namespace seal
         vector<uint64_t> conjugate_classes(uint64_t modulus,
             uint64_t subgroup_generator)
         {
-            if (!product_fits_in(modulus, subgroup_generator) ||
-                !fits_in<size_t>(modulus))
+            if (!product_fits_in(modulus, subgroup_generator))
             {
                 throw invalid_argument("inputs too large");
             }
@@ -35,25 +34,24 @@ namespace seal
             }
             for (uint64_t i = 0; i < modulus; i++)
             {
-                if (classes[static_cast<size_t>(i)] == 0)
+                if (classes[i] == 0)
                 {
                     continue;
                 }
-                if (classes[static_cast<size_t>(i)] < i)
+                if (classes[i] < i)
                 {
                     // i is not a pivot, updated its pivot
-                    classes[static_cast<size_t>(i)] =
-                        classes[static_cast<size_t>(classes[static_cast<size_t>(i)])];
+                    classes[i] = classes[classes[i]];
                     continue;
                 }
                 // If i is a pivot, update other pivots to point to it
                 uint64_t j = (i * subgroup_generator) % modulus;
-                while (classes[static_cast<size_t>(j)] != i)
+                while (classes[j] != i)
                 {
                     // Merge the equivalence classes of j and i
                     // Note: if classes[j] != j then classes[j] will be updated later,
                     // when we get to i = j and use the code for "i not pivot".
-                    classes[static_cast<size_t>(classes[static_cast<size_t>(j)])] = i;
+                    classes[classes[j]] = i;
                     j = (j * subgroup_generator) % modulus;
                 }
             }
@@ -63,8 +61,7 @@ namespace seal
         vector<uint64_t> multiplicative_orders(
             vector<uint64_t> conjugate_classes, uint64_t modulus)
         {
-            if (!product_fits_in(modulus, modulus) ||
-                !fits_in<size_t>(modulus))
+            if (!product_fits_in(modulus, modulus))
             {
                 throw invalid_argument("inputs too large");
             }
@@ -75,21 +72,19 @@ namespace seal
 
             for (uint64_t i = 2; i < modulus; i++)
             {
-                if (conjugate_classes[static_cast<size_t>(i)] <= 1)
+                if (conjugate_classes[i] <= 1)
                 {
-                    orders.push_back(
-                        conjugate_classes[static_cast<size_t>(i)]);
+                    orders.push_back(conjugate_classes[i]);
                     continue;
                 }
-                if (conjugate_classes[static_cast<size_t>(i)] < i)
+                if (conjugate_classes[i] < i)
                 {
-                    orders.push_back(orders[static_cast<size_t>(
-                        conjugate_classes[static_cast<size_t>(i)])]);
+                    orders.push_back(orders[conjugate_classes[i]]);
                     continue;
                 }
                 uint64_t j = (i * i) % modulus;
                 uint64_t order = 2;
-                while (conjugate_classes[static_cast<size_t>(j)] != 1)
+                while (conjugate_classes[j] != 1)
                 {
                     j = (j * i) % modulus;
                     order++;

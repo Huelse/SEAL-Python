@@ -4,12 +4,9 @@
 #include "gtest/gtest.h"
 #include "seal/randomgen.h"
 #include "seal/keygenerator.h"
+#include <random>
 #include <cstdint>
-#include <algorithm>
-#include <thread>
 #include <memory>
-#include <numeric>
-#include <set>
 
 using namespace seal;
 using namespace std;
@@ -18,46 +15,45 @@ namespace SEALTest
 {
     namespace
     {
-        class SequentialRandomGenerator : public UniformRandomGenerator
+        class CustomRandomEngine : public UniformRandomGenerator
         {
         public:
-            SequentialRandomGenerator() : UniformRandomGenerator({})
+            CustomRandomEngine()
             {
             }
 
-            ~SequentialRandomGenerator() override = default;
-
-        protected:
-            void refill_buffer() override
+            uint32_t generate() override
             {
-                iota(
-                    reinterpret_cast<uint8_t*>(buffer_begin_),
-                    reinterpret_cast<uint8_t*>(buffer_end_),
-                    value);
+                count_++;
+                return static_cast<uint32_t>(engine_());
+            }
 
-                value = static_cast<uint8_t>(static_cast<size_t>(value) + buffer_size_);
+            static int count()
+            {
+                return count_;
             }
 
         private:
-            uint8_t value = 0;
+            default_random_engine engine_;
+
+            static int count_;
         };
 
-        class SequentialRandomGeneratorFactory : public UniformRandomGeneratorFactory
+        class CustomRandomEngineFactory : public UniformRandomGeneratorFactory
         {
-        private:
-            SEAL_NODISCARD auto create_impl(
-                SEAL_MAYBE_UNUSED random_seed_type seed)
-                -> shared_ptr<UniformRandomGenerator> override
+        public:
+            shared_ptr<UniformRandomGenerator> create() override
             {
-                return make_shared<SequentialRandomGenerator>();
+                return shared_ptr<UniformRandomGenerator>(new CustomRandomEngine());
             }
         };
+
+        int CustomRandomEngine::count_ = 0;
     }
 
     TEST(RandomGenerator, UniformRandomCreateDefault)
     {
-        shared_ptr<UniformRandomGenerator> generator(
-            UniformRandomGeneratorFactory::DefaultFactory()->create());
+        shared_ptr<UniformRandomGenerator> generator(UniformRandomGeneratorFactory::default_factory()->create());
         bool lower_half = false;
         bool upper_half = false;
         bool even = false;
@@ -88,127 +84,58 @@ namespace SEALTest
         ASSERT_TRUE(odd);
     }
 
-    TEST(RandomGenerator, SequentialRandomGenerator)
+    TEST(RandomGenerator, StandardRandomAdapterGenerate)
     {
-        unique_ptr<UniformRandomGenerator> sgen =
-            make_unique<SequentialRandomGenerator>();
-        array<uint8_t, 4096> value_list;
-        iota(value_list.begin(), value_list.end(), 0);
-
-        array<uint8_t, 4096> compare_list;
-        sgen->generate(4096, reinterpret_cast<SEAL_BYTE*>(compare_list.data()));
-
-        ASSERT_TRUE(equal(value_list.cbegin(), value_list.cend(), compare_list.cbegin()));
+        StandardRandomAdapter<default_random_engine> generator;
+        bool lower_half = false;
+        bool upper_half = false;
+        bool even = false;
+        bool odd = false;
+        for (int i = 0; i < 10; ++i)
+        {
+            uint32_t value = generator.generate();
+            if (value < UINT32_MAX / 2)
+            {
+                lower_half = true;
+            }
+            else
+            {
+                upper_half = true;
+            }
+            if ((value % 2) == 0)
+            {
+                even = true;
+            }
+            else
+            {
+                odd = true;
+            }
+        }
+        ASSERT_TRUE(lower_half);
+        ASSERT_TRUE(upper_half);
+        ASSERT_TRUE(even);
+        ASSERT_TRUE(odd);
     }
 
-    TEST(RandomGenerator, RandomUInt64)
+    TEST(RandomGenerator, CustomRandomGenerator)
     {
-        set<uint64_t> values;
-        size_t count = 100;
-        for (size_t i = 0; i < count; i++)
-        {
-            values.emplace(random_uint64());
-        }
-        ASSERT_EQ(count, values.size());
-    }
+        shared_ptr<CustomRandomEngineFactory> factory(new CustomRandomEngineFactory);
 
-    TEST(RandomGenerator, SeededRNG)
-    {
-        auto generator1(UniformRandomGeneratorFactory::DefaultFactory()->create(
-            { }));
-        array<uint32_t, 20> values1;
-        generator1->generate(sizeof(values1),
-            reinterpret_cast<SEAL_BYTE*>(values1.data()));
+        EncryptionParameters parms(scheme_type::BFV);
+        uint64_t coeff_modulus;
+        SmallModulus plain_modulus;
+        coeff_modulus = 0xFFFFFFFFC001;
+        plain_modulus = 1 << 6;
+        parms.set_poly_modulus_degree(64);
+        parms.set_plain_modulus(plain_modulus);
+        parms.set_coeff_modulus({ coeff_modulus });
+        parms.set_random_generator(factory);
+        auto context = SEALContext::Create(parms, false, sec_level_type::none);
 
-        auto generator2(UniformRandomGeneratorFactory::DefaultFactory()->create(
-            { 1 }));
-        array<uint32_t, 20> values2;
-        generator2->generate(sizeof(values2),
-            reinterpret_cast<SEAL_BYTE*>(values2.data()));
+        ASSERT_EQ(0, CustomRandomEngine::count());
 
-        auto generator3(UniformRandomGeneratorFactory::DefaultFactory()->create(
-            { 1 }));
-        array<uint32_t, 20> values3;
-        generator3->generate(sizeof(values3),
-            reinterpret_cast<SEAL_BYTE*>(values3.data()));
+        KeyGenerator keygen(context);
 
-        for (size_t i = 0; i < values1.size(); i++)
-        {
-            ASSERT_NE(values1[i], values2[i]);
-            ASSERT_EQ(values2[i], values3[i]);
-        }
-
-        uint32_t val1, val2, val3;
-        val1 = generator1->generate();
-        val2 = generator2->generate();
-        val3 = generator3->generate();
-        ASSERT_NE(val1, val2);
-        ASSERT_EQ(val2, val3);
-    }
-
-    TEST(RandomGenerator, RandomSeededRNG)
-    {
-        auto generator1(UniformRandomGeneratorFactory::DefaultFactory()->create());
-        array<uint32_t, 20> values1;
-        generator1->generate(sizeof(values1),
-            reinterpret_cast<SEAL_BYTE*>(values1.data()));
-
-        auto generator2(UniformRandomGeneratorFactory::DefaultFactory()->create());
-        array<uint32_t, 20> values2;
-        generator2->generate(sizeof(values2),
-            reinterpret_cast<SEAL_BYTE*>(values2.data()));
-
-        auto seed3 = generator2->seed();
-        auto generator3(UniformRandomGeneratorFactory::DefaultFactory()->create(seed3));
-        array<uint32_t, 20> values3;
-        generator3->generate(sizeof(values3),
-            reinterpret_cast<SEAL_BYTE*>(values3.data()));
-
-        for (size_t i = 0; i < values1.size(); i++)
-        {
-            ASSERT_NE(values1[i], values2[i]);
-            ASSERT_EQ(values2[i], values3[i]);
-        }
-
-        uint32_t val1, val2, val3;
-        val1 = generator1->generate();
-        val2 = generator2->generate();
-        val3 = generator3->generate();
-        ASSERT_NE(val1, val2);
-        ASSERT_EQ(val2, val3);
-    }
-
-    TEST(RandomGenerator, MultiThreaded)
-    {
-        constexpr size_t thread_count = 2;
-        constexpr size_t numbers_per_thread = 50;
-        array<uint64_t, thread_count * numbers_per_thread> results;
-
-        auto generator(UniformRandomGeneratorFactory::DefaultFactory()->create());
-
-        vector<thread> th_vec;
-        for (size_t i = 0; i < thread_count; i++)
-        {
-            auto th_func = [&, generator, i]() {
-                generator->generate(sizeof(uint64_t) * numbers_per_thread,
-                    reinterpret_cast<SEAL_BYTE*>(results.data() + numbers_per_thread * i));
-            };
-            th_vec.emplace_back(th_func);
-        }
-
-        for (auto &th : th_vec)
-        {
-            th.join();
-        }
-
-        auto seed = generator->seed();
-        auto generator2(UniformRandomGeneratorFactory::DefaultFactory()->create(seed));
-        for (size_t i = 0; i < thread_count * numbers_per_thread; i++)
-        {
-            uint64_t value = 0;
-            generator2->generate(sizeof(value),
-                reinterpret_cast<SEAL_BYTE*>(&value));
-            ASSERT_TRUE(find(results.begin(), results.end(), value) != results.end());
-        }
+        ASSERT_NE(0, CustomRandomEngine::count());
     }
 }

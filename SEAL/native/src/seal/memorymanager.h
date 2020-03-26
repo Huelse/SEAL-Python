@@ -539,7 +539,7 @@ namespace seal
         {
             if (!mm_prof)
             {
-                throw std::invalid_argument("mm_prof cannot be null");
+                throw std::invalid_argument("mm_prof cannot be nullptr");
             }
             auto ret_mm_prof = std::move(mm_prof_);
             mm_prof_.reset(mm_prof);
@@ -552,7 +552,7 @@ namespace seal
         {
             if (!mm_prof)
             {
-                throw std::invalid_argument("mm_prof cannot be null");
+                throw std::invalid_argument("mm_prof cannot be nullptr");
             }
             std::swap(mm_prof_, mm_prof);
             return std::move(mm_prof);

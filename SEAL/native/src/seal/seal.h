@@ -23,6 +23,5 @@
 #include "seal/randomtostd.h"
 #include "seal/relinkeys.h"
 #include "seal/secretkey.h"
-#include "seal/serialization.h"
 #include "seal/smallmodulus.h"
 #include "seal/valcheck.h"
