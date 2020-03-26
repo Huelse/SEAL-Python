@@ -5,10 +5,10 @@
 
 #include <stdexcept>
 #include <string>
-#include <fstream>
 #include <iostream>
 #include <algorithm>
 #include <memory>
+#include <functional>
 #include "seal/util/common.h"
 #include "seal/util/polycore.h"
 #include "seal/util/defines.h"
@@ -17,6 +17,10 @@
 #include "seal/intarray.h"
 #include "seal/context.h"
 #include "seal/valcheck.h"
+#include "seal/util/ztools.h"
+#ifdef SEAL_USE_MSGSL_SPAN
+#include <gsl/span>
+#endif
 
 namespace seal
 {
@@ -56,8 +60,6 @@ namespace seal
     public:
         using pt_coeff_type = std::uint64_t;
 
-        using size_type = IntArray<pt_coeff_type>::size_type;
-
         /**
         Constructs an empty plaintext allocating no memory.
 
@@ -80,9 +82,10 @@ namespace seal
         @throws std::invalid_argument if coeff_count is negative
         @throws std::invalid_argument if pool is uninitialized
         */
-        explicit Plaintext(size_type coeff_count,
+        explicit Plaintext(std::size_t coeff_count,
             MemoryPoolHandle pool = MemoryManager::GetPool()) :
-            data_(coeff_count, std::move(pool))
+            coeff_count_(coeff_count),
+            data_(coeff_count_, std::move(pool))
         {
         }
 
@@ -98,9 +101,10 @@ namespace seal
         @throws std::invalid_argument if coeff_count is negative
         @throws std::invalid_argument if pool is uninitialized
         */
-        explicit Plaintext(size_type capacity, size_type coeff_count,
+        explicit Plaintext(std::size_t capacity, std::size_t coeff_count,
             MemoryPoolHandle pool = MemoryManager::GetPool()) :
-            data_(capacity, coeff_count, std::move(pool))
+            coeff_count_(coeff_count),
+            data_(capacity, coeff_count_, std::move(pool))
         {
         }
 
@@ -174,13 +178,14 @@ namespace seal
         @throws std::invalid_argument if capacity is negative
         @throws std::logic_error if the plaintext is NTT transformed
         */
-        void reserve(size_type capacity)
+        void reserve(std::size_t capacity)
         {
             if (is_ntt_form())
             {
                 throw std::logic_error("cannot reserve for an NTT transformed Plaintext");
             }
             data_.reserve(capacity);
+            coeff_count_ = data_.size();
         }
 
         /**
@@ -201,6 +206,7 @@ namespace seal
         inline void release() noexcept
         {
             parms_id_ = parms_id_zero;
+            coeff_count_ = 0;
             scale_ = 1.0;
             data_.release();
         }
@@ -214,13 +220,14 @@ namespace seal
         @throws std::invalid_argument if coeff_count is negative
         @throws std::logic_error if the plaintext is NTT transformed
         */
-        inline void resize(size_type coeff_count)
+        inline void resize(std::size_t coeff_count)
         {
             if (is_ntt_form())
             {
                 throw std::logic_error("cannot reserve for an NTT transformed Plaintext");
             }
             data_.resize(coeff_count);
+            coeff_count_ = coeff_count;
         }
 
         /**
@@ -276,6 +283,7 @@ namespace seal
         {
             data_.resize(1);
             data_[0] = const_coeff;
+            coeff_count_ = 1;
             return *this;
         }
 
@@ -287,13 +295,13 @@ namespace seal
         @param[in] length The number of coefficients to set to zero
         @throws std::out_of_range if start_coeff + length - 1 is not within [0, coeff_count)
         */
-        inline void set_zero(size_type start_coeff, size_type length)
+        inline void set_zero(std::size_t start_coeff, std::size_t length)
         {
             if (!length)
             {
                 return;
             }
-            if (start_coeff + length - 1 >= coeff_count())
+            if (start_coeff + length - 1 >= coeff_count_)
             {
                 throw std::out_of_range("length must be non-negative and start_coeff + length - 1 must be within [0, coeff_count)");
             }
@@ -306,9 +314,9 @@ namespace seal
         @param[in] start_coeff The index of the first coefficient to set to zero
         @throws std::out_of_range if start_coeff is not within [0, coeff_count)
         */
-        inline void set_zero(size_type start_coeff)
+        inline void set_zero(std::size_t start_coeff)
         {
-            if (start_coeff >= coeff_count())
+            if (start_coeff >= coeff_count_)
             {
                 throw std::out_of_range("start_coeff must be within [0, coeff_count)");
             }
@@ -321,6 +329,14 @@ namespace seal
         inline void set_zero()
         {
             std::fill(data_.begin(), data_.end(), pt_coeff_type(0));
+        }
+
+        /**
+        Returns a reference to the backing IntArray object.
+        */
+        SEAL_NODISCARD inline const auto &int_array() const noexcept
+        {
+            return data_;
         }
 
         /**
@@ -345,7 +361,7 @@ namespace seal
         SEAL_NODISCARD inline gsl::span<pt_coeff_type> data_span()
         {
             return gsl::span<pt_coeff_type>(data_.begin(),
-                static_cast<std::ptrdiff_t>(coeff_count()));
+                static_cast<std::ptrdiff_t>(coeff_count_));
         }
 
         /**
@@ -354,7 +370,7 @@ namespace seal
         SEAL_NODISCARD inline gsl::span<const pt_coeff_type> data_span() const
         {
             return gsl::span<const pt_coeff_type>(data_.cbegin(),
-                static_cast<std::ptrdiff_t>(coeff_count()));
+                static_cast<std::ptrdiff_t>(coeff_count_));
         }
 #endif
         /**
@@ -363,13 +379,13 @@ namespace seal
         @param[in] coeff_index The index of the coefficient in the plaintext polynomial
         @throws std::out_of_range if coeff_index is not within [0, coeff_count)
         */
-        SEAL_NODISCARD inline pt_coeff_type *data(size_type coeff_index)
+        SEAL_NODISCARD inline pt_coeff_type *data(std::size_t coeff_index)
         {
-            if (coeff_count() == 0)
+            if (!coeff_count_)
             {
                 return nullptr;
             }
-            if (coeff_index >= coeff_count())
+            if (coeff_index >= coeff_count_)
             {
                 throw std::out_of_range("coeff_index must be within [0, coeff_count)");
             }
@@ -382,13 +398,13 @@ namespace seal
         @param[in] coeff_index The index of the coefficient in the plaintext polynomial
         */
         SEAL_NODISCARD inline const pt_coeff_type *data(
-            size_type coeff_index) const
+            std::size_t coeff_index) const
         {
-            if (coeff_count() == 0)
+            if (!coeff_count_)
             {
                 return nullptr;
             }
-            if (coeff_index >= coeff_count())
+            if (coeff_index >= coeff_count_)
             {
                 throw std::out_of_range("coeff_index must be within [0, coeff_count)");
             }
@@ -402,7 +418,7 @@ namespace seal
         @throws std::out_of_range if coeff_index is not within [0, coeff_count)
         */
         SEAL_NODISCARD inline const pt_coeff_type &operator [](
-            size_type coeff_index) const
+            std::size_t coeff_index) const
         {
             return data_.at(coeff_index);
         }
@@ -414,7 +430,7 @@ namespace seal
         @throws std::out_of_range if coeff_index is not within [0, coeff_count)
         */
         SEAL_NODISCARD inline pt_coeff_type &operator [](
-            size_type coeff_index)
+            std::size_t coeff_index)
         {
             return data_.at(coeff_index);
         }
@@ -461,7 +477,7 @@ namespace seal
         */
         SEAL_NODISCARD inline bool is_zero() const
         {
-            return (coeff_count() == 0) ||
+            return !coeff_count_ ||
                 std::all_of(data_.cbegin(), data_.cend(),
                     util::is_zero<pt_coeff_type>);
         }
@@ -469,7 +485,7 @@ namespace seal
         /**
         Returns the capacity of the current allocation.
         */
-        SEAL_NODISCARD inline size_type capacity() const noexcept
+        SEAL_NODISCARD inline std::size_t capacity() const noexcept
         {
             return data_.capacity();
         }
@@ -477,33 +493,33 @@ namespace seal
         /**
         Returns the coefficient count of the current plaintext polynomial.
         */
-        SEAL_NODISCARD inline size_type coeff_count() const noexcept
+        SEAL_NODISCARD inline std::size_t coeff_count() const noexcept
         {
-            return data_.size();
+            return coeff_count_;
         }
 
         /**
         Returns the significant coefficient count of the current plaintext polynomial.
         */
-        SEAL_NODISCARD inline size_type significant_coeff_count() const
+        SEAL_NODISCARD inline std::size_t significant_coeff_count() const
         {
-            if (coeff_count() == 0)
+            if (!coeff_count_)
             {
                 return 0;
             }
-            return util::get_significant_uint64_count_uint(data_.cbegin(), coeff_count());
+            return util::get_significant_uint64_count_uint(data_.cbegin(), coeff_count_);
         }
 
         /**
         Returns the non-zero coefficient count of the current plaintext polynomial.
         */
-        SEAL_NODISCARD inline size_type nonzero_coeff_count() const
+        SEAL_NODISCARD inline std::size_t nonzero_coeff_count() const
         {
-            if (coeff_count() == 0)
+            if (!coeff_count_)
             {
                 return 0;
             }
-            return util::get_nonzero_uint64_count_uint(data_.cbegin(), coeff_count());
+            return util::get_nonzero_uint64_count_uint(data_.cbegin(), coeff_count_);
         }
 
         /**
@@ -532,30 +548,54 @@ namespace seal
             {
                 throw std::invalid_argument("cannot convert NTT transformed plaintext to string");
             }
-            return util::poly_to_hex_string(data_.cbegin(), coeff_count(), 1);
+            return util::poly_to_hex_string(data_.cbegin(), coeff_count_, 1);
+        }
+
+        /**
+        Returns an upper bound on the size of the plaintext, as if it was written
+        to an output stream.
+
+        @param[in] compr_mode The compression mode
+        @throws std::invalid_argument if the compression mode is not supported
+        @throws std::logic_error if the size does not fit in the return type
+        */
+        SEAL_NODISCARD inline std::streamoff save_size(
+            compr_mode_type compr_mode) const
+        {
+            std::size_t members_size = Serialization::ComprSizeEstimate(
+                util::add_safe(
+                    sizeof(parms_id_),
+                    sizeof(std::uint64_t), // coeff_count_
+                    sizeof(scale_),
+                    util::safe_cast<std::size_t>(
+                        data_.save_size(compr_mode_type::none))),
+                compr_mode);
+
+            return util::safe_cast<std::streamoff>(util::add_safe(
+                sizeof(Serialization::SEALHeader),
+                members_size
+            ));
         }
 
         /**
         Saves the plaintext to an output stream. The output is in binary format
         and not human-readable. The output stream must have the "binary" flag set.
 
-        @param[in] stream The stream to save the plaintext to
-        @throws std::exception if the plaintext could not be written to stream
+        @param[out] stream The stream to save the plaintext to
+        @param[in] compr_mode The desired compression mode
+        @throws std::logic_error if the data to be saved is invalid, if compression
+        mode is not supported, or if compression failed
+        @throws std::runtime_error if I/O operations failed
         */
-        void save(std::ostream &stream) const;
-
-        void python_save(std::string &path) const
+        inline std::streamoff save(
+            std::ostream &stream,
+            compr_mode_type compr_mode = Serialization::compr_mode_default) const
         {
-            try
-            {
-                std::ofstream out(path, std::ofstream::binary);
-                this->save(out);
-                out.close();
-            }
-            catch (const std::exception &)
-            {
-                throw "Plaintext write exception";
-            }
+            using namespace std::placeholders;
+            return Serialization::Save(
+                std::bind(&Plaintext::save_members, this, _1),
+                save_size(compr_mode_type::none),
+                stream, compr_mode);
         }
 
         /**
@@ -564,24 +604,22 @@ namespace seal
         parameters is performed. This function should not be used unless the
         plaintext comes from a fully trusted source.
 
+        @param[in] context The SEALContext
         @param[in] stream The stream to load the plaintext from
-        @throws std::exception if a valid plaintext could not be read from stream
+        @throws std::invalid_argument if the context is not set or encryption
+        parameters are not valid
+        @throws std::logic_error if the loaded data is invalid or if decompression
+        failed
+        @throws std::runtime_error if I/O operations failed
         */
-        void unsafe_load(std::istream &stream);
-
-        void python_load(std::shared_ptr<SEALContext> context,
-            std::string &path)
+        inline std::streamoff unsafe_load(
+            std::shared_ptr<SEALContext> context,
+            std::istream &stream)
         {
-            try
-            {
-                std::ifstream in(path, std::ifstream::binary);
-                this->load(context, in);
-                in.close();
-            }
-            catch (const std::exception &)
-            {
-                throw "Plaintext read exception";
-            }
+            using namespace std::placeholders;
+            return Serialization::Load(
+                std::bind(&Plaintext::load_members, this, std::move(context), _1),
+                stream);
         }
 
         /**
@@ -592,20 +630,103 @@ namespace seal
         @param[in] stream The stream to load the plaintext from
         @throws std::invalid_argument if the context is not set or encryption
         parameters are not valid
-        @throws std::exception if a valid plaintext could not be read from stream
-        @throws std::invalid_argument if the loaded plaintext is invalid for the
-        context
+        @throws std::logic_error if the loaded data is invalid or if decompression
+        failed
+        @throws std::runtime_error if I/O operations failed
         */
-        inline void load(std::shared_ptr<SEALContext> context,
+        inline std::streamoff load(
+            std::shared_ptr<SEALContext> context,
             std::istream &stream)
         {
             Plaintext new_data(pool());
-            new_data.unsafe_load(stream);
+            auto in_size = new_data.unsafe_load(context, stream);
             if (!is_valid_for(new_data, std::move(context)))
             {
-                throw std::invalid_argument("Plaintext data is invalid");
+                throw std::logic_error("Plaintext data is invalid");
             }
             std::swap(*this, new_data);
+            return in_size;
+        }
+
+        /**
+        Saves the plaintext to a given memory location. The output is in binary
+        format and not human-readable.
+
+        @param[out] out The memory location to write the plaintext to
+        @param[in] size The number of bytes available in the given memory location
+        @param[in] compr_mode The desired compression mode
+        @throws std::invalid_argument if out is null or if size is too small to
+        contain a SEALHeader
+        @throws std::logic_error if the data to be saved is invalid, if compression
+        mode is not supported, or if compression failed
+        @throws std::runtime_error if I/O operations failed
+        */
+        inline std::streamoff save(
+            SEAL_BYTE *out,
+            std::size_t size,
+            compr_mode_type compr_mode = Serialization::compr_mode_default) const
+        {
+            using namespace std::placeholders;
+            return Serialization::Save(
+                std::bind(&Plaintext::save_members, this, _1),
+                save_size(compr_mode_type::none),
+                out, size, compr_mode);
+        }
+
+        /**
+        Loads a plaintext from a given memory location overwriting the current
+        plaintext. No checking of the validity of the plaintext data against
+        encryption parameters is performed. This function should not be used
+        unless the plaintext comes from a fully trusted source.
+
+        @param[in] context The SEALContext
+        @param[in] in The memory location to load the plaintext from
+        @param[in] size The number of bytes available in the given memory location
+        @throws std::invalid_argument if the context is not set or encryption
+        parameters are not valid
+        @throws std::invalid_argument if in is null or if size is too small to
+        contain a SEALHeader
+        @throws std::logic_error if the loaded data is invalid or if decompression
+        failed
+        @throws std::runtime_error if I/O operations failed
+        */
+        inline std::streamoff unsafe_load(
+            std::shared_ptr<SEALContext> context,
+            const SEAL_BYTE *in, std::size_t size)
+        {
+            using namespace std::placeholders;
+            return Serialization::Load(
+                std::bind(&Plaintext::load_members, this, std::move(context), _1),
+                in, size);
+        }
+
+        /**
+        Loads a plaintext from an input stream overwriting the current plaintext.
+        The loaded plaintext is verified to be valid for the given SEALContext.
+
+        @param[in] context The SEALContext
+        @param[in] in The memory location to load the PublicKey from
+        @param[in] size The number of bytes available in the given memory location
+        @throws std::invalid_argument if the context is not set or encryption
+        parameters are not valid
+        @throws std::invalid_argument if in is null or if size is too small to
+        contain a SEALHeader
+        @throws std::logic_error if the loaded data is invalid or if decompression
+        failed
+        @throws std::runtime_error if I/O operations failed
+        */
+        inline std::streamoff load(
+            std::shared_ptr<SEALContext> context,
+            const SEAL_BYTE *in, std::size_t size)
+        {
+            Plaintext new_data(pool());
+            auto in_size = new_data.unsafe_load(context, in, size);
+            if (!is_valid_for(new_data, std::move(context)))
+            {
+                throw std::logic_error("Plaintext data is invalid");
+            }
+            std::swap(*this, new_data);
+            return in_size;
         }
 
         /**
@@ -671,7 +792,13 @@ namespace seal
         struct PlaintextPrivateHelper;
 
     private:
+        void save_members(std::ostream &stream) const;
+
+        void load_members(std::shared_ptr<SEALContext> context, std::istream &stream);
+
         parms_id_type parms_id_ = parms_id_zero;
+
+        std::size_t coeff_count_ = 0;
 
         double scale_ = 1.0;
 
