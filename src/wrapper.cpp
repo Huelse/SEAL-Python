@@ -4,7 +4,7 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 #include "seal/seal.h"
-#include "base64.h"
+#include <fstream>
 
 using namespace std;
 using namespace seal;
@@ -17,30 +17,6 @@ PYBIND11_MAKE_OPAQUE(std::vector<std::uint64_t>);
 PYBIND11_MAKE_OPAQUE(std::vector<std::int64_t>);
 
 using parms_id_type = std::array<std::uint64_t, 4>;
-
-// template <class T>
-// py::tuple serialize(T &c)
-// {
-// 	std::stringstream output(std::ios::binary | std::ios::out);
-// 	c.save(output);
-// 	std::string cipherstr = output.str();
-// 	std::string base64_encoded_cipher = base64_encode(reinterpret_cast<const unsigned char *>(cipherstr.c_str()), (unsigned int)cipherstr.length());
-// 	return py::make_tuple(base64_encoded_cipher);
-// }
-
-// template <class T>
-// T deserialize(py::tuple t)
-// {
-// 	if (t.size() != 1)
-// 		throw std::runtime_error("(Pickle) Invalid input tuple!");
-// 	T c = T();
-// 	std::string cipherstr_encoded = t[0].cast<std::string>();
-// 	std::string cipherstr_decoded = base64_decode(cipherstr_encoded);
-// 	std::stringstream input(std::ios::binary | std::ios::in);
-// 	input.str(cipherstr_decoded);
-// 	c.load(context, input);
-// 	return c;
-// }
 
 PYBIND11_MODULE(seal, m)
 {
@@ -90,7 +66,7 @@ PYBIND11_MODULE(seal, m)
 	// context.h
 	py::class_<SEALContext, std::shared_ptr<SEALContext>>(m, "SEALContext")
 		// .def_static("Create", [](const EncryptionParameters &parms) { return SEALContext::Create(parms); })
-		.def_static("Create", &SEALContext::Create, py::arg(), py::arg()=true, py::arg()=sec_level_type::tc128)
+		.def_static("Create", &SEALContext::Create, py::arg(), py::arg() = true, py::arg() = sec_level_type::tc128)
 		.def("get_context_data", &SEALContext::get_context_data)
 		.def("key_context_data", &SEALContext::key_context_data)
 		.def("first_context_data", &SEALContext::first_context_data)
@@ -151,7 +127,17 @@ PYBIND11_MODULE(seal, m)
 		.def("significant_coeff_count", &Plaintext::significant_coeff_count)
 		.def("to_string", &Plaintext::to_string)
 		.def("parms_id", (parms_id_type & (Plaintext::*)()) & Plaintext::parms_id, py::return_value_policy::reference)
-		.def("scale", (double &(Plaintext::*)()) & Plaintext::scale, py::return_value_policy::reference);
+		.def("scale", (double &(Plaintext::*)()) & Plaintext::scale, py::return_value_policy::reference)
+		.def("save", [](const Plaintext &c, std::string &path) {
+			std::ofstream out(path, std::ofstream::binary);
+			c.save(out);
+			out.close();
+		})
+		.def("load", [](Plaintext &c, std::shared_ptr<SEALContext> &context, std::string &path) {
+			std::ifstream in(path, std::ifstream::binary);
+			c.load(context, in);
+			in.close();
+		});
 
 	// ciphertext.h
 	py::class_<Ciphertext>(m, "Ciphertext")
@@ -168,35 +154,95 @@ PYBIND11_MODULE(seal, m)
 		.def("release", &Ciphertext::release)
 		.def("size", &Ciphertext::size)
 		.def("parms_id", (parms_id_type & (Ciphertext::*)()) & Ciphertext::parms_id, py::return_value_policy::reference)
-		.def("scale", [](Ciphertext &c, double scale){
+		.def("scale", (double &(Ciphertext::*)()) & Ciphertext::scale, py::return_value_policy::reference)
+		.def("scale", [](Ciphertext &c, double scale) {
 			c.scale() = scale;
 		})
-		.def("scale", (double &(Ciphertext::*)()) & Ciphertext::scale, py::return_value_policy::reference);
+		.def("save", [](const Ciphertext &c, std::string &path) {
+			std::ofstream out(path, std::ofstream::binary);
+			c.save(out);
+			out.close();
+		})
+		.def("load", [](Ciphertext &c, std::shared_ptr<SEALContext> &context, std::string &path) {
+			std::ifstream in(path, std::ifstream::binary);
+			c.load(context, in);
+			in.close();
+		});
 
 	// secretkey.h
 	py::class_<SecretKey>(m, "SecretKey")
 		.def(py::init<>())
-		.def("parms_id", (parms_id_type & (SecretKey::*)()) & SecretKey::parms_id, py::return_value_policy::reference);
+		.def("parms_id", (parms_id_type & (SecretKey::*)()) & SecretKey::parms_id, py::return_value_policy::reference)
+		.def("save", [](const SecretKey &c, std::string &path) {
+			std::ofstream out(path, std::ofstream::binary);
+			c.save(out);
+			out.close();
+		})
+		.def("load", [](SecretKey &c, std::shared_ptr<SEALContext> &context, std::string &path) {
+			std::ifstream in(path, std::ifstream::binary);
+			c.load(context, in);
+			in.close();
+		});
 
 	// publickey.h
 	py::class_<PublicKey>(m, "PublicKey")
 		.def(py::init<>())
-		.def("parms_id", (parms_id_type & (PublicKey::*)()) & PublicKey::parms_id, py::return_value_policy::reference);
+		.def("parms_id", (parms_id_type & (PublicKey::*)()) & PublicKey::parms_id, py::return_value_policy::reference)
+		.def("save", [](const PublicKey &c, std::string &path) {
+			std::ofstream out(path, std::ofstream::binary);
+			c.save(out);
+			out.close();
+		})
+		.def("load", [](PublicKey &c, std::shared_ptr<SEALContext> &context, std::string &path) {
+			std::ifstream in(path, std::ifstream::binary);
+			c.load(context, in);
+			in.close();
+		});
 
 	// kswitchkeys.h
 	py::class_<KSwitchKeys>(m, "KSwitchKeys")
 		.def(py::init<>())
-		.def("parms_id", (parms_id_type & (KSwitchKeys::*)()) & KSwitchKeys::parms_id, py::return_value_policy::reference);
+		.def("parms_id", (parms_id_type & (KSwitchKeys::*)()) & KSwitchKeys::parms_id, py::return_value_policy::reference)
+		.def("save", [](const KSwitchKeys &c, std::string &path) {
+			std::ofstream out(path, std::ofstream::binary);
+			c.save(out);
+			out.close();
+		})
+		.def("load", [](KSwitchKeys &c, std::shared_ptr<SEALContext> &context, std::string &path) {
+			std::ifstream in(path, std::ifstream::binary);
+			c.load(context, in);
+			in.close();
+		});
 
 	// relinKeys.h
 	py::class_<RelinKeys, KSwitchKeys>(m, "RelinKeys")
 		.def(py::init<>())
-		.def("parms_id", (parms_id_type & (RelinKeys::KSwitchKeys::*)()) & RelinKeys::KSwitchKeys::parms_id, py::return_value_policy::reference);
+		.def("parms_id", (parms_id_type & (RelinKeys::KSwitchKeys::*)()) & RelinKeys::KSwitchKeys::parms_id, py::return_value_policy::reference)
+		.def("save", [](const RelinKeys &c, std::string &path) {
+			std::ofstream out(path, std::ofstream::binary);
+			c.save(out);
+			out.close();
+		})
+		.def("load", [](RelinKeys &c, std::shared_ptr<SEALContext> &context, std::string &path) {
+			std::ifstream in(path, std::ifstream::binary);
+			c.load(context, in);
+			in.close();
+		});
 
 	// galoisKeys.h
 	py::class_<GaloisKeys, KSwitchKeys>(m, "GaloisKeys")
 		.def(py::init<>())
-		.def("parms_id", (parms_id_type & (GaloisKeys::KSwitchKeys::*)()) & GaloisKeys::KSwitchKeys::parms_id, py::return_value_policy::reference);
+		.def("parms_id", (parms_id_type & (GaloisKeys::KSwitchKeys::*)()) & GaloisKeys::KSwitchKeys::parms_id, py::return_value_policy::reference)
+		.def("save", [](const GaloisKeys &c, std::string &path) {
+			std::ofstream out(path, std::ofstream::binary);
+			c.save(out);
+			out.close();
+		})
+		.def("load", [](GaloisKeys &c, std::shared_ptr<SEALContext> &context, std::string &path) {
+			std::ifstream in(path, std::ifstream::binary);
+			c.load(context, in);
+			in.close();
+		});
 
 	// keygenerator.h
 	py::class_<KeyGenerator>(m, "KeyGenerator")

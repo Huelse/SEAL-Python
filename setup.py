@@ -12,7 +12,7 @@ cpp_args = ['-std=c++17']
 # include directories
 include_dirs = [incdir, './pybind11/include', './SEAL/native/src']
 # library path
-extra_objects = ['./SEAL/native/lib/libseal.a']
+extra_objects = ['./SEAL/native/lib/libseal-3.4.a']
 
 if(platform.system() == "Windows"):
     cpp_args[0] = '/std:c++latest'
@@ -25,7 +25,7 @@ if not os.path.exists(extra_objects[0]):
 ext_modules = [
     Extension(
         name='seal',
-        sources=['src/base64.cpp', 'src/wrapper.cpp'],
+        sources=['src/wrapper.cpp'],
         include_dirs=include_dirs,
         language='c++',
         extra_compile_args=cpp_args,

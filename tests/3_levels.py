@@ -16,16 +16,16 @@ def example_levels():
 
     parms.set_coeff_modulus(CoeffModulus.Create(
         poly_modulus_degree, [50, 30, 30, 50, 50]))
-    parms.set_plain_modulus(1 << 20)
+    parms.set_plain_modulus(PlainModulus.Batching(poly_modulus_degree, 20))
     context = SEALContext.Create(parms)
     print_parameters(context)
 
     print("-" * 50)
     print("Print the modulus switching chain.")
 
-    '''
+    """
 	First print the key level parameter information.
-	'''
+	"""
     context_data = context.key_context_data()
     print("----> Level (chain index): " +
           str(context_data.chain_index()), end="")
@@ -37,9 +37,9 @@ def example_levels():
         print(str(hex(item.value())) + " ", end="")
     print("\n\\\n \\-->", end="")
 
-    '''
+    """
 	Next iterate over the remaining (data) levels.
-	'''
+	"""
     context_data = context.first_context_data()
     while context_data:
         print(" Level (chain index): " + str(context_data.chain_index()), end="")
@@ -59,9 +59,9 @@ def example_levels():
         context_data = context_data.next_context_data()
     print(" End of chain reached\n")
 
-    '''
+    """
 	We create some keys and check that indeed they appear at the highest level.
-	'''
+	"""
     keygen = KeyGenerator(context)
     public_key = keygen.public_key()
     secret_key = keygen.secret_key()
@@ -82,10 +82,10 @@ def example_levels():
     evaluator = Evaluator(context)
     decryptor = Decryptor(context, secret_key)
 
-    '''
+    """
 	In the BFV scheme plaintexts do not carry a parms_id, but ciphertexts do. Note
-    	how the freshly encrypted ciphertext is at the highest data level.
-	'''
+    how the freshly encrypted ciphertext is at the highest data level.
+	"""
     plain = Plaintext("1x^3 + 2x^2 + 3x^1 + 4")
     encrypted = Ciphertext()
     encryptor.encrypt(plain, encrypted)
@@ -116,11 +116,11 @@ def example_levels():
           "%.0f" % decryptor.invariant_noise_budget(encrypted) + " bits")
     print("\\\n \\--> End of chain reached\n")
 
-    '''
+    """
 	At this point it is hard to see any benefit in doing this: we lost a huge
-    	amount of noise budget (i.e., computational power) at each switch and seemed
-    	to get nothing in return. Decryption still works.
-	'''
+    amount of noise budget (i.e., computational power) at each switch and seemed
+    to get nothing in return. Decryption still works.
+	"""
     print("-" * 50)
     print("Decrypt still works after modulus switching.")
     decryptor.decrypt(encrypted, plain)
@@ -138,10 +138,10 @@ def example_levels():
     print("    + Noise budget after squaring:          " +
           "%.0f" % decryptor.invariant_noise_budget(encrypted) + " bits")
 
-    '''
+    """
     	Surprisingly, in this case modulus switching has no effect at all on the
     	noise budget.
-    	'''
+    	"""
     evaluator.mod_switch_to_next_inplace(encrypted)
     print("    + Noise budget after modulus switching: " +
           "%.0f" % decryptor.invariant_noise_budget(encrypted) + " bits")
@@ -157,11 +157,11 @@ def example_levels():
     print("    + Decryption of fourth power (hexadecimal) ...... Correct.")
     print("    " + plain.to_string() + "\n")
 
-    '''
-    	In BFV modulus switching is not necessary and in some cases the user might
-    	not want to create the modulus switching chain, except for the highest two
-    	levels. This can be done by passing a bool `false' to SEALContext::Create.
-    	'''
+    """
+    In BFV modulus switching is not necessary and in some cases the user might
+    not want to create the modulus switching chain, except for the highest two
+    levels. This can be done by passing a bool `false' to SEALContext::Create.
+    """
     context = SEALContext.Create(parms, False)
     print("Optionally disable modulus switching chain expansion.")
     print("-" * 50)

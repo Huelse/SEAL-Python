@@ -8,12 +8,8 @@ include_directories("/usr/include/python3.6")
 include_directories("../pybind11/include")
 include_directories("../SEAL/native/src")
 
-LINK_LIBRARIES("../SEAL/native/lib/libseal.a")
+LINK_LIBRARIES("../SEAL/native/lib/libseal-3.4.a")
 
 find_package(pybind11 REQUIRED)
 
 pybind11_add_module(seal wrapper.cpp)
-target_sources(seal
-    PRIVATE
-        base64.cpp
-)

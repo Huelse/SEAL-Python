@@ -30,12 +30,10 @@ cd SEAL/native/src
 cmake .
 make
 
-cd src
 pip3 install -r requirements.txt
 
 # Check the path at first
 # Setuptools (Recommend)
-cd src
 python3 setup.py build_ext -i
 # or install
 python3 setup.py install
@@ -56,7 +54,6 @@ Visual Studio 2017 version 15.3 or newer is required to build Microsoft SEAL.
 Open the `SEAL/SEAL.sln` in VS, config in `x64, Release, WinSDK(17763, etc)` mode and generate it.
 
 ```shell
-cd src
 python3 setup.py build_ext -i
 # or install
 python3 setup.py install
