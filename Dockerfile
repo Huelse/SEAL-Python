@@ -24,7 +24,7 @@ RUN cmake . && \
     make install
 
 # Install requirements
-WORKDIR /app/src
+WORKDIR /app
 RUN pip3 install -r requirements.txt
 
 # Build pybind11
@@ -36,7 +36,7 @@ RUN cmake .. && \
     make install
 
 # Build wrapper
-WORKDIR /app/src
+WORKDIR /app
 RUN python3 setup.py build_ext -i && \
     python3 setup.py install
 
