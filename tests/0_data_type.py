@@ -1,7 +1,6 @@
 from seal import *
 from seal_helper import *
 import numpy as np
-import pickle
 
 
 def example_data_type():
@@ -18,18 +17,8 @@ def example_data_type():
     print(e)  # [0 0 0 0 1 0 0 0 0 0]
 
 
-def example_pickle_save(out, path="temp"):
-    with open(path, "wb") as write:
-        pickle.dump(out, write)
-
-
-def example_pickle_load(path="temp"):
-    with open(path, "rb") as read:
-        return pickle.load(read)
-
-
 def example_serialize():
-    print_example_banner("Example: pickle & save & load")
+    print_example_banner("Example: save & load")
     parms = EncryptionParameters(scheme_type.BFV)
 
     poly_modulus_degree = 4096
