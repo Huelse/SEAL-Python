@@ -21,7 +21,7 @@ This is a python binding for the Microsoft SEAL library.
 ### Linux
 CMake (>= 3.10), GNU G++ (>= 6.0) or Clang++ (>= 5.0), Python (>=3.6.8)
 
-`sudo apt-get update && sudo apt-get install g++ make cmake git python3 python3-dev python3.6-pip`
+`sudo apt-get update && sudo apt-get install g++ make cmake git python3 python3-dev python3-pip`
 
 `git clone https://github.com/Huelse/SEAL-Python.git`
 
@@ -37,12 +37,6 @@ pip3 install -r requirements.txt
 python3 setup.py build_ext -i
 # or install
 python3 setup.py install
-
-# CMake (Optional)
-mkdir build
-cd build
-cmake ..
-make
 ```
 
 [setuptools docs](https://docs.python.org/3/distutils/configfile.html) [pybind11 docs](https://pybind11.readthedocs.io/en/master/index.html)
