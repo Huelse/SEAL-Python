@@ -51,7 +51,17 @@ PYBIND11_MODULE(seal, m)
 		.def("scheme", &EncryptionParameters::scheme)
 		.def("poly_modulus_degree", &EncryptionParameters::poly_modulus_degree)
 		.def("coeff_modulus", &EncryptionParameters::coeff_modulus)
-		.def("plain_modulus", &EncryptionParameters::plain_modulus);
+		.def("plain_modulus", &EncryptionParameters::plain_modulus)
+		.def("save", [](const EncryptionParameters &p, std::string &path) {
+			std::ofstream out(path, std::ofstream::binary);
+			p.save(out);
+			out.close();
+		})
+		.def("load", [](EncryptionParameters &p, std::string &path) {
+			std::ifstream in(path, std::ifstream::binary);
+			p.load(in);
+			in.close();
+		});
 
 	// context.h
 	py::class_<EncryptionParameterQualifiers, std::unique_ptr<EncryptionParameterQualifiers, py::nodelete>>(m, "EncryptionParameterQualifiers")
