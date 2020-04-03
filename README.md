@@ -39,7 +39,7 @@ python3 setup.py build_ext -i
 python3 setup.py install
 ```
 
-[setuptools docs](https://docs.python.org/3/distutils/configfile.html) [pybind11 docs](https://pybind11.readthedocs.io/en/master/index.html)
+Docs: [setuptools](https://docs.python.org/3/distutils/configfile.html) [pybind11](https://pybind11.readthedocs.io/en/master/index.html)
 
 ### Windows
 
@@ -54,6 +54,26 @@ python3 setup.py install
 ```
 
 Microsoft official video [SEAL in windows](https://www.microsoft.com/en-us/research/video/installing-microsoft-seal-on-windows/).
+
+
+
+## FAQ
+
+1. ImportError: undefined symbol
+
+   Build a shared SEAL library `cmake . -D SEAL_LIB_BUILD_TYPE=Shared`, and get the `libseal.so`
+
+   then change the lib path in `setup.py` or `src/CMakeLists.txt`, and rebuild.
+
+
+
+2. ImportError: libseal.so.3.4 cannot find
+
+   a. `sudo ln -s /path/to/libseal.so  /usr/lib`
+
+   b. add `/usr/local/lib` or the `SEAL/native/lib` to `/etc/ld.so.conf` and refresh it `sudo ldconfig`
+
+   c. build in cmake.
 
 
 
