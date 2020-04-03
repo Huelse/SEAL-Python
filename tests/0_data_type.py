@@ -26,7 +26,11 @@ def example_serialize():
     parms.set_coeff_modulus(CoeffModulus.BFVDefault(poly_modulus_degree))
     parms.set_plain_modulus(256)
 
-    context = SEALContext.Create(parms)
+    parms.save("parms")
+    parms_loaded = EncryptionParameters(scheme_type.BFV)
+    parms_loaded.load("parms")
+
+    context = SEALContext.Create(parms_loaded)
 
     print("-" * 50)
     print("Set encryption parameters and print")
