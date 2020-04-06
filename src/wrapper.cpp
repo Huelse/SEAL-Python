@@ -330,7 +330,7 @@ PYBIND11_MODULE(seal, m)
 		.def("add_plain_inplace", (void (Evaluator::*)(Ciphertext &, const Plaintext &)) & Evaluator::add_plain_inplace)
 		.def("add_plain", (void (Evaluator::*)(const Ciphertext &, const Plaintext &, Ciphertext &)) & Evaluator::add_plain)
 		.def("sub_plain_inplace", (void (Evaluator::*)(Ciphertext &, const Plaintext &)) & Evaluator::sub_plain_inplace)
-		.def("sub_plain", (void (Evaluator::*)(const Ciphertext &, const Plaintext &)) & Evaluator::sub_plain)
+		.def("sub_plain", (void (Evaluator::*)(const Ciphertext &, const Plaintext &, Ciphertext &)) & Evaluator::sub_plain)
 		.def("multiply_plain_inplace", (void (Evaluator::*)(Ciphertext &, const Plaintext &, MemoryPoolHandle)) & Evaluator::multiply_plain_inplace,
 			 py::arg(), py::arg(), py::arg() = MemoryManager::GetPool())
 		.def("multiply_plain", (void (Evaluator::*)(const Ciphertext &, const Plaintext &, Ciphertext &, MemoryPoolHandle)) & Evaluator::multiply_plain,
