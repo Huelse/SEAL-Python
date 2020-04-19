@@ -5,7 +5,6 @@
 #include <pybind11/stl.h>
 #include "seal/seal.h"
 #include <fstream>
-#include "base64.h"
 
 using namespace std;
 using namespace seal;
@@ -18,44 +17,6 @@ PYBIND11_MAKE_OPAQUE(std::vector<std::uint64_t>);
 PYBIND11_MAKE_OPAQUE(std::vector<std::int64_t>);
 
 using parms_id_type = std::array<std::uint64_t, 4>;
-
-template <class T>
-py::tuple serialize(T &c)
-{
-	std::stringstream output(std::ios::binary | std::ios::out);
-	c.save(output);
-	std::string cipherstr = output.str();
-	std::string base64_encoded_cipher = base64_encode(reinterpret_cast<const unsigned char *>(cipherstr.c_str()), cipherstr.length());
-	return py::make_tuple(base64_encoded_cipher);
-}
-
-template <class T>
-T deserialize(py::tuple t)
-{
-	if (t.size() != 1)
-		throw std::runtime_error("(Pickle) Invalid input tuple!");
-	T c = T();
-	std::string cipherstr_encoded = t[0].cast<std::string>();
-	std::string cipherstr_decoded = base64_decode(cipherstr_encoded);
-	std::stringstream input(std::ios::binary | std::ios::in);
-	input.str(cipherstr_decoded);
-	c.load(input);
-	return c;
-}
-
-template <class T>
-T deserialize_context(py::tuple t)
-{
-	if (t.size() != 2)
-		throw std::runtime_error("(Pickle) Invalid input tuple!");
-	T c = T();
-	std::string cipherstr_encoded = t[1].cast<std::string>();
-	std::string cipherstr_decoded = base64_decode(cipherstr_encoded);
-	std::stringstream input(std::ios::binary | std::ios::in);
-	input.str(cipherstr_decoded);
-	c.load(t[0].cast<std::shared_ptr<SEALContext>>(), input);
-	return c;
-}
 
 PYBIND11_MODULE(seal, m)
 {
@@ -100,8 +61,7 @@ PYBIND11_MODULE(seal, m)
 			std::ifstream in(path, std::ifstream::binary);
 			p.load(in);
 			in.close();
-		})
-		.def(py::pickle(&serialize<EncryptionParameters>, &deserialize<EncryptionParameters>));
+		});
 
 	// context.h
 	py::class_<EncryptionParameterQualifiers, std::unique_ptr<EncryptionParameterQualifiers, py::nodelete>>(m, "EncryptionParameterQualifiers")
@@ -187,8 +147,7 @@ PYBIND11_MODULE(seal, m)
 			std::ifstream in(path, std::ifstream::binary);
 			c.load(context, in);
 			in.close();
-		})
-		.def(py::pickle(&serialize<Plaintext>, &deserialize_context<Plaintext>));
+		});
 
 	// ciphertext.h
 	py::class_<Ciphertext>(m, "Ciphertext")
@@ -218,8 +177,7 @@ PYBIND11_MODULE(seal, m)
 			std::ifstream in(path, std::ifstream::binary);
 			c.load(context, in);
 			in.close();
-		})
-		.def(py::pickle(&serialize<Ciphertext>, &deserialize_context<Ciphertext>));
+		});
 
 	// secretkey.h
 	py::class_<SecretKey>(m, "SecretKey")
@@ -234,8 +192,7 @@ PYBIND11_MODULE(seal, m)
 			std::ifstream in(path, std::ifstream::binary);
 			c.load(context, in);
 			in.close();
-		})
-		.def(py::pickle(&serialize<SecretKey>, &deserialize_context<SecretKey>));
+		});
 
 	// publickey.h
 	py::class_<PublicKey>(m, "PublicKey")
@@ -250,8 +207,7 @@ PYBIND11_MODULE(seal, m)
 			std::ifstream in(path, std::ifstream::binary);
 			c.load(context, in);
 			in.close();
-		})
-		.def(py::pickle(&serialize<PublicKey>, &deserialize_context<PublicKey>));
+		});
 
 	// kswitchkeys.h
 	py::class_<KSwitchKeys>(m, "KSwitchKeys")
@@ -266,8 +222,7 @@ PYBIND11_MODULE(seal, m)
 			std::ifstream in(path, std::ifstream::binary);
 			c.load(context, in);
 			in.close();
-		})
-		.def(py::pickle(&serialize<KSwitchKeys>, &deserialize_context<KSwitchKeys>));
+		});
 
 	// relinKeys.h
 	py::class_<RelinKeys, KSwitchKeys>(m, "RelinKeys")
@@ -282,8 +237,7 @@ PYBIND11_MODULE(seal, m)
 			std::ifstream in(path, std::ifstream::binary);
 			c.load(context, in);
 			in.close();
-		})
-		.def(py::pickle(&serialize<RelinKeys>, &deserialize_context<RelinKeys>));
+		});
 
 	// galoisKeys.h
 	py::class_<GaloisKeys, KSwitchKeys>(m, "GaloisKeys")
@@ -298,8 +252,7 @@ PYBIND11_MODULE(seal, m)
 			std::ifstream in(path, std::ifstream::binary);
 			c.load(context, in);
 			in.close();
-		})
-		.def(py::pickle(&serialize<GaloisKeys>, &deserialize_context<GaloisKeys>));
+		});
 
 	// keygenerator.h
 	py::class_<KeyGenerator>(m, "KeyGenerator")
