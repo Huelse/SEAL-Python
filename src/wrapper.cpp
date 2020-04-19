@@ -44,16 +44,20 @@ T deserialize(py::tuple t)
 }
 
 template <class T>
-T deserialize_context(py::tuple t)
-{
-	if (t.size() != 2)
-		throw std::runtime_error("(Pickle) Invalid input tuple!");
-	T c = T();
-	std::string cipherstr_encoded = t[1].cast<std::string>();
-	std::string cipherstr_decoded = base64_decode(cipherstr_encoded);
+std::string saves(const T &c) {
+	std::stringstream output(std::ios::binary | std::ios::out);
+	c.save(output);
+	std::string cipherstr = output.str();
+	std::string base64_encoded_cipher = base64_encode(reinterpret_cast<const unsigned char *>(cipherstr.c_str()), cipherstr.length());
+	return 	base64_encoded_cipher;
+}
+
+template <class T>
+T loads(T &c, std::shared_ptr<SEALContext> &context, std::string s) {
+	std::string cipherstr_decoded = base64_decode(s);
 	std::stringstream input(std::ios::binary | std::ios::in);
 	input.str(cipherstr_decoded);
-	c.load(t[0].cast<std::shared_ptr<SEALContext>>(), input);
+	c.load(context, input);
 	return c;
 }
 
@@ -101,7 +105,16 @@ PYBIND11_MODULE(seal, m)
 			p.load(in);
 			in.close();
 		})
+		.def("saves", &saves<EncryptionParameters>)
+		.def("loads", [](EncryptionParameters &p, std::string &s){
+			std::string cipherstr_decoded = base64_decode(s);
+			std::stringstream input(std::ios::binary | std::ios::in);
+			input.str(cipherstr_decoded);
+			p.load(input);
+			return p;
+		})
 		.def(py::pickle(&serialize<EncryptionParameters>, &deserialize<EncryptionParameters>));
+
 
 	// context.h
 	py::class_<EncryptionParameterQualifiers, std::unique_ptr<EncryptionParameterQualifiers, py::nodelete>>(m, "EncryptionParameterQualifiers")
@@ -122,7 +135,19 @@ PYBIND11_MODULE(seal, m)
 		.def("first_context_data", &SEALContext::first_context_data)
 		.def("first_parms_id", &SEALContext::first_parms_id)
 		.def("last_parms_id", &SEALContext::last_parms_id)
-		.def("using_keyswitching", &SEALContext::using_keyswitching);
+		.def("using_keyswitching", &SEALContext::using_keyswitching)
+		.def(py::pickle(
+        	[](const SEALContext &context) {
+				std::shared_ptr<const seal::SEALContext::ContextData> data = context.key_context_data();
+            	EncryptionParameters parms_ = data->parms();
+            	return serialize<EncryptionParameters>(parms_);
+        	},
+        	[](py::tuple t) {
+        	    EncryptionParameters parms_ = deserialize<EncryptionParameters>(t);
+        	    std::shared_ptr<SEALContext> context = SEALContext::Create(parms_);;
+        	    return context;
+        	}
+   		));
 
 	// context.h
 	py::class_<SEALContext::ContextData, std::shared_ptr<SEALContext::ContextData>>(m, "SEALContext::ContextData")
@@ -188,7 +213,8 @@ PYBIND11_MODULE(seal, m)
 			c.load(context, in);
 			in.close();
 		})
-		.def(py::pickle(&serialize<Plaintext>, &deserialize_context<Plaintext>));
+		.def("saves", &saves<Plaintext>)
+		.def("loads", &loads<Plaintext>, py::return_value_policy::reference);
 
 	// ciphertext.h
 	py::class_<Ciphertext>(m, "Ciphertext")
@@ -219,7 +245,8 @@ PYBIND11_MODULE(seal, m)
 			c.load(context, in);
 			in.close();
 		})
-		.def(py::pickle(&serialize<Ciphertext>, &deserialize_context<Ciphertext>));
+		.def("saves", &saves<Ciphertext>)
+		.def("loads", &loads<Ciphertext>, py::return_value_policy::reference);
 
 	// secretkey.h
 	py::class_<SecretKey>(m, "SecretKey")
@@ -235,7 +262,8 @@ PYBIND11_MODULE(seal, m)
 			c.load(context, in);
 			in.close();
 		})
-		.def(py::pickle(&serialize<SecretKey>, &deserialize_context<SecretKey>));
+		.def("saves", &saves<SecretKey>)
+		.def("loads", &loads<SecretKey>, py::return_value_policy::reference);
 
 	// publickey.h
 	py::class_<PublicKey>(m, "PublicKey")
@@ -251,7 +279,8 @@ PYBIND11_MODULE(seal, m)
 			c.load(context, in);
 			in.close();
 		})
-		.def(py::pickle(&serialize<PublicKey>, &deserialize_context<PublicKey>));
+		.def("saves", &saves<PublicKey>)
+		.def("loads", &loads<PublicKey>, py::return_value_policy::reference);
 
 	// kswitchkeys.h
 	py::class_<KSwitchKeys>(m, "KSwitchKeys")
@@ -267,7 +296,8 @@ PYBIND11_MODULE(seal, m)
 			c.load(context, in);
 			in.close();
 		})
-		.def(py::pickle(&serialize<KSwitchKeys>, &deserialize_context<KSwitchKeys>));
+		.def("saves", &saves<KSwitchKeys>)
+		.def("loads", &loads<KSwitchKeys>, py::return_value_policy::reference);
 
 	// relinKeys.h
 	py::class_<RelinKeys, KSwitchKeys>(m, "RelinKeys")
@@ -283,7 +313,8 @@ PYBIND11_MODULE(seal, m)
 			c.load(context, in);
 			in.close();
 		})
-		.def(py::pickle(&serialize<RelinKeys>, &deserialize_context<RelinKeys>));
+		.def("saves", &saves<RelinKeys>)
+		.def("loads", &loads<RelinKeys>, py::return_value_policy::reference);
 
 	// galoisKeys.h
 	py::class_<GaloisKeys, KSwitchKeys>(m, "GaloisKeys")
@@ -299,7 +330,8 @@ PYBIND11_MODULE(seal, m)
 			c.load(context, in);
 			in.close();
 		})
-		.def(py::pickle(&serialize<GaloisKeys>, &deserialize_context<GaloisKeys>));
+		.def("saves", &saves<GaloisKeys>)
+		.def("loads", &loads<GaloisKeys>, py::return_value_policy::reference);
 
 	// keygenerator.h
 	py::class_<KeyGenerator>(m, "KeyGenerator")

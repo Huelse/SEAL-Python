@@ -43,6 +43,7 @@ def example_serialize():
     encryptor = Encryptor(context, public_key)
     evaluator = Evaluator(context)
     decryptor = Decryptor(context, secret_key)
+    encoder = IntegerEncoder(context)
 
     print("-" * 50)
     x = "6"
@@ -66,6 +67,23 @@ def example_serialize():
     print("\nx_read scale: %.1f" % x_read.scale())
     print("x_read parms_id: ", end="")
     print(x_read.parms_id())
+
+    # test save/load printable strings of the objects
+    p = Plaintext()
+    p_copy = Plaintext()
+    p = encoder.encode(100)
+    p_str = p.saves()
+    p_copy.loads(context, p_str)
+    assert encoder.decode_int64(p) == encoder.decode_int64(p_copy)
+
+    c = Ciphertext()
+    c_copy = Ciphertext()
+    encryptor.encrypt(p, c)
+    c_str = c.saves()
+    c_copy.loads(context, c_str)
+    p_copy = Plaintext()
+    decryptor.decrypt(c_copy, p_copy)
+    assert encoder.decode_int64(p) == encoder.decode_int64(p_copy)
 
 
 if __name__ == '__main__':
