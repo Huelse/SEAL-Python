@@ -117,8 +117,8 @@ PYBIND11_MODULE(seal, m)
 
 	// modulus.h
 	py::class_<PlainModulus>(m, "PlainModulus")
-		.def("Batching", [](std::size_t poly_modulus_degree, int bit_size) { return PlainModulus::Batching(poly_modulus_degree, bit_size); })
-		.def("Batching", [](std::size_t poly_modulus_degree, std::vector<int> bit_sizes) { return PlainModulus::Batching(poly_modulus_degree, bit_sizes); });
+		.def_static("Batching", [](std::size_t poly_modulus_degree, int bit_size) { return PlainModulus::Batching(poly_modulus_degree, bit_size); })
+		.def_static("Batching", [](std::size_t poly_modulus_degree, std::vector<int> bit_sizes) { return PlainModulus::Batching(poly_modulus_degree, bit_sizes); });
 
 	// plaintext.h
 	py::class_<Plaintext>(m, "Plaintext")
