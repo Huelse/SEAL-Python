@@ -25,7 +25,7 @@ if not os.path.exists(extra_objects[0]):
 ext_modules = [
     Extension(
         name='seal',
-        sources=['src/wrapper.cpp'],
+        sources=['src/base64.cpp', 'src/wrapper.cpp'],
         include_dirs=include_dirs,
         language='c++',
         extra_compile_args=cpp_args,

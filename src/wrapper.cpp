@@ -4,6 +4,7 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 #include "seal/seal.h"
+#include "base64.h"
 #include <fstream>
 
 using namespace std;
@@ -17,6 +18,30 @@ PYBIND11_MAKE_OPAQUE(std::vector<std::uint64_t>);
 PYBIND11_MAKE_OPAQUE(std::vector<std::int64_t>);
 
 using parms_id_type = std::array<std::uint64_t, 4>;
+
+template <class T>
+py::tuple serialize(T &c)
+{
+	std::stringstream output(std::ios::binary | std::ios::out);
+	c.save(output);
+	std::string str1 = output.str();
+	std::string base64_encoded_str = base64_encode(reinterpret_cast<const unsigned char *>(str1.c_str()), (unsigned int)str1.length());
+	return py::make_tuple(base64_encoded_str);
+}
+
+template <class T>
+T deserialize(py::tuple t)
+{
+	if (t.size() != 1)
+		throw std::runtime_error("(Pickle) Invalid input tuple!");
+	T c = T();
+	std::string encoded_str = t[0].cast<std::string>();
+	std::string decoded_str = base64_decode(cipherstr_encoded);
+	std::stringstream input(std::ios::binary | std::ios::in);
+	input.str(decoded_str);
+	c.load(input);
+	return c;
+}
 
 PYBIND11_MODULE(seal, m)
 {
@@ -61,7 +86,8 @@ PYBIND11_MODULE(seal, m)
 			std::ifstream in(path, std::ifstream::binary);
 			p.load(in);
 			in.close();
-		});
+		})
+		.def(py::pickle(&serialize<EncryptionParameters>, &deserialize<EncryptionParameters>));;
 
 	// context.h
 	py::class_<EncryptionParameterQualifiers, std::unique_ptr<EncryptionParameterQualifiers, py::nodelete>>(m, "EncryptionParameterQualifiers")
