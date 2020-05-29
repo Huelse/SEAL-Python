@@ -36,7 +36,7 @@ T deserialize(py::tuple t)
 		throw std::runtime_error("(Pickle) Invalid input tuple!");
 	T c = T();
 	std::string encoded_str = t[0].cast<std::string>();
-	std::string decoded_str = base64_decode(cipherstr_encoded);
+	std::string decoded_str = base64_decode(encoded_str);
 	std::stringstream input(std::ios::binary | std::ios::in);
 	input.str(decoded_str);
 	c.load(input);
