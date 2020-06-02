@@ -6,6 +6,6 @@
 # @Last modified time: 2020-05-29T13:58:56+01:00
 # @License: please see LICENSE file in project root
 
-
-docker build -t huelse/seal-python ../. -f Dockerfile
+set -e
+docker build -t huelse/seal-python ./../. -f ./../Dockerfile
 docker run -it huelse/seal-python python3 /app/tests/unittests.py
