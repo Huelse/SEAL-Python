@@ -5,7 +5,6 @@
 
 #include <stdexcept>
 #include <string>
-#include <fstream>
 #include <iostream>
 #include <algorithm>
 #include <memory>
@@ -544,20 +543,6 @@ namespace seal
         */
         void save(std::ostream &stream) const;
 
-        void python_save(std::string &path) const
-        {
-            try
-            {
-                std::ofstream out(path, std::ofstream::binary);
-                this->save(out);
-                out.close();
-            }
-            catch (const std::exception &)
-            {
-                throw "Plaintext write exception";
-            }
-        }
-
         /**
         Loads a plaintext from an input stream overwriting the current plaintext.
         No checking of the validity of the plaintext data against encryption
@@ -568,21 +553,6 @@ namespace seal
         @throws std::exception if a valid plaintext could not be read from stream
         */
         void unsafe_load(std::istream &stream);
-
-        void python_load(std::shared_ptr<SEALContext> context,
-            std::string &path)
-        {
-            try
-            {
-                std::ifstream in(path, std::ifstream::binary);
-                this->load(context, in);
-                in.close();
-            }
-            catch (const std::exception &)
-            {
-                throw "Plaintext read exception";
-            }
-        }
 
         /**
         Loads a plaintext from an input stream overwriting the current plaintext.

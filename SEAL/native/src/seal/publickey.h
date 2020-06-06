@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <fstream>
 #include <iostream>
 #include <memory>
 #include "seal/ciphertext.h"
@@ -92,20 +91,6 @@ namespace seal
             pk_.save(stream);
         }
 
-        void python_save(std::string &path) const
-        {
-            try
-            {
-                std::ofstream out(path, std::ofstream::binary);
-                this->save(out);
-                out.close();
-            }
-            catch (const std::exception &)
-            {
-                throw "PublicKey write exception";
-            }
-        }
-
         /**
         Loads a PublicKey from an input stream overwriting the current PublicKey.
         No checking of the validity of the PublicKey data against encryption
@@ -120,21 +105,6 @@ namespace seal
             Ciphertext new_pk(pk_.pool());
             new_pk.unsafe_load(stream);
             std::swap(pk_, new_pk);
-        }
-
-        void python_load(std::shared_ptr<SEALContext> context,
-            std::string &path)
-        {
-            try
-            {
-                std::ifstream in(path, std::ifstream::binary);
-                this->load(context, in);
-                in.close();
-            }
-            catch (const std::exception &)
-            {
-                throw "PublicKey read exception";
-            }
         }
 
         /**

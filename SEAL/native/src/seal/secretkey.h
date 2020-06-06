@@ -116,20 +116,6 @@ namespace seal
             sk_.save(stream);
         }
 
-        void python_save(std::string &path) const
-        {
-            try
-            {
-                std::ofstream out(path, std::ofstream::binary);
-                this->save(out);
-                out.close();
-            }
-            catch (const std::exception &)
-            {
-                throw "SecretKey write exception";
-            }
-        }
-
         /**
         Loads a SecretKey from an input stream overwriting the current SecretKey.
         No checking of the validity of the SecretKey data against encryption
@@ -145,21 +131,6 @@ namespace seal
             Plaintext new_sk(MemoryManager::GetPool(mm_prof_opt::FORCE_NEW, true));
             new_sk.unsafe_load(stream);
             std::swap(sk_, new_sk);
-        }
-
-        void python_load(std::shared_ptr<SEALContext> context,
-            std::string &path)
-        {
-            try
-            {
-                std::ifstream in(path, std::ifstream::binary);
-                this->load(context, in);
-                in.close();
-            }
-            catch (const std::exception &)
-            {
-                throw "SecretKey read exception";
-            }
         }
 
         /**
