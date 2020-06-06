@@ -182,40 +182,80 @@ PYBIND11_MODULE(seal, m)
 	py::class_<SecretKey>(m, "SecretKey")
 		.def(py::init<>())
 		.def("parms_id", (parms_id_type & (SecretKey::*)()) & SecretKey::parms_id, py::return_value_policy::reference)
-		.def("save", &SecretKey::python_save)
-		.def("load", &SecretKey::python_load)
+		.def("save", [](SecretKey &sk, std::string &path){
+			std::ofstream out(path, std::ofstream::binary);
+			sk.save(out);
+			out.close();
+		})
+		.def("load", [](SecretKey &sk, std::shared_ptr<SEALContext> &context, std::string &path){
+			std::ifstream in(path, std::ifstream::binary);
+			sk.load(context, in);
+			in.close();
+		})
 		.def(py::pickle(&serialize<SecretKey>, &deserialize<SecretKey>));
 
 	// PublicKey
 	py::class_<PublicKey>(m, "PublicKey")
 		.def(py::init<>())
 		.def("parms_id", (parms_id_type & (PublicKey::*)()) & PublicKey::parms_id, py::return_value_policy::reference)
-		.def("save", &PublicKey::python_save)
-		.def("load", &PublicKey::python_load)
+		.def("save", [](PublicKey &pk, std::string &path){
+			std::ofstream out(path, std::ofstream::binary);
+			pk.save(out);
+			out.close();
+		})
+		.def("load", [](PublicKey &pk, std::shared_ptr<SEALContext> &context, std::string &path){
+			std::ifstream in(path, std::ifstream::binary);
+			pk.load(context, in);
+			in.close();
+		})
 		.def(py::pickle(&serialize<PublicKey>, &deserialize<PublicKey>));
 
 	// KSwitchKeys
 	py::class_<KSwitchKeys>(m, "KSwitchKeys")
 		.def(py::init<>())
 		.def("parms_id", (parms_id_type & (KSwitchKeys::*)()) & KSwitchKeys::parms_id, py::return_value_policy::reference)
-		.def("save", &KSwitchKeys::python_save)
-		.def("load", &KSwitchKeys::python_load)
+		.def("save", [](KSwitchKeys &ksk, std::string &path){
+			std::ofstream out(path, std::ofstream::binary);
+			ksk.save(out);
+			out.close();
+		})
+		.def("load", [](KSwitchKeys &ksk, std::shared_ptr<SEALContext> &context, std::string &path){
+			std::ifstream in(path, std::ifstream::binary);
+			ksk.load(context, in);
+			in.close();
+		})
 		.def(py::pickle(&serialize<KSwitchKeys>, &deserialize<KSwitchKeys>));
 
 	// RelinKeys
 	py::class_<RelinKeys, KSwitchKeys>(m, "RelinKeys")
 		.def(py::init<>())
 		.def("parms_id", (parms_id_type & (RelinKeys::KSwitchKeys::*)()) & RelinKeys::KSwitchKeys::parms_id, py::return_value_policy::reference)
-		.def("save", &KSwitchKeys::python_save)
-		.def("load", &KSwitchKeys::python_load)
+		.def("save", [](RelinKeys &rk, std::string &path){
+			std::ofstream out(path, std::ofstream::binary);
+			rk.save(out);
+			out.close();
+		})
+		.def("load", [](RelinKeys &rk, std::shared_ptr<SEALContext> &context, std::string &path){
+			std::ifstream in(path, std::ifstream::binary);
+			rk.load(context, in);
+			in.close();
+		})
 		.def(py::pickle(&serialize<RelinKeys>, &deserialize<RelinKeys>));
 
 	// GaloisKeys
 	py::class_<GaloisKeys, KSwitchKeys>(m, "GaloisKeys")
 		.def(py::init<>())
 		.def("parms_id", (parms_id_type & (GaloisKeys::KSwitchKeys::*)()) & GaloisKeys::KSwitchKeys::parms_id, py::return_value_policy::reference)
-		.def("save", &KSwitchKeys::python_save)
-		.def("load", &KSwitchKeys::python_load)
+		.def("save", [](GaloisKeys &gk, std::string &path){
+			std::ofstream out(path, std::ofstream::binary);
+			gk.save(out);
+			out.close();
+		})
+		.def("load", [](GaloisKeys &gk, std::shared_ptr<SEALContext> &context, std::string &path){
+			std::ifstream in(path, std::ifstream::binary);
+			gk.load(context, in);
+			in.close();
+		})
 		.def(py::pickle(&serialize<GaloisKeys>, &deserialize<GaloisKeys>));
 
 	// KeyGenerator
@@ -252,8 +292,16 @@ PYBIND11_MODULE(seal, m)
 		.def("reserve", (void (Ciphertext::*)(size_type)) & Ciphertext::reserve)
 		.def("set_scale", (void (Ciphertext::*)(double)) & Ciphertext::set_scale)
 		.def("parms_id", (parms_id_type & (Ciphertext::*)()) & Ciphertext::parms_id)
-		.def("save", &Ciphertext::python_save)
-		.def("load", &Ciphertext::python_load)
+		.def("save", [](Ciphertext &ct, std::string &path){
+			std::ofstream out(path, std::ofstream::binary);
+			ct.save(out);
+			out.close();
+		})
+		.def("load", [](Ciphertext &ct, std::shared_ptr<SEALContext> &context, std::string &path){
+			std::ifstream in(path, std::ifstream::binary);
+			ct.load(context, in);
+			in.close();
+		})
 		.def(py::pickle(&serialize<Ciphertext>, &deserialize<Ciphertext>));
 
 	// Plaintext
@@ -271,8 +319,16 @@ PYBIND11_MODULE(seal, m)
 		.def("load", (void (Plaintext::*)(std::shared_ptr<SEALContext>, std::istream &)) & Plaintext::load)
 		.def("scale", (double &(Plaintext::*)()) & Plaintext::scale)
 		.def("parms_id", (parms_id_type & (Plaintext::*)()) & Plaintext::parms_id)
-		.def("save", &Plaintext::python_save)
-		.def("load", &Plaintext::python_load)
+		.def("save", [](Plaintext &pt, std::string &path){
+			std::ofstream out(path, std::ofstream::binary);
+			pt.save(out);
+			out.close();
+		})
+		.def("load", [](Plaintext &pt, std::shared_ptr<SEALContext> &context, std::string &path){
+			std::ifstream in(path, std::ifstream::binary);
+			pt.load(context, in);
+			in.close();
+		})
 		.def(py::pickle(&serialize<Plaintext>, &deserialize<Plaintext>));
 
 	// Encryptor
