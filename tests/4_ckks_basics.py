@@ -125,8 +125,8 @@ def example_ckks_basics():
     print("Normalize scales to 2^40.")
 
     # set_scale() this function should be add to seal/ciphertext.h line 632
-    x3_encrypted.set_scale(pow(2.0, 40))
-    x1_encrypted.set_scale(pow(2.0, 40))
+    x3_encrypted.scale(pow(2.0, 40))
+    x1_encrypted.scale(pow(2.0, 40))
 
     '''
     We still have a problem with mismatching encryption parameters. This is easy
