@@ -1,4 +1,4 @@
-FROM ubuntu:19.10
+FROM ubuntu:18.04
 
 # Install binary dependencies
 RUN apt-get update && \
