@@ -25,9 +25,9 @@ py::tuple serialize(T &c)
 {
 	std::stringstream output(std::ios::binary | std::ios::out);
 	c.save(output);
-	std::string cipherstr = output.str();
-	std::string base64_encoded_cipher = base64_encode(reinterpret_cast<const unsigned char *>(cipherstr.c_str()), (unsigned int)cipherstr.length());
-	return py::make_tuple(base64_encoded_cipher);
+	std::string str = output.str();
+	std::string base64_encoded_str = base64_encode(reinterpret_cast<const unsigned char *>(str.c_str()), (unsigned int)str.length());
+	return py::make_tuple(base64_encoded_str);
 }
 
 template <class T>
@@ -36,10 +36,10 @@ T deserialize(py::tuple t)
 	if (t.size() != 1)
 		throw std::runtime_error("(Pickle) Invalid input tuple!");
 	T c = T();
-	std::string cipherstr_encoded = t[0].cast<std::string>();
-	std::string cipherstr_decoded = base64_decode(cipherstr_encoded);
+	std::string str_encoded = t[0].cast<std::string>();
+	std::string str_decoded = base64_decode(str_encoded);
 	std::stringstream input(std::ios::binary | std::ios::in);
-	input.str(cipherstr_decoded);
+	input.str(str_decoded);
 	c.unsafe_load(input);
 	return c;
 }
@@ -74,7 +74,41 @@ PYBIND11_MODULE(seal, m)
 		.def("scheme", &EncryptionParameters::scheme)
 		.def("poly_modulus_degree", &EncryptionParameters::poly_modulus_degree)
 		.def("coeff_modulus", &EncryptionParameters::coeff_modulus)
-		.def("plain_modulus", &EncryptionParameters::plain_modulus);
+		.def("plain_modulus", &EncryptionParameters::plain_modulus)
+		.def_static("save", [](const EncryptionParameters &parms, std::string &path){
+			std::ofstream out(path, std::ofstream::binary);
+			parms.Save(parms, out);
+			out.close();
+		})
+		.def_static("load", [](std::string &path){
+			std::ifstream in(path, std::ifstream::binary);
+			EncryptionParameters parms = EncryptionParameters::Load(in);
+			in.close();
+			return parms;
+		})
+		.def_static("load", [](EncryptionParameters &parms, std::string &path){
+			std::ifstream in(path, std::ifstream::binary);
+			parms = EncryptionParameters::Load(in);
+			in.close();
+		})
+		.def(py::pickle(
+			[](EncryptionParameters &parms){
+				std::stringstream output(std::ios::binary | std::ios::out);
+				parms.Save(parms, output);
+				std::string str = output.str();
+				std::string base64_encoded_str = base64_encode(reinterpret_cast<const unsigned char *>(str.c_str()), (unsigned int)str.length());
+				return py::make_tuple(base64_encoded_str);
+			},
+			[](py::tuple t){
+				if (t.size() != 1)
+					throw std::runtime_error("(Pickle) Invalid input tuple!");
+				std::string str_encoded = t[0].cast<std::string>();
+				std::string str_decoded = base64_decode(str_encoded);
+				std::stringstream input(std::ios::binary | std::ios::in);
+				input.str(str_decoded);
+				return EncryptionParameters::Load(input);
+			}
+		));
 
 	// scheme_type
 	py::enum_<scheme_type>(m, "scheme_type", py::arithmetic())
@@ -130,18 +164,18 @@ PYBIND11_MODULE(seal, m)
 
 	// CoeffModulus
 	py::class_<CoeffModulus>(m, "CoeffModulus")
-		.def("BFVDefault",
+		.def_static("BFVDefault",
 			 [](std::size_t poly_modulus_degree) { return CoeffModulus::BFVDefault(poly_modulus_degree); })
-		.def("Create",
+		.def_static("Create",
 			 [](std::size_t poly_modulus_degree, std::vector<int> bit_sizes) { return CoeffModulus::Create(poly_modulus_degree, bit_sizes); })
-		.def("MaxBitCount",
+		.def_static("MaxBitCount",
 			 [](std::size_t poly_modulus_degree) { return CoeffModulus::MaxBitCount(poly_modulus_degree); });
 
 	// PlainModulus
 	py::class_<PlainModulus>(m, "PlainModulus")
-		.def("Batching",
+		.def_static("Batching",
 			 [](std::size_t poly_modulus_degree, int bit_size) { return PlainModulus::Batching(poly_modulus_degree, bit_size); })
-		.def("Batching",
+		.def_static("Batching",
 			 [](std::size_t poly_modulus_degree, std::vector<int> bit_sizes) { return PlainModulus::Batching(poly_modulus_degree, bit_sizes); });
 
 	// SecretKey
