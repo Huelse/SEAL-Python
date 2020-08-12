@@ -417,7 +417,33 @@ PYBIND11_MODULE(seal, m)
 			 py::arg(), py::arg(), py::arg() = MemoryManager::GetPool())
 		.def("decode", (void (CKKSEncoder::*)(const Plaintext &, std::vector<std::complex<double>> &, MemoryPoolHandle)) & CKKSEncoder::decode,
 			 py::arg(), py::arg(), py::arg() = MemoryManager::GetPool())
-		.def("slot_count", &CKKSEncoder::slot_count);
+		.def("slot_count", &CKKSEncoder::slot_count)
+		// lambda
+		.def("encode", [](CKKSEncoder &encoder, double value, double scale){
+			Plaintext destination;
+			encoder.encode(value, scale, destination);
+			return destination;
+		})
+		.def("encode", [](CKKSEncoder &encoder, py::array_t<double> values, double scale){
+			py::buffer_info buf1 = values.request();
+			if (buf1.ndim != 1)
+        		throw std::runtime_error("Number of dimensions must be one");
+			
+			double *ptr1 = (double *)buf1.ptr;
+			std::vector<double> vec(buf1.shape[0]);
+
+			for (std::size_t i = 0; i < buf1.shape[0]; i++)
+				vec[i] = ptr1[i];
+
+			Plaintext destination;
+			encoder.encode(vec, scale, destination);
+			return destination;
+		})
+		.def("decode", [](CKKSEncoder &encoder, const Plaintext &plain){
+			std::vector<double> destination;
+			encoder.decode(plain, destination);
+			return destination;
+		});
 	// gsl
 
 	// decryptor.h
