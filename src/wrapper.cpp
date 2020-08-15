@@ -302,8 +302,14 @@ PYBIND11_MODULE(seal, m)
 		.def("encrypt_zero", (void (Encryptor::*)(Ciphertext &, MemoryPoolHandle)) & Encryptor::encrypt,
 			 py::arg(), py::arg() = MemoryManager::GetPool())
 		.def("encrypt_zero", (void (Encryptor::*)(parms_id_type, Ciphertext &, MemoryPoolHandle)) & Encryptor::encrypt,
-			 py::arg(), py::arg(), py::arg() = MemoryManager::GetPool());
-	// symmetric
+			 py::arg(), py::arg(), py::arg() = MemoryManager::GetPool())
+		// lambda functions for python style
+		.def("encrypt", [](Encryptor &encryptor,const Plaintext &plain){
+			Ciphertext cipher;
+			encryptor.encrypt(plain, cipher);
+			return cipher;
+		});
+		// symmetric
 
 	// evaluator.h
 	py::class_<Evaluator>(m, "Evaluator")
@@ -418,7 +424,7 @@ PYBIND11_MODULE(seal, m)
 		.def("decode", (void (CKKSEncoder::*)(const Plaintext &, std::vector<std::complex<double>> &, MemoryPoolHandle)) & CKKSEncoder::decode,
 			 py::arg(), py::arg(), py::arg() = MemoryManager::GetPool())
 		.def("slot_count", &CKKSEncoder::slot_count)
-		// lambda
+		// lambda functions for python style
 		.def("encode", [](CKKSEncoder &encoder, double value, double scale){
 			Plaintext destination;
 			encoder.encode(value, scale, destination);
@@ -431,7 +437,7 @@ PYBIND11_MODULE(seal, m)
 
 			double *ptr1 = (double *)buf1.ptr;
 			std::vector<double> vec(buf1.shape[0]);
-			
+
 			for (auto i = 0; i < buf1.shape[0]; i++)
 				vec[i] = ptr1[i];
 
@@ -452,7 +458,7 @@ PYBIND11_MODULE(seal, m)
 
 			return values;
 		});
-	// gsl
+		// gsl
 
 	// decryptor.h
 	py::class_<Decryptor>(m, "Decryptor")
@@ -473,7 +479,7 @@ PYBIND11_MODULE(seal, m)
 		.def("to_string", &BigUInt::to_string)
 		.def("to_dec_string", &BigUInt::to_dec_string)
 		.def("resize", &BigUInt::resize);
-	// gsl
+		// gsl
 
 	// intencoder.h
 	py::class_<IntegerEncoder>(m, "IntegerEncoder")
@@ -504,5 +510,5 @@ PYBIND11_MODULE(seal, m)
 		.def("decode", (void (BatchEncoder::*)(Plaintext &, MemoryPoolHandle)) & BatchEncoder::decode,
 			 py::arg(), py::arg() = MemoryManager::GetPool())
 		.def("slot_count", &BatchEncoder::slot_count);
-	//gsl
+		//gsl
 }
