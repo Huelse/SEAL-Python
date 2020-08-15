@@ -427,12 +427,12 @@ PYBIND11_MODULE(seal, m)
 		.def("encode", [](CKKSEncoder &encoder, py::array_t<double> values, double scale){
 			py::buffer_info buf1 = values.request();
 			if (buf1.ndim != 1)
-        		throw std::runtime_error("Number of dimensions must be one");
-			
+				throw std::runtime_error("Number of dimensions must be one");
+
 			double *ptr1 = (double *)buf1.ptr;
 			std::vector<double> vec(buf1.shape[0]);
-
-			for (std::size_t i = 0; i < buf1.shape[0]; i++)
+			
+			for (auto i = 0; i < buf1.shape[0]; i++)
 				vec[i] = ptr1[i];
 
 			Plaintext destination;
@@ -442,7 +442,15 @@ PYBIND11_MODULE(seal, m)
 		.def("decode", [](CKKSEncoder &encoder, const Plaintext &plain){
 			std::vector<double> destination;
 			encoder.decode(plain, destination);
-			return destination;
+
+			py::array_t<double> values(destination.size());
+			py::buffer_info buf1 = values.request();
+			double *ptr1 = (double *)buf1.ptr;
+
+			for (auto i = 0; i < buf1.shape[0]; i++)
+				ptr1[i] = destination[i];
+
+			return values;
 		});
 	// gsl
 
