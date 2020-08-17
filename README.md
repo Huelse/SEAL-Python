@@ -98,6 +98,7 @@ Microsoft official video [SEAL in windows](https://www.microsoft.com/en-us/resea
 | 4_ckks_basics.cpp | 4_ckks_basics.py | Encrypted real number arithmetic using the CKKS scheme       |
 | 5_rotation.cpp    | 5_rotation.py    | Performing cyclic rotations on encrypted vectors in the BFV and CKKS schemes |
 | 6_performance.cpp | 6_performance.py | Performance tests for Microsoft SEAL                         |
+| - | 7_matrix_operations.py | Encrypted matrix multiplication and transpose examples from [paper](https://eprint.iacr.org/2018/1041.pdf) |
 
 
 
