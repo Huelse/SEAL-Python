@@ -21,19 +21,20 @@ This is a python binding for the Microsoft SEAL library.
 ### Linux
 CMake (>= 3.10), GNU G++ (>= 6.0) or Clang++ (>= 5.0), Python (>=3.6.8)
 
-`sudo apt-get update && sudo apt-get install g++ make cmake git python3 python3-dev python3-pip`
+`sudo apt-get install build-essential cmake python3 python3-dev python3-pip`
 
 `git clone https://github.com/Huelse/SEAL-Python.git`
 
 ```shell
+# Build the seal lib at first
 cd SEAL/native/src
 cmake .
 make
 
 pip3 install -r requirements.txt
 
-# Check the path at first
-# Setuptools (Recommend)
+# Check the path if necessary
+# Build in the current path (Recommend)
 python3 setup.py build_ext -i
 # or install
 python3 setup.py install
@@ -48,9 +49,9 @@ Visual Studio 2017 version 15.3 or newer is required to build Microsoft SEAL.
 Open the `SEAL/SEAL.sln` in VS, config in `x64, Release, WinSDK(17763, etc)` mode and generate it.
 
 ```shell
+# Same as above
+# IT must be inside x64 native tools command prompt
 python3 setup.py build_ext -i
-# or install
-python3 setup.py install
 ```
 
 Microsoft official video [SEAL in windows](https://www.microsoft.com/en-us/research/video/installing-microsoft-seal-on-windows/).
@@ -74,6 +75,10 @@ Microsoft official video [SEAL in windows](https://www.microsoft.com/en-us/resea
    b. add `/usr/local/lib` or the `SEAL/native/lib` to `/etc/ld.so.conf` and refresh it `sudo ldconfig`
 
    c. build in cmake.
+   
+   
+   
+3. BuildError: C++17 at least
 
 
 
