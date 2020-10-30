@@ -3,9 +3,8 @@ FROM ubuntu:19.10
 # Install binary dependencies
 RUN apt-get update && \
     apt-get install -qqy \
-    g++ \
+    build-essential \
     git \
-    make \
     cmake \
     python3 \
     python3-dev \

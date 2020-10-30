@@ -50,7 +50,7 @@ Open the `SEAL/SEAL.sln` in VS, config in `x64, Release, WinSDK(17763, etc)` mod
 
 ```shell
 # Same as above
-# IT must be inside x64 native tools command prompt
+# It must be inside x64 native tools command prompt
 python3 setup.py build_ext -i
 ```
 
