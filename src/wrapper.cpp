@@ -464,6 +464,11 @@ PYBIND11_MODULE(seal, m)
 	py::class_<Decryptor>(m, "Decryptor")
 		.def(py::init<std::shared_ptr<SEALContext>, const SecretKey &>())
 		.def("decrypt", &Decryptor::decrypt)
+		.def("decrypt", [](Decryptor &decryptor, const Ciphertext &encrypted){
+			Plaintext plain;
+			decryptor.decrypt(encrypted, plain);
+			return plain;
+		})
 		.def("invariant_noise_budget", &Decryptor::invariant_noise_budget);
 
 	// biguint.h
