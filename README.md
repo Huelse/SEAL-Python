@@ -1,3 +1,26 @@
+## Install the fork
+This is a fork from SEAL-Python. There are some modification I did for a project. The latest branch is `bug-pickle`. Following the instruction below to install.
+`git clone https://github.com/carlee0/SEAL-Python.git`
+`cd SEAL-Python`
+`git checkout bug-pickle`
+`cd SEAL/native/src`
+`cmake .`
+`make -j 4`
+`cd -`
+
+Create a Python virtual environment and after activating the environment. 
+`pip install -r requirements.txt`
+`python setup.py install`
+
+Verify that seal is installed and it is the correct version (for the privacy perserving geofencing project)
+`python`
+`from seal import Ciphertext`
+`c = Ciphertext()`
+`c.saves()`
+
+The above should return a string that is the header of a ciphertext.
+
+
 ## Microsoft SEAL For Python
 
 Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-source ([MIT licensed](https://github.com/microsoft/SEAL/blob/master/LICENSE)) homomorphic encryption library developed by the Cryptography Research group at Microsoft.
