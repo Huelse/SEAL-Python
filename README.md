@@ -21,7 +21,7 @@ Create a Python virtual environment and after activating the environment.
 Verify that seal is installed and it is the correct version (for the privacy perserving geofencing project)
 
 ```
-$ python
+(venv)$ python
 >>> from seal import Ciphertext
 >>> c = Ciphertext()
 >>> c.saves()
