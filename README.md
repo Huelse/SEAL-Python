@@ -10,9 +10,9 @@ This is a python binding for the Microsoft SEAL library.
 
 ## Contents
 
-* [Build](https://github.com/Huelse/SEAL-Python#build)
-* [FAQ](https://github.com/Huelse/SEAL-Python#FAQ)
-* [Note](#Note)
+* [Build](#build)
+* [FAQ](#faq)
+* [Note](#note)
 
 
 
@@ -42,7 +42,7 @@ python3 setup.py build_ext -i
 
 ### Windows
 
-Visual Studio 2019 or newer is required. And use the **x64 Native Tools Command Promptfor Visual Studio 2019**  command prompt to configure and build the Microsoft SEAL library. It's usually can be found in your Start Menu.
+Visual Studio 2019 or newer is required. And use the **x64 Native Tools Command Prompt for Visual Studio 2019**  command prompt to configure and build the Microsoft SEAL library. It's usually can be found in your Start Menu.
 
 ```shell
 # Same as above
@@ -85,9 +85,9 @@ Microsoft official video [SEAL in windows](https://www.microsoft.com/en-us/resea
 
 ## Note
 
-There are lot of changes in the latest SEAL lib, we try to make the api in python can be used easier, it may remain some problems we unknown, if any problems(bugs), [Issue](https://github.com/Huelse/SEAL-Python/issues) please.
+There are a lot of changes in the latest SEAL lib, we try to make the API in python can be used easier, it may remain some problems we unknown, if any problems(bugs), [Issue](https://github.com/Huelse/SEAL-Python/issues) please.
 
-Email: [huelse@oini.top](mailto:huelse@oini.top?subject=Github-SEAL-Python-Issues&cc=5956877@qq.com)
+Email: [huelse@oini.top](mailto:huelse@oini.top?subject=Github-SEAL-Python-Issues)
 
 
 
