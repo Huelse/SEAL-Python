@@ -11,9 +11,8 @@ This is a python binding for the Microsoft SEAL library.
 ## Contents
 
 * [Build](https://github.com/Huelse/SEAL-Python#build)
-* [Tests](https://github.com/Huelse/SEAL-Python#tests)
-* [About](https://github.com/Huelse/SEAL-Python#about)
-* [Contributing](https://github.com/Huelse/SEAL-Python#contributing)
+* [FAQ](https://github.com/Huelse/SEAL-Python#FAQ)
+* [Note](#Note)
 
 
 
@@ -21,37 +20,39 @@ This is a python binding for the Microsoft SEAL library.
 ### Linux
 CMake (>= 3.10), GNU G++ (>= 6.0) or Clang++ (>= 5.0), Python (>=3.6.8)
 
-`sudo apt-get install build-essential cmake python3 python3-dev python3-pip`
-
-`git clone https://github.com/Huelse/SEAL-Python.git`
-
 ```shell
-# Build the seal lib at first
-cd SEAL/native/src
-cmake .
-make
-
+# Optional
+sudo apt-get install build-essential cmake python3 python3-dev python3-pip
+# Numpy is essential
 pip3 install -r requirements.txt
 
-# Check the path if necessary
-# Build in the current path (Recommend)
-python3 setup.py build_ext -i
-# or install
-python3 setup.py install
-```
+# Get the repo or download from the releases
+git clone https://github.com/Huelse/SEAL-Python.git
+git submodule init
 
-Docs: [setuptools](https://docs.python.org/3/distutils/configfile.html) [pybind11](https://pybind11.readthedocs.io/en/master/index.html)
+# Build the SEAL lib
+cd ./SEAL
+cmake -S . -B build -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF -DSEAL_USE_ZSTD=OFF
+cmake --build build
+cd ..
+
+# Run the setup.py
+python3 setup.py build_ext -i
+```
 
 ### Windows
 
-Visual Studio 2017 version 15.3 or newer is required to build Microsoft SEAL.
-
-Open the `SEAL/SEAL.sln` in VS, config in `x64, Release, WinSDK(17763, etc)` mode and generate it.
+Visual Studio 2019 or newer is required. And use the **x64 Native Tools Command Promptfor Visual Studio 2019**  command prompt to configure and build the Microsoft SEAL library. It's usually can be found in your Start Menu.
 
 ```shell
 # Same as above
-# It must be inside x64 native tools command prompt
-python3 setup.py build_ext -i
+
+# Build the SEAL lib
+cmake -S . -B build -G "Visual Studio 16 2019" -A x64 -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF -DSEAL_USE_ZSTD=OFF
+cmake --build build --config Release
+
+# Run the setup.py
+python setup.py build_ext -i
 ```
 
 Microsoft official video [SEAL in windows](https://www.microsoft.com/en-us/research/video/installing-microsoft-seal-on-windows/).
@@ -62,13 +63,11 @@ Microsoft official video [SEAL in windows](https://www.microsoft.com/en-us/resea
 
 1. ImportError: undefined symbol
 
-   Build a shared SEAL library `cmake . -D SEAL_LIB_BUILD_TYPE=Shared`, and get the `libseal.so`
+   Build a shared SEAL library `cmake . -DBUILD_SHARED_LIBS=ON`, and get the `libseal.so`,
 
-   then change the lib path in `setup.py` or `src/CMakeLists.txt`, and rebuild.
+   then change the path in `setup.py`, and rebuild.
 
-
-
-2. ImportError: libseal.so.3.4 cannot find
+2. ImportError: libseal.so... cannot find
 
    a. `sudo ln -s /path/to/libseal.so  /usr/lib`
 
@@ -76,47 +75,17 @@ Microsoft official video [SEAL in windows](https://www.microsoft.com/en-us/resea
 
    c. build in cmake.
    
-   
-   
 3. BuildError: C++17 at least
 
+4. ModuleNotFoundError: No module named 'seal'
+
+   The `.so` or `.pyd` file must be in the current directory, or you have `install` it already.
 
 
 
-## Tests
+## Note
 
-`cd tests`
-
-`python3 [example_name].py`
-
-* The `.so` file must be in the same folder, or you had `install` it already.
-
-
-
-## Getting Started
-
-| C++               | Python           | Description                                                  |
-| ----------------- | ---------------- | ------------------------------------------------------------ |
-| 1_bfv_basics.cpp  | 1_bfv_basics.py  | Encrypted modular arithmetic using the BFV scheme            |
-| 2_encoders.cpp    | 2_encoders.py    | Encoding more complex data into Microsoft SEAL plaintext objects |
-| 3_levels.cpp      | 3_levels.py      | Introduces the concept of levels; prerequisite for using the CKKS scheme |
-| 4_ckks_basics.cpp | 4_ckks_basics.py | Encrypted real number arithmetic using the CKKS scheme       |
-| 5_rotation.cpp    | 5_rotation.py    | Performing cyclic rotations on encrypted vectors in the BFV and CKKS schemes |
-| 6_performance.cpp | 6_performance.py | Performance tests for Microsoft SEAL                         |
-| - | 7_matrix_operations.py | Encrypted matrix multiplication and transpose examples from [paper](https://eprint.iacr.org/2018/1041.pdf) |
-
-
-
-## Future
-
-* pickle
-* microsoft gsl
-
-
-
-## About
-
-This project is still testing now, if any problems(bugs), [Issue](https://github.com/Huelse/SEAL-Python/issues) please.
+There are lot of changes in the latest SEAL lib, we try to make the api in python can be used easier, it may remain some problems we unknown, if any problems(bugs), [Issue](https://github.com/Huelse/SEAL-Python/issues) please.
 
 Email: [huelse@oini.top](mailto:huelse@oini.top?subject=Github-SEAL-Python-Issues&cc=5956877@qq.com)
 
