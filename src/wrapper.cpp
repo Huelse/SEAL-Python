@@ -142,21 +142,21 @@ PYBIND11_MODULE(seal, m)
 		.def("significant_coeff_count", &Plaintext::significant_coeff_count)
 		.def("nonzero_coeff_count", &Plaintext::nonzero_coeff_count)
 		.def("to_string", &Plaintext::to_string)
-		.def("save", [](const Plaintext &pt, const std::string &path) {
+		.def("save", [](const Plaintext &plain, const std::string &path) {
 			std::ofstream out(path, std::ofstream::binary);
-			pt.save(out);
+			plain.save(out);
 			out.close();
 		})
-		.def("load", [](Plaintext &pt, const SEALContext &context, const std::string &path) {
+		.def("load", [](Plaintext &plain, const SEALContext &context, const std::string &path) {
 			std::ifstream in(path, std::ifstream::binary);
-			pt.load(context, in);
+			plain.load(context, in);
 			in.close();
 		})
 		.def("is_ntt_form", &Plaintext::is_ntt_form)
 		.def("parms_id", py::overload_cast<>(&Plaintext::parms_id, py::const_), py::return_value_policy::reference)
 		.def("scale", py::overload_cast<>(&Plaintext::scale, py::const_), py::return_value_policy::reference)
-		.def("scale", [](Plaintext &pt, double scale) {
-			pt.scale() = scale;
+		.def("scale", [](Plaintext &plain, double scale) {
+			plain.scale() = scale;
 		});;
 
 	// ciphertext.h
@@ -171,21 +171,21 @@ PYBIND11_MODULE(seal, m)
 		.def("size", &Ciphertext::size)
 		.def("size_capacity", &Ciphertext::size_capacity)
 		.def("is_transparent", &Ciphertext::is_transparent)
-		.def("save", [](const Ciphertext &ct, const std::string &path) {
+		.def("save", [](const Ciphertext &encrypted, const std::string &path) {
 			std::ofstream out(path, std::ofstream::binary);
-			ct.save(out);
+			encrypted.save(out);
 			out.close();
 		})
-		.def("load", [](Ciphertext &ct, const SEALContext &context, const std::string &path) {
+		.def("load", [](Ciphertext &encrypted, const SEALContext &context, const std::string &path) {
 			std::ifstream in(path, std::ifstream::binary);
-			ct.load(context, in);
+			encrypted.load(context, in);
 			in.close();
 		})
 		.def("is_ntt_form", py::overload_cast<>(&Ciphertext::is_ntt_form, py::const_))
 		.def("parms_id", py::overload_cast<>(&Ciphertext::parms_id, py::const_), py::return_value_policy::reference)
 		.def("scale", py::overload_cast<>(&Ciphertext::scale, py::const_), py::return_value_policy::reference)
-		.def("scale", [](Ciphertext &ct, double scale) {
-			ct.scale() = scale;
+		.def("scale", [](Ciphertext &encrypted, double scale) {
+			encrypted.scale() = scale;
 		});
 
 	// secretkey.h
@@ -298,14 +298,14 @@ PYBIND11_MODULE(seal, m)
 		.def("set_public_key", &Encryptor::set_public_key)
 		.def("set_secret_key", &Encryptor::set_secret_key)
 		.def("encrypt_zero", [](const Encryptor &encryptor){
-			Ciphertext ct;
-			encryptor.encrypt_zero(ct);
-			return ct;
+			Ciphertext encrypted;
+			encryptor.encrypt_zero(encrypted);
+			return encrypted;
 		})
-		.def("encrypt", [](const Encryptor &encryptor, const Plaintext &pt){
-			Ciphertext ct;
-			encryptor.encrypt(pt, ct);
-			return ct;
+		.def("encrypt", [](const Encryptor &encryptor, const Plaintext &plain){
+			Ciphertext encrypted;
+			encryptor.encrypt(plain, encrypted);
+			return encrypted;
 		});
 		// symmetric
 
@@ -313,19 +313,189 @@ PYBIND11_MODULE(seal, m)
 	py::class_<Evaluator>(m, "Evaluator")
 		.def(py::init<const SEALContext &>())
 		.def("negate_inplace", &Evaluator::negate_inplace)
-		.def("negate", &Evaluator::negate)
+		.def("negate", [](Evaluator &evaluator, const Ciphertext &encrypted1){
+			Ciphertext destination;
+			evaluator.negate(encrypted1, destination);
+			return destination;
+		})
 		.def("add_inplace", &Evaluator::add_inplace)
-		.def("add", &Evaluator::add)
-		.def("add_many", &Evaluator::add_many)
+		.def("add", [](Evaluator &evaluator, const Ciphertext &encrypted1, const Ciphertext &encrypted2){
+			Ciphertext destination;
+			evaluator.add(encrypted1, encrypted2, destination);
+			return destination;
+		})
+		.def("add_many", [](Evaluator &evaluator, const std::vector<Ciphertext> &encrypteds){
+			Ciphertext destination;
+			evaluator.add_many(encrypteds, destination);
+			return destination;
+		})
 		.def("sub_inplace", &Evaluator::sub_inplace)
-		.def("sub", &Evaluator::sub)
-		.def("multiply_inplace", &Evaluator::multiply_inplace)
-		.def("multiply", &Evaluator::multiply)
-		.def("square_inplace", &Evaluator::square_inplace)
-		.def("square", &Evaluator::square)
-		.def("relinearize_inplace", &Evaluator::relinearize_inplace)
-		.def("relinearize", &Evaluator::relinearize)
-		;
+		.def("sub", [](Evaluator &evaluator, const Ciphertext &encrypted1, const Ciphertext &encrypted2){
+			Ciphertext destination;
+			evaluator.sub(encrypted1, encrypted2, destination);
+			return destination;
+		})
+		.def("multiply_inplace", [](Evaluator &evaluator, Ciphertext &encrypted1, const Ciphertext &encrypted2){
+			evaluator.multiply_inplace(encrypted1, encrypted2);
+		})
+		.def("multiply", [](Evaluator &evaluator, const Ciphertext &encrypted1, const Ciphertext &encrypted2){
+			Ciphertext destination;
+			evaluator.multiply(encrypted1, encrypted2, destination);
+			return destination;
+		})
+		.def("square_inplace", [](Evaluator &evaluator, Ciphertext &encrypted1){
+			evaluator.square_inplace(encrypted1);
+		})
+		.def("square", [](Evaluator &evaluator, const Ciphertext &encrypted1){
+			Ciphertext destination;
+			evaluator.square(encrypted1, destination);
+			return destination;
+		})
+		.def("relinearize_inplace", [](Evaluator &evaluator, Ciphertext &encrypted1, const RelinKeys &relin_keys){
+			evaluator.relinearize_inplace(encrypted1, relin_keys);
+		})
+		.def("relinearize", [](Evaluator &evaluator, const Ciphertext &encrypted1, const RelinKeys &relin_keys){
+			Ciphertext destination;
+			evaluator.relinearize(encrypted1, relin_keys, destination);
+			return destination;
+		})
+		.def("mod_switch_to_next", [](Evaluator &evaluator, const Ciphertext &encrypted){
+			Ciphertext destination;
+			evaluator.mod_switch_to_next(encrypted, destination);
+			return destination;
+		})
+		.def("mod_switch_to_next_inplace", [](Evaluator &evaluator, Ciphertext &encrypted){
+			evaluator.mod_switch_to_next_inplace(encrypted);
+		})
+		.def("mod_switch_to_next_inplace", py::overload_cast<Plaintext &>(&Evaluator::mod_switch_to_next_inplace))
+		.def("mod_switch_to_next", [](Evaluator &evaluator, const Plaintext &plain){
+			Plaintext destination;
+			evaluator.mod_switch_to_next(plain, destination);
+			return destination;
+		})
+		.def("mod_switch_to_inplace", [](Evaluator &evaluator, Ciphertext &encrypted, parms_id_type parms_id){
+			evaluator.mod_switch_to_inplace(encrypted, parms_id);
+		})
+		.def("mod_switch_to", [](Evaluator &evaluator, const Ciphertext &encrypted, parms_id_type parms_id){
+			Ciphertext destination;
+			evaluator.mod_switch_to(encrypted, parms_id, destination);
+			return destination;
+		})
+		.def("mod_switch_to_inplace", py::overload_cast<Plaintext &, parms_id_type>(&Evaluator::mod_switch_to_inplace))
+		.def("mod_switch_to", [](Evaluator &evaluator, const Plaintext &plain, parms_id_type parms_id){
+			Plaintext destination;
+			evaluator.mod_switch_to(plain, parms_id, destination);
+			return destination;
+		})
+		.def("rescale_to_next", [](Evaluator &evaluator, const Ciphertext &encrypted){
+			Ciphertext destination;
+			evaluator.rescale_to_next(encrypted, destination);
+			return destination;
+		})
+		.def("rescale_to_next_inplace", [](Evaluator &evaluator, Ciphertext &encrypted){
+			evaluator.rescale_to_next_inplace(encrypted);
+		})
+		.def("rescale_to_inplace", [](Evaluator &evaluator, Ciphertext &encrypted, parms_id_type parms_id){
+			evaluator.rescale_to_inplace(encrypted, parms_id);
+		})
+		.def("rescale_to", [](Evaluator &evaluator, const Ciphertext &encrypted, parms_id_type parms_id){
+			Ciphertext destination;
+			evaluator.rescale_to(encrypted, parms_id, destination);
+			return destination;
+		})
+		.def("multiply_many", [](Evaluator &evaluator,  const std::vector<Ciphertext> &encrypteds, const RelinKeys &relin_keys){
+			Ciphertext destination;
+			evaluator.multiply_many(encrypteds, relin_keys, destination);
+			return destination;
+		})
+		.def("exponentiate_inplace", [](Evaluator &evaluator, Ciphertext &encrypted, std::uint64_t exponent, const RelinKeys &relin_keys){
+			evaluator.exponentiate_inplace(encrypted, exponent, relin_keys);
+		})
+		.def("exponentiate", [](Evaluator &evaluator,  const Ciphertext &encrypted, std::uint64_t exponent, const RelinKeys &relin_keys){
+			Ciphertext destination;
+			evaluator.exponentiate(encrypted, exponent, relin_keys, destination);
+			return destination;
+		})
+		.def("add_plain_inplace", &Evaluator::add_plain_inplace)
+		.def("add_plain", [](Evaluator &evaluator, const Ciphertext &encrypted, const Plaintext &plain){
+			Ciphertext destination;
+			evaluator.add_plain(encrypted, plain, destination);
+			return destination;
+		})
+		.def("sub_plain_inplace", &Evaluator::sub_plain_inplace)
+		.def("sub_plain", [](Evaluator &evaluator, const Ciphertext &encrypted, const Plaintext &plain){
+			Ciphertext destination;
+			evaluator.sub_plain(encrypted, plain, destination);
+			return destination;
+		})
+		.def("multiply_plain_inplace", [](Evaluator &evaluator, Ciphertext &encrypted, const Plaintext &plain){
+			evaluator.multiply_plain_inplace(encrypted, plain);
+		})
+		.def("multiply_plain", [](Evaluator &evaluator, const Ciphertext &encrypted, const Plaintext &plain){
+			Ciphertext destination;
+			evaluator.multiply_plain(encrypted, plain, destination);
+			return destination;
+		})
+		.def("transform_to_ntt_inplace", [](Evaluator &evaluator, Plaintext &plain, parms_id_type parms_id){
+			evaluator.transform_to_ntt_inplace(plain,parms_id);
+		})
+		.def("transform_to_ntt", [](Evaluator &evaluator, const Plaintext &plain, parms_id_type parms_id){
+			Plaintext destination_ntt;
+			evaluator.transform_to_ntt(plain, parms_id, destination_ntt);
+			return destination_ntt;
+		})
+		.def("transform_to_ntt_inplace", py::overload_cast<Ciphertext &>(&Evaluator::transform_to_ntt_inplace))
+		.def("transform_to_ntt", [](Evaluator &evaluator, const Ciphertext &encrypted){
+			Ciphertext destination_ntt;
+			evaluator.transform_to_ntt(encrypted, destination_ntt);
+			return destination_ntt;
+		})
+		.def("transform_from_ntt_inplace", &Evaluator::transform_from_ntt_inplace)
+		.def("transform_from_ntt", [](Evaluator &evaluator, const Ciphertext &encrypted_ntt){
+			Ciphertext destination;
+			evaluator.transform_from_ntt(encrypted_ntt, destination);
+			return destination;
+		})
+		.def("apply_galois_inplace", [](Evaluator &evaluator, Ciphertext &encrypted, std::uint32_t galois_elt, const GaloisKeys &galois_keys){
+			evaluator.apply_galois_inplace(encrypted, galois_elt, galois_keys);
+		})
+		.def("apply_galois", [](Evaluator &evaluator, const Ciphertext &encrypted, std::uint32_t galois_elt, const GaloisKeys &galois_keys){
+			Ciphertext destination;
+			evaluator.apply_galois(encrypted, galois_elt, galois_keys, destination);
+			return destination;
+		})
+		.def("rotate_rows_inplace", [](Evaluator &evaluator, Ciphertext &encrypted, int steps, const GaloisKeys &galois_keys){
+			evaluator.rotate_rows_inplace(encrypted, steps, galois_keys);
+		})
+		.def("rotate_rows", [](Evaluator &evaluator, const Ciphertext &encrypted, int steps, const GaloisKeys &galois_keys){
+			Ciphertext destination;
+			evaluator.rotate_rows(encrypted, steps, galois_keys, destination);
+			return destination;
+		})
+		.def("rotate_columns_inplace", [](Evaluator &evaluator, Ciphertext &encrypted, const GaloisKeys &galois_keys){
+			evaluator.rotate_columns_inplace(encrypted, galois_keys);
+		})
+		.def("rotate_columns", [](Evaluator &evaluator, const Ciphertext &encrypted, const GaloisKeys &galois_keys){
+			Ciphertext destination;
+			evaluator.rotate_columns(encrypted, galois_keys, destination);
+			return destination;
+		})
+		.def("rotate_vector_inplace", [](Evaluator &evaluator, Ciphertext &encrypted, int steps, const GaloisKeys &galois_keys){
+			evaluator.rotate_vector_inplace(encrypted, steps, galois_keys);
+		})
+		.def("rotate_vector", [](Evaluator &evaluator, const Ciphertext &encrypted, int steps, const GaloisKeys &galois_keys){
+			Ciphertext destination;
+			evaluator.rotate_vector(encrypted, steps, galois_keys, destination);
+			return destination;
+		})
+		.def("complex_conjugate_inplace", [](Evaluator &evaluator, Ciphertext &encrypted, const GaloisKeys &galois_keys){
+			evaluator.complex_conjugate_inplace(encrypted, galois_keys);
+		})
+		.def("complex_conjugate", [](Evaluator &evaluator, const Ciphertext &encrypted, const GaloisKeys &galois_keys){
+			Ciphertext destination;
+			evaluator.complex_conjugate(encrypted, galois_keys, destination);
+			return destination;
+		});
 
 	// ckks.h
 	py::class_<CKKSEncoder>(m, "CKKSEncoder")
@@ -370,9 +540,9 @@ PYBIND11_MODULE(seal, m)
 		.def(py::init<const SEALContext &, const SecretKey &>())
 		.def("decrypt", &Decryptor::decrypt)
 		.def("invariant_noise_budget", &Decryptor::invariant_noise_budget)
-		.def("decrypt", [](Decryptor &decryptor, const Ciphertext &ct){
+		.def("decrypt", [](Decryptor &decryptor, const Ciphertext &encrypted){
 			Plaintext pt;
-			decryptor.decrypt(ct, pt);
+			decryptor.decrypt(encrypted, pt);
 			return pt;
 		});
 
