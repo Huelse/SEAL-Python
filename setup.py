@@ -1,5 +1,4 @@
 import os
-import sys
 import platform
 from setuptools import setup, Extension
 from distutils.sysconfig import get_python_inc
@@ -13,6 +12,8 @@ cpp_args = ['-std=c++17']
 include_dirs = [py_include_dir, './pybind11/include', './SEAL/native/src', './SEAL/build/native/src']
 # library path
 extra_objects = ['./SEAL/build/lib/libseal-3.6.a']
+# available wrapper: src/wrapper.cpp, src/wrapper_with_pickle.cpp
+wrapper_file = 'src/wrapper.cpp'
 
 if(platform.system() == "Windows"):
     cpp_args[0] = '/std:c++latest'  # /std:c++1z
@@ -26,7 +27,7 @@ if not os.path.exists(extra_objects[0]):
 ext_modules = [
     Extension(
         name='seal',
-        sources=['src/wrapper.cpp'],
+        sources=[wrapper_file, 'src/base64.cpp'],
         include_dirs=include_dirs,
         language='c++',
         extra_compile_args=cpp_args,
@@ -42,5 +43,8 @@ setup(
     description='Python wrapper for the Microsoft SEAL',
     url='https://github.com/Huelse/SEAL-Python',
     license='MIT',
+    setup_requires=[
+        'numpy'
+    ],
     ext_modules=ext_modules,
 )

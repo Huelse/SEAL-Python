@@ -13,6 +13,8 @@ This is a python binding for the Microsoft SEAL library.
 * [Build](#build)
 * [FAQ](#faq)
 * [Note](#note)
+  * [Serialize](#serialize)
+  * [Other](#other)
 
 
 
@@ -85,9 +87,49 @@ Microsoft official video [SEAL in windows](https://www.microsoft.com/en-us/resea
 
 ## Note
 
-There are a lot of changes in the latest SEAL lib, we try to make the API in python can be used easier, it may remain some problems we unknown, if any problems(bugs), [Issue](https://github.com/Huelse/SEAL-Python/issues) please.
+* **Serialize**
 
-Email: [huelse@oini.top](mailto:huelse@oini.top?subject=Github-SEAL-Python-Issues)
+  In usually, you can use the SEAL's native serialize API to save the data.  Here is an example:
+
+  ```python
+  cipher.save('cipher')
+  
+  load_cipher = Ciphertext()
+  load_cipher.load(context, 'cipher')  # work if the context is valid.
+  ```
+
+  Support type: `Encryptionparams, Ciphertext, Plaintext, SecretKey, Publickey, Relinkeys, Galoiskeys`
+
+  Particularly, if you want to use the pickle to serialize your data, you need to do these things like below:
+
+  ```shell
+  # 1. Modify the serializable object's header file in SEAL and switch the wrapper.
+  python helper.py
+  
+  # 2. Rebuild the SEAL lib like above
+  cmake --build build
+  
+  # 3. Run the setup.py
+  python setup.py build_ext -i
+  ```
+
+  Then, you can pickle the data object like this:
+
+  ```python
+  import pickle
+  
+  cipher.set_parms(parms)  # nccessary
+  cipher_dump = pickle.dumps(cipher)
+  cipher_load = pickle.loads(cipher_dump)
+  ```
+  
+  Generally, we don't use the compress lib.
+  
+* **Other**
+
+  There are a lot of changes in the latest SEAL lib, we try to make the API in python can be used easier, it may remain some problems we unknown, if any problems(bugs), [Issue](https://github.com/Huelse/SEAL-Python/issues) please.
+
+  Email: [huelse@oini.top](mailto:huelse@oini.top?subject=Github-SEAL-Python-Issues)
 
 
 
