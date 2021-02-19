@@ -65,7 +65,7 @@ This is a python binding for the Microsoft SEAL library.
 
 * #### Serialize
 
-  In usually, you can use the SEAL's native serialize API to save the data.  Here is an example:
+  In usually, you can use the SEAL's native serialize API to save the data, here is an example:
 
   ```python
   cipher.save('cipher')
@@ -99,7 +99,7 @@ This is a python binding for the Microsoft SEAL library.
   cipher_load = pickle.loads(cipher_dump)
   ```
 
-  Generally, we don't use the compress lib.
+  Generally, we don't use compression library.
 
 * #### Other
 
