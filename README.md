@@ -41,9 +41,9 @@ This is a python binding for the Microsoft SEAL library.
   cmake --build build
   cd ..
   # Run the setup.py
-python3 setup.py build_ext -i
+  python3 setup.py build_ext -i
   ```
-  
+
 * #### Windows
 
   Visual Studio 2019 or newer is required. And use the **x64 Native Tools Command Prompt for Visual Studio 2019**  command prompt to configure and build the Microsoft SEAL library. It's usually can be found in your Start Menu.
