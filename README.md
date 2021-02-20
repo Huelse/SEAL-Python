@@ -36,13 +36,12 @@ This is a python binding for the Microsoft SEAL library.
   git submodule update --remote
   
   # Build the SEAL lib
-  cd ./SEAL
+  cd SEAL
   cmake -S . -B build -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF -DSEAL_USE_ZSTD=OFF
   cmake --build build
   cd ..
-  
-# Run the setup.py
-  python3 setup.py build_ext -i
+  # Run the setup.py
+python3 setup.py build_ext -i
   ```
   
 * #### Windows
