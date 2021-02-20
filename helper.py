@@ -1,6 +1,6 @@
 import os
 
-root_path = './SEAL/native/src/seal'
+root_path = './SEAL/native/src/seal/'
 files = ['plaintext.h', 'ciphertext.h', 'kswitchkeys.h', 'secretkey.h', 'publickey.h']
 keyword = 'private:'
 new_line = 'EncryptionParameters parms;'

@@ -25,14 +25,17 @@ This is a python binding for the Microsoft SEAL library.
   ```shell
   # Optional
   sudo apt-get install build-essential cmake python3 python3-dev python3-pip
+  
+  # Get the repository or download from the releases
+  git clone https://github.com/Huelse/SEAL-Python.git
+  cd SEAL-Python
+  
   # Numpy is essential
   pip3 install -r requirements.txt
   
-  # Get the repo or download from the releases
-  git clone https://github.com/Huelse/SEAL-Python.git
-  cd SEAL-Python
+  # Init the SEAL and pybind11
   git submodule init && git submodule update
-  # Get the newest SEAL and pybind11
+  # Get the newest repositories
   git submodule update --remote
   
   # Build the SEAL lib
@@ -40,26 +43,26 @@ This is a python binding for the Microsoft SEAL library.
   cmake -S . -B build -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF -DSEAL_USE_ZSTD=OFF
   cmake --build build
   cd ..
+
   # Run the setup.py
   python3 setup.py build_ext -i
   ```
-
+  
 * #### Windows
 
   Visual Studio 2019 or newer is required. And use the **x64 Native Tools Command Prompt for Visual Studio 2019**  command prompt to configure and build the Microsoft SEAL library. It's usually can be found in your Start Menu.
 
   ```shell
   # Same as above
-  
-  # Build the SEAL lib
+  # Build the SEAL library
   cmake -S . -B build -G Ninja -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF -DSEAL_USE_ZSTD=OFF
-  cmake --build build --config Release
+  cmake --build build
   
   # Run the setup.py
   python setup.py build_ext -i
   ```
-
-  Microsoft SEAL official [illustrate](https://github.com/microsoft/SEAL#building-microsoft-seal-manually).
+  
+Usually, the Ninja generator is better than the "Visual Studio 16 2019" generator, there is more information in the Microsoft SEAL official [illustrate](https://github.com/microsoft/SEAL#building-microsoft-seal-manually).
 
 
 
