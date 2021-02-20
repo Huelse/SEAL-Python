@@ -32,17 +32,17 @@ def switch_wrapper():
     with open('./setup.py', 'r', encoding='utf-8') as f:
         lines = f.readlines()
         for line in lines:
-            if "wrapper = 'src/wrapper.cpp'" in line:
+            if "wrapper_file = 'src/wrapper.cpp'" in line:
                 ifswitch = True
     if ifswitch:
         with open('./setup.py', 'w', encoding='utf-8') as fs:
             for line in lines:
-                if "wrapper = 'src/wrapper.cpp'" in line:
-                    line = line.replace(line, "wrapper = 'src/wrapper_with_pickle.cpp'\n")
+                if "wrapper_file = 'src/wrapper.cpp'" in line:
+                    line = line.replace(line, "wrapper_file = 'src/wrapper_with_pickle.cpp'\n")
                 fs.write(line)
             print("Switch wrapper success.")
     else:
-        print('Already witch to wrapper with pickle.')
+        print('Already switch to wrapper with pickle.')
 
 
 if __name__ == '__main__':
