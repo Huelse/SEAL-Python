@@ -30,7 +30,10 @@ This is a python binding for the Microsoft SEAL library.
   
   # Get the repo or download from the releases
   git clone https://github.com/Huelse/SEAL-Python.git
-  git submodule init
+  cd SEAL-Python
+  git submodule init && git submodule update
+  # Get the newest SEAL and pybind11
+  git submodule update --remote
   
   # Build the SEAL lib
   cd ./SEAL
@@ -38,10 +41,10 @@ This is a python binding for the Microsoft SEAL library.
   cmake --build build
   cd ..
   
-  # Run the setup.py
+# Run the setup.py
   python3 setup.py build_ext -i
   ```
-
+  
 * #### Windows
 
   Visual Studio 2019 or newer is required. And use the **x64 Native Tools Command Prompt for Visual Studio 2019**  command prompt to configure and build the Microsoft SEAL library. It's usually can be found in your Start Menu.
@@ -50,14 +53,14 @@ This is a python binding for the Microsoft SEAL library.
   # Same as above
   
   # Build the SEAL lib
-  cmake -S . -B build -G "Visual Studio 16 2019" -A x64 -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF -DSEAL_USE_ZSTD=OFF
+  cmake -S . -B build -G Ninja -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF -DSEAL_USE_ZSTD=OFF
   cmake --build build --config Release
   
   # Run the setup.py
   python setup.py build_ext -i
   ```
 
-  Microsoft official video [SEAL in windows](https://www.microsoft.com/en-us/research/video/installing-microsoft-seal-on-windows/).
+  Microsoft SEAL official [illustrate](https://github.com/microsoft/SEAL#building-microsoft-seal-manually).
 
 
 

@@ -20,8 +20,8 @@ if(platform.system() == "Windows"):
     extra_objects[0] = './SEAL/build/lib/Release/seal-3.6.lib'
 
 if not os.path.exists(extra_objects[0]):
-    print('Can not find the seal lib')
-    print('Compile the seal lib first or check the path')
+    print('Can not find the seal lib,')
+    print('Compile the seal lib first or check the path.')
     exit(1)
 
 ext_modules = [
@@ -43,8 +43,5 @@ setup(
     description='Python wrapper for the Microsoft SEAL',
     url='https://github.com/Huelse/SEAL-Python',
     license='MIT',
-    setup_requires=[
-        'numpy'
-    ],
     ext_modules=ext_modules,
 )
