@@ -62,7 +62,7 @@ This is a python binding for the Microsoft SEAL library.
   python setup.py build_ext -i
   ```
   
-Usually, the Ninja generator is better than the "Visual Studio 16 2019" generator, there is more information in the Microsoft SEAL official [illustrate](https://github.com/microsoft/SEAL#building-microsoft-seal-manually).
+  Generally, the Ninja generator is better than the "Visual Studio 16 2019" generator, and there is more information in the Microsoft SEAL official [illustrate](https://github.com/microsoft/SEAL#building-microsoft-seal-manually).
 
 
 
@@ -70,7 +70,7 @@ Usually, the Ninja generator is better than the "Visual Studio 16 2019" generato
 
 * #### Serialize
 
-  In usually, you can use the SEAL's native serialize API to save the data, here is an example:
+  In most situations, you can use the SEAL's native serialize API to save the data, here is an example:
 
   ```python
   cipher.save('cipher')
