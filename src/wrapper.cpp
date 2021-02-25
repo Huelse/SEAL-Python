@@ -582,6 +582,7 @@ PYBIND11_MODULE(seal, m)
 	// batchencoder.h
 	py::class_<BatchEncoder>(m, "BatchEncoder")
 		.def(py::init<const SEALContext &>())
+		.def("slot_count", &BatchEncoder::slot_count)
 		.def("encode", [](BatchEncoder &encoder, py::array_t<std::int64_t> values){
 			py::buffer_info buf = values.request();
 			if (buf.ndim != 1)
