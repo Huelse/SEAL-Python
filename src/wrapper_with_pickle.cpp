@@ -239,6 +239,9 @@ PYBIND11_MODULE(seal, m)
 		.def("set_parms", [](Plaintext &plain, const EncryptionParameters &parms){
 			plain.parms = parms;
 		})
+		.def("save_size", [](const Plaintext &plain){
+			return plain.save_size();
+		})
 		.def(py::pickle(&serialize<Plaintext>, &deserialize<Plaintext>));
 
 	// ciphertext.h
@@ -271,6 +274,9 @@ PYBIND11_MODULE(seal, m)
 		})
 		.def("set_parms", [](Ciphertext &cipher, const EncryptionParameters &parms){
 			cipher.parms = parms;
+		})
+		.def("save_size", [](const Ciphertext &cipher){
+			return cipher.save_size();
 		})
 		.def(py::pickle(&serialize<Ciphertext>, &deserialize<Ciphertext>));
 

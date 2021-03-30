@@ -180,6 +180,9 @@ PYBIND11_MODULE(seal, m)
 			std::ifstream in(path, std::ifstream::binary);
 			plain.load(context, in);
 			in.close();
+		})
+		.def("save_size", [](const Plaintext &plain){
+			return plain.save_size();
 		});
 
 	// ciphertext.h
@@ -209,6 +212,9 @@ PYBIND11_MODULE(seal, m)
 			std::ifstream in(path, std::ifstream::binary);
 			cipher.load(context, in);
 			in.close();
+		})
+		.def("save_size", [](const Ciphertext &cipher){
+			return cipher.save_size();
 		});
 
 	// secretkey.h
