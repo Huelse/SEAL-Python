@@ -24,20 +24,20 @@ This is a python binding for the Microsoft SEAL library.
 
   ```shell
   # Optional
-  sudo apt-get install build-essential cmake python3 python3-dev python3-pip
-  
+  sudo apt-get install git build-essential cmake python3 python3-dev python3-pip
+
   # Get the repository or download from the releases
   git clone https://github.com/Huelse/SEAL-Python.git
   cd SEAL-Python
-  
+
   # Numpy is essential
   pip3 install -r requirements.txt
-  
+
   # Init the SEAL and pybind11
   git submodule init && git submodule update
   # Get the newest repositories (unnecessary)
   git submodule update --remote
-  
+
   # Build the SEAL lib
   cd SEAL
   cmake -S . -B build -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF -DSEAL_USE_ZSTD=OFF
@@ -47,7 +47,7 @@ This is a python binding for the Microsoft SEAL library.
   # Run the setup.py
   python3 setup.py build_ext -i
   ```
-  
+
 * #### Windows
 
   Visual Studio 2019 or newer is required. And use the **x64 Native Tools Command Prompt for Visual Studio 2019**  command prompt to configure and build the Microsoft SEAL library. It's usually can be found in your Start Menu.
@@ -57,14 +57,26 @@ This is a python binding for the Microsoft SEAL library.
   # Build the SEAL library
   cmake -S . -B build -G Ninja -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF -DSEAL_USE_ZSTD=OFF
   cmake --build build
-  
+
   # Run the setup.py
   python setup.py build_ext -i
   ```
-  
+
   Generally, the Ninja generator is better than the "Visual Studio 16 2019" generator, and there is more information in the Microsoft SEAL official [illustrate](https://github.com/microsoft/SEAL#building-microsoft-seal-manually).
 
 
+* #### Docker
+  requires: [Docker](https://www.docker.com/)
+
+  To build source code into a docker image (from this directory):
+  ```shell
+  docker build -t huelse/seal -f Dockerfile .
+  ```
+
+  To use the image by running it as an interactive container:
+  ```shell
+  docker run -it huelse/seal
+  ```
 
 ## Note
 
@@ -74,7 +86,7 @@ This is a python binding for the Microsoft SEAL library.
 
   ```python
   cipher.save('cipher')
-  
+
   load_cipher = Ciphertext()
   load_cipher.load(context, 'cipher')  # work if the context is valid.
   ```
@@ -86,10 +98,10 @@ This is a python binding for the Microsoft SEAL library.
   ```shell
   # 1. Modify the serializable object's header file in SEAL and switch the wrapper.
   python helper.py
-  
+
   # 2. Rebuild the SEAL lib like above
   cmake --build build
-  
+
   # 3. Run the setup.py
   python setup.py build_ext -i
   ```
@@ -98,7 +110,7 @@ This is a python binding for the Microsoft SEAL library.
 
   ```python
   import pickle
-  
+
   cipher.set_parms(parms)  # necessary
   cipher_dump = pickle.dumps(cipher)
   cipher_load = pickle.loads(cipher_dump)
@@ -142,4 +154,3 @@ This is a python binding for the Microsoft SEAL library.
 * Professor: [Dr. Chen](https://zhigang-chen.github.io/)
 
 * [Contributors](https://github.com/Huelse/SEAL-Python/graphs/contributors)
-
