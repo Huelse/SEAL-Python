@@ -6,6 +6,7 @@
 #include "base64.h"
 #include <iostream>
 #include <fstream>
+#include <type_traits>
 
 using namespace seal;
 
@@ -13,6 +14,60 @@ namespace py = pybind11;
 
 PYBIND11_MAKE_OPAQUE(std::vector<double>);
 PYBIND11_MAKE_OPAQUE(std::vector<std::int64_t>);
+
+template <typename T, typename = void>
+struct HasParms : std::false_type { };
+
+template <typename T>
+struct HasParms <T, decltype((void)T::parms, void())> : std::true_type { };
+
+template <class T>
+py::tuple serialize(T &c)
+{
+	if (!HasParms<T>::value)
+		throw std::runtime_error("E001: Invalid state! set parms first.");
+
+	// EncryptionParameters
+	std::stringstream out_stream1(std::ios::binary | std::ios::out);
+	// if parms exists
+	c.parms.save(out_stream1);
+	std::string str_buf1 = out_stream1.str();
+	std::string encoded_str1 = base64_encode(reinterpret_cast<const unsigned char *>(str_buf1.c_str()), (unsigned int)str_buf1.length());
+
+	// T
+	std::stringstream out_stream2(std::ios::binary | std::ios::out);
+	c.save(out_stream2);
+	std::string str_buf2 = out_stream2.str();
+	std::string encoded_str2 = base64_encode(reinterpret_cast<const unsigned char *>(str_buf2.c_str()), (unsigned int)str_buf2.length());
+
+	return py::make_tuple(encoded_str1, encoded_str2);
+}
+
+template <class T>
+T deserialize(py::tuple t)
+{
+	if (t.size() != 2)
+		throw std::runtime_error("E002: Invalid state!");
+
+	// EncryptionParameters
+	std::string encoded_str1 = t[0].cast<std::string>();
+	std::string decoded_str1 = base64_decode(encoded_str1);
+	std::stringstream in_stream1(std::ios::binary | std::ios::in);
+	in_stream1.str(decoded_str1);
+	EncryptionParameters parms;
+	parms.load(in_stream1);
+	SEALContext context(parms);
+
+	// T
+	std::string encoded_str2 = t[1].cast<std::string>();
+	std::string decoded_str2 = base64_decode(encoded_str2);
+	std::stringstream in_stream2(std::ios::binary | std::ios::in);
+	in_stream2.str(decoded_str2);
+	T c;
+	c.load(context, in_stream2);
+
+	return c;
+}
 
 PYBIND11_MODULE(seal, m)
 {
@@ -60,7 +115,7 @@ PYBIND11_MODULE(seal, m)
 			[](py::tuple t){
 				if (t.size() != 1)
                 	throw std::runtime_error("E002: Invalid state!");
-				
+
 				std::string encoded_str = t[0].cast<std::string>();
 				std::string decoded_str = base64_decode(encoded_str);
 				std::stringstream in_stream(std::ios::binary | std::ios::in);
@@ -181,9 +236,13 @@ PYBIND11_MODULE(seal, m)
 			plain.load(context, in);
 			in.close();
 		})
+		.def("set_parms", [](Plaintext &plain, const EncryptionParameters &parms){
+			plain.parms = parms;
+		})
 		.def("save_size", [](const Plaintext &plain){
 			return plain.save_size();
-		});
+		})
+		.def(py::pickle(&serialize<Plaintext>, &deserialize<Plaintext>));
 
 	// ciphertext.h
 	py::class_<Ciphertext>(m, "Ciphertext")
@@ -213,9 +272,13 @@ PYBIND11_MODULE(seal, m)
 			cipher.load(context, in);
 			in.close();
 		})
+		.def("set_parms", [](Ciphertext &cipher, const EncryptionParameters &parms){
+			cipher.parms = parms;
+		})
 		.def("save_size", [](const Ciphertext &cipher){
 			return cipher.save_size();
-		});
+		})
+		.def(py::pickle(&serialize<Ciphertext>, &deserialize<Ciphertext>));
 
 	// secretkey.h
 	py::class_<SecretKey>(m, "SecretKey")
@@ -231,7 +294,11 @@ PYBIND11_MODULE(seal, m)
 			std::ifstream in(path, std::ifstream::binary);
 			sk.load(context, in);
 			in.close();
-		});
+		})
+		.def("set_parms", [](SecretKey &sk, const EncryptionParameters &parms){
+			sk.parms = parms;
+		})
+		.def(py::pickle(&serialize<SecretKey>, &deserialize<SecretKey>));
 
 	// publickey.h
 	py::class_<PublicKey>(m, "PublicKey")
@@ -247,7 +314,11 @@ PYBIND11_MODULE(seal, m)
 			std::ifstream in(path, std::ifstream::binary);
 			pk.load(context, in);
 			in.close();
-		});
+		})
+		.def("set_parms", [](PublicKey &pk, const EncryptionParameters &parms){
+			pk.parms = parms;
+		})
+		.def(py::pickle(&serialize<PublicKey>, &deserialize<PublicKey>));
 
 	// kswitchkeys.h
 	py::class_<KSwitchKeys>(m, "KSwitchKeys")
@@ -264,7 +335,11 @@ PYBIND11_MODULE(seal, m)
 			std::ifstream in(path, std::ifstream::binary);
 			ksk.load(context, in);
 			in.close();
-		});
+		})
+		.def("set_parms", [](KSwitchKeys &ksk, const EncryptionParameters &parms){
+			ksk.parms = parms;
+		})
+		.def(py::pickle(&serialize<KSwitchKeys>, &deserialize<KSwitchKeys>));
 
 	// relinKeys.h
 	py::class_<RelinKeys, KSwitchKeys>(m, "RelinKeys")
@@ -272,8 +347,6 @@ PYBIND11_MODULE(seal, m)
 		.def(py::init<const RelinKeys::KSwitchKeys &>())
 		.def("size", &RelinKeys::KSwitchKeys::size)
 		.def("parms_id", py::overload_cast<>(&RelinKeys::KSwitchKeys::parms_id, py::const_), py::return_value_policy::reference)
-		.def_static("get_index", &RelinKeys::get_index)
-		.def("has_key", &RelinKeys::has_key)
 		.def("save", [](const RelinKeys &rk, const std::string &path){
 			std::ofstream out(path, std::ofstream::binary);
 			rk.save(out);
@@ -283,7 +356,13 @@ PYBIND11_MODULE(seal, m)
 			std::ifstream in(path, std::ifstream::binary);
 			rk.load(context, in);
 			in.close();
-		});
+		})
+		.def_static("get_index", &RelinKeys::get_index)
+		.def("has_key", &RelinKeys::has_key)
+		.def("set_parms", [](RelinKeys &rk, const EncryptionParameters &parms){
+			rk.parms = parms;
+		})
+		.def(py::pickle(&serialize<RelinKeys>, &deserialize<RelinKeys>));
 
 	// galoisKeys.h
 	py::class_<GaloisKeys, KSwitchKeys>(m, "GaloisKeys")
@@ -291,8 +370,6 @@ PYBIND11_MODULE(seal, m)
 		.def(py::init<const GaloisKeys::KSwitchKeys &>())
 		.def("size", &GaloisKeys::KSwitchKeys::size)
 		.def("parms_id", py::overload_cast<>(&GaloisKeys::KSwitchKeys::parms_id, py::const_), py::return_value_policy::reference)
-		.def_static("get_index", &GaloisKeys::get_index)
-		.def("has_key", &GaloisKeys::has_key)
 		.def("save", [](const GaloisKeys &gk, const std::string &path){
 			std::ofstream out(path, std::ofstream::binary);
 			gk.save(out);
@@ -302,7 +379,13 @@ PYBIND11_MODULE(seal, m)
 			std::ifstream in(path, std::ifstream::binary);
 			gk.load(context, in);
 			in.close();
-		});
+		})
+		.def_static("get_index", &GaloisKeys::get_index)
+		.def("has_key", &GaloisKeys::has_key)
+		.def("set_parms", [](GaloisKeys &gk, const EncryptionParameters &parms){
+			gk.parms = parms;
+		})
+		.def(py::pickle(&serialize<GaloisKeys>, &deserialize<GaloisKeys>));
 
 	// keygenerator.h
 	py::class_<KeyGenerator>(m, "KeyGenerator")

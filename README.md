@@ -10,50 +10,107 @@ This is a python binding for the Microsoft SEAL library.
 
 ## Contents
 
-* [Build](https://github.com/Huelse/SEAL-Python#build)
-* [Tests](https://github.com/Huelse/SEAL-Python#tests)
-* [About](https://github.com/Huelse/SEAL-Python#about)
-* [Contributing](https://github.com/Huelse/SEAL-Python#contributing)
+* [Build](#build)
+* [Note](#note)
+  * [Serialize](#serialize)
+  * [Other](#other)
+* [FAQ](#faq)
 
 
 
 ## Build
-### Linux
-CMake (>= 3.10), GNU G++ (>= 6.0) or Clang++ (>= 5.0), Python (>=3.6.8)
+* #### Linux
+  Clang++ (>= 5.0) or GNU G++ (>= 6.0), CMake (>= 3.12)
 
-`sudo apt-get update && sudo apt-get install g++ make cmake git python3 python3-dev python3-pip`
+  ```shell
+  # Optional
+  sudo apt-get install build-essential cmake python3 python3-dev python3-pip
+  
+  # Get the repository or download from the releases
+  git clone https://github.com/Huelse/SEAL-Python.git
+  cd SEAL-Python
+  
+  # Numpy is essential
+  pip3 install -r requirements.txt
+  
+  # Init the SEAL and pybind11
+  git submodule init && git submodule update
+  # Get the newest repositories (unnecessary)
+  git submodule update --remote
+  
+  # Build the SEAL lib
+  cd SEAL
+  cmake -S . -B build -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF -DSEAL_USE_ZSTD=OFF
+  cmake --build build
+  cd ..
 
-`git clone https://github.com/Huelse/SEAL-Python.git`
+  # Run the setup.py
+  python3 setup.py build_ext -i
+  ```
+  
+* #### Windows
 
-```shell
-cd SEAL/native/src
-cmake .
-make
+  Visual Studio 2019 or newer is required. And use the **x64 Native Tools Command Prompt for Visual Studio 2019**  command prompt to configure and build the Microsoft SEAL library. It's usually can be found in your Start Menu.
 
-pip3 install -r requirements.txt
+  ```shell
+  # Same as above
+  # Build the SEAL library
+  cmake -S . -B build -G Ninja -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF -DSEAL_USE_ZSTD=OFF
+  cmake --build build
+  
+  # Run the setup.py
+  python setup.py build_ext -i
+  ```
+  
+  Generally, the Ninja generator is better than the "Visual Studio 16 2019" generator, and there is more information in the Microsoft SEAL official [illustrate](https://github.com/microsoft/SEAL#building-microsoft-seal-manually).
 
-# Check the path at first
-# Setuptools (Recommend)
-python3 setup.py build_ext -i
-# or install
-python3 setup.py install
-```
 
-Docs: [setuptools](https://docs.python.org/3/distutils/configfile.html) [pybind11](https://pybind11.readthedocs.io/en/master/index.html)
 
-### Windows
+## Note
 
-Visual Studio 2017 version 15.3 or newer is required to build Microsoft SEAL.
+* #### Serialize
 
-Open the `SEAL/SEAL.sln` in VS, config in `x64, Release, WinSDK(17763, etc)` mode and generate it.
+  In most situations, you can use the SEAL's native serialize API to save the data, here is an example:
 
-```shell
-python3 setup.py build_ext -i
-# or install
-python3 setup.py install
-```
+  ```python
+  cipher.save('cipher')
+  
+  load_cipher = Ciphertext()
+  load_cipher.load(context, 'cipher')  # work if the context is valid.
+  ```
 
-Microsoft official video [SEAL in windows](https://www.microsoft.com/en-us/research/video/installing-microsoft-seal-on-windows/).
+  Support type: `Encryptionparams, Ciphertext, Plaintext, SecretKey, Publickey, Relinkeys, Galoiskeys`
+
+  Particularly, if you want to use the pickle to serialize your data, you need to do these things like below:
+
+  ```shell
+  # 1. Modify the serializable object's header file in SEAL and switch the wrapper.
+  python helper.py
+  
+  # 2. Rebuild the SEAL lib like above
+  cmake --build build
+  
+  # 3. Run the setup.py
+  python setup.py build_ext -i
+  ```
+
+  Then, you can pickle the data object like this:
+
+  ```python
+  import pickle
+  
+  cipher.set_parms(parms)  # necessary
+  cipher_dump = pickle.dumps(cipher)
+  cipher_load = pickle.loads(cipher_dump)
+  ```
+
+  Generally, we don't use compression library.
+
+* #### Other
+
+  There are a lot of changes in the latest SEAL lib, we try to make the API in python can be used easier, it may remain some problems we unknown, if any problems(bugs), [Issue](https://github.com/Huelse/SEAL-Python/issues) please.
+
+  Email: [huelse@oini.top](mailto:huelse@oini.top?subject=Github-SEAL-Python-Issues)
 
 
 
@@ -61,13 +118,11 @@ Microsoft official video [SEAL in windows](https://www.microsoft.com/en-us/resea
 
 1. ImportError: undefined symbol
 
-   Build a shared SEAL library `cmake . -D SEAL_LIB_BUILD_TYPE=Shared`, and get the `libseal.so`
+   Build a shared SEAL library `cmake . -DBUILD_SHARED_LIBS=ON`, and get the `libseal.so`,
 
-   then change the lib path in `setup.py` or `src/CMakeLists.txt`, and rebuild.
+   then change the path in `setup.py`, and rebuild.
 
-
-
-2. ImportError: libseal.so.3.4 cannot find
+2. ImportError: libseal.so... cannot find
 
    a. `sudo ln -s /path/to/libseal.so  /usr/lib`
 
@@ -75,44 +130,11 @@ Microsoft official video [SEAL in windows](https://www.microsoft.com/en-us/resea
 
    c. build in cmake.
 
+3. BuildError: C++17 at least
 
+4. ModuleNotFoundError: No module named 'seal'
 
-
-## Tests
-
-`cd tests`
-
-`python3 [example_name].py`
-
-* The `.so` file must be in the same folder, or you had `install` it already.
-
-
-
-## Getting Started
-
-| C++               | Python           | Description                                                  |
-| ----------------- | ---------------- | ------------------------------------------------------------ |
-| 1_bfv_basics.cpp  | 1_bfv_basics.py  | Encrypted modular arithmetic using the BFV scheme            |
-| 2_encoders.cpp    | 2_encoders.py    | Encoding more complex data into Microsoft SEAL plaintext objects |
-| 3_levels.cpp      | 3_levels.py      | Introduces the concept of levels; prerequisite for using the CKKS scheme |
-| 4_ckks_basics.cpp | 4_ckks_basics.py | Encrypted real number arithmetic using the CKKS scheme       |
-| 5_rotation.cpp    | 5_rotation.py    | Performing cyclic rotations on encrypted vectors in the BFV and CKKS schemes |
-| 6_performance.cpp | 6_performance.py | Performance tests for Microsoft SEAL                         |
-
-
-
-## Future
-
-* pickle
-* microsoft gsl
-
-
-
-## About
-
-This project is still testing now, if any problems(bugs), [Issue](https://github.com/Huelse/SEAL-Python/issues) please.
-
-Email: [huelse@oini.top](mailto:huelse@oini.top?subject=Github-SEAL-Python-Issues&cc=5956877@qq.com)
+   The `.so` or `.pyd` file must be in the current directory, or you have `install` it already.
 
 
 
