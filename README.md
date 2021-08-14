@@ -34,9 +34,9 @@ This is a python binding for the Microsoft SEAL library.
   pip3 install -r requirements.txt
 
   # Init the SEAL and pybind11
-  git submodule init && git submodule update
+  git submodule update --init --recursive
   # Get the newest repositories (unnecessary)
-  git submodule update --remote
+  # git submodule update --remote
 
   # Build the SEAL lib
   cd SEAL
