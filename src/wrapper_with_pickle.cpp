@@ -489,7 +489,9 @@ PYBIND11_MODULE(seal, m)
 		.def("mod_switch_to_next_inplace", [](Evaluator &evaluator, Ciphertext &encrypted){
 			evaluator.mod_switch_to_next_inplace(encrypted);
 		})
-		.def("mod_switch_to_next_inplace", py::overload_cast<Plaintext &>(&Evaluator::mod_switch_to_next_inplace))
+		.def("mod_switch_to_next_inplace", [](Evaluator &evaluator, Plaintext &plain){
+			evaluator.mod_switch_to_next_inplace(plain);
+		})
 		.def("mod_switch_to_next", [](Evaluator &evaluator, const Plaintext &plain){
 			Plaintext destination;
 			evaluator.mod_switch_to_next(plain, destination);
@@ -503,7 +505,9 @@ PYBIND11_MODULE(seal, m)
 			evaluator.mod_switch_to(encrypted, parms_id, destination);
 			return destination;
 		})
-		.def("mod_switch_to_inplace", py::overload_cast<Plaintext &, parms_id_type>(&Evaluator::mod_switch_to_inplace))
+		.def("mod_switch_to_inplace", [](Evaluator &evaluator, Plaintext &plain, parms_id_type parms_id){
+			evaluator.mod_switch_to_inplace(plain, parms_id);
+		})
 		.def("mod_switch_to", [](Evaluator &evaluator, const Plaintext &plain, parms_id_type parms_id){
 			Plaintext destination;
 			evaluator.mod_switch_to(plain, parms_id, destination);
@@ -559,14 +563,16 @@ PYBIND11_MODULE(seal, m)
 			return destination;
 		})
 		.def("transform_to_ntt_inplace", [](Evaluator &evaluator, Plaintext &plain, parms_id_type parms_id){
-			evaluator.transform_to_ntt_inplace(plain,parms_id);
+			evaluator.transform_to_ntt_inplace(plain, parms_id);
 		})
 		.def("transform_to_ntt", [](Evaluator &evaluator, const Plaintext &plain, parms_id_type parms_id){
 			Plaintext destination_ntt;
 			evaluator.transform_to_ntt(plain, parms_id, destination_ntt);
 			return destination_ntt;
 		})
-		.def("transform_to_ntt_inplace", py::overload_cast<Ciphertext &>(&Evaluator::transform_to_ntt_inplace))
+		.def("transform_to_ntt_inplace", [](Evaluator &evaluator, Ciphertext &encrypted){
+			evaluator.transform_to_ntt_inplace(encrypted);
+		})
 		.def("transform_to_ntt", [](Evaluator &evaluator, const Ciphertext &encrypted){
 			Ciphertext destination_ntt;
 			evaluator.transform_to_ntt(encrypted, destination_ntt);
