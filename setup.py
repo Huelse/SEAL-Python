@@ -17,7 +17,7 @@ wrapper_file = 'src/wrapper.cpp'
 
 if(platform.system() == "Windows"):
     cpp_args[0] = '/std:c++latest'  # /std:c++1z
-    extra_objects[0] = './SEAL/build/lib/Release/seal-3.6.lib'
+    extra_objects[0] = './SEAL/build/lib/Release/seal-3.7.lib'
 
 if not os.path.exists(extra_objects[0]):
     print('Can not find the seal lib,')
@@ -37,11 +37,11 @@ ext_modules = [
 
 setup(
     name='seal',
-    version='3.6',
-    author='Huelse',
-    author_email='huelse@oini.top',
+    version='3.7',
+    author='Desilo',
+    author_email='engineering.dev@desilo.ai',
     description='Python wrapper for the Microsoft SEAL',
-    url='https://github.com/Huelse/SEAL-Python',
+    url='https://github.com/Desilo/SEAL-Python',
     license='MIT',
     ext_modules=ext_modules,
 )

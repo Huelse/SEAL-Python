@@ -36,7 +36,10 @@ src/*.pyd
 # Others
 *.zip
 build
+dist
+seal.egg-info
 *.lib
 *.pyd
 *.pyc
 temp
+env
