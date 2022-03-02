@@ -15,7 +15,7 @@ extra_objects = ['./SEAL/build/lib/libseal-3.7.a']
 # available wrapper: src/wrapper.cpp, src/wrapper_with_pickle.cpp
 wrapper_file = 'src/wrapper.cpp'
 
-if(platform.system() == "Windows"):
+if platform.system() == "Windows":
     cpp_args[0] = '/std:c++latest'  # /std:c++1z
     extra_objects[0] = './SEAL/build/lib/seal-3.7.lib'
 
