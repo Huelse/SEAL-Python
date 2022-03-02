@@ -40,3 +40,4 @@ build
 *.pyd
 *.pyc
 temp
+.idea
