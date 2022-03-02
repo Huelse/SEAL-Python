@@ -37,7 +37,7 @@ ext_modules = [
 
 setup(
     name='seal',
-    version='3.6',
+    version='3.7',
     author='Huelse',
     author_email='huelse@oini.top',
     description='Python wrapper for the Microsoft SEAL',
