@@ -35,7 +35,7 @@ This is a python binding for the Microsoft SEAL library.
 
   # Init the SEAL and pybind11
   git submodule update --init --recursive
-  # Get the newest repositories (unnecessary)
+  # Get the newest repositories (dev only)
   # git submodule update --remote
 
   # Build the SEAL lib
@@ -64,7 +64,7 @@ This is a python binding for the Microsoft SEAL library.
   python setup.py build_ext -i
   ```
 
-  Generally, the Ninja generator is better than the "Visual Studio 16 2019" generator, and there is more information in the Microsoft SEAL official [illustrate](https://github.com/microsoft/SEAL#building-microsoft-seal-manually).
+  In general, the Ninja generator is better than the "Visual Studio 16 2019" generator, and there is more information in the Microsoft SEAL official [illustrate](https://github.com/microsoft/SEAL#building-microsoft-seal-manually).
 
 
 * #### Docker
