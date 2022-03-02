@@ -47,6 +47,8 @@ This is a python binding for the Microsoft SEAL library.
   # Run the setup.py
   python3 setup.py build_ext -i
   ```
+  
+  CMake Options: `-DSEAL_BUILD_EXAMPLES=ON` and [more](https://github.com/microsoft/SEAL#basic-cmake-options)
 
 * #### Windows
 
@@ -93,7 +95,7 @@ This is a python binding for the Microsoft SEAL library.
 
   Support type: `Encryptionparams, Ciphertext, Plaintext, SecretKey, Publickey, Relinkeys, Galoiskeys`
 
-  Particularly, if you want to use the pickle to serialize your data, you need to do these things like below:
+  If you want to use the pickle to serialize your data, you need to do these things below:
 
   ```shell
   # 1. Modify the serializable object's header file in SEAL and switch the wrapper.
@@ -106,7 +108,7 @@ This is a python binding for the Microsoft SEAL library.
   python setup.py build_ext -i
   ```
 
-  Then, you can pickle the data object like this:
+  And serialize the data object like this:
 
   ```python
   import pickle
@@ -116,13 +118,11 @@ This is a python binding for the Microsoft SEAL library.
   cipher_load = pickle.loads(cipher_dump)
   ```
 
-  Generally, we don't use compression library.
-
 * #### Other
 
   There are a lot of changes in the latest SEAL lib, we try to make the API in python can be used easier, it may remain some problems we unknown, if any problems(bugs), [Issue](https://github.com/Huelse/SEAL-Python/issues) please.
 
-  Email: [huelse@oini.top](mailto:huelse@oini.top?subject=Github-SEAL-Python-Issues)
+  Email: [topmaxz@protonmail.com](mailto:topmaxz@protonmail.com?subject=Github-SEAL-Python-Issues)
 
 
 
