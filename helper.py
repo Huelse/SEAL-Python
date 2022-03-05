@@ -5,6 +5,7 @@ files = ['plaintext.h', 'ciphertext.h', 'kswitchkeys.h', 'secretkey.h', 'publick
 keyword = 'private:'
 new_line = 'EncryptionParameters parms;'
 
+
 def add_parms_to_header():
     for file_name in files:
         file_path = root_path + file_name
@@ -20,9 +21,9 @@ def add_parms_to_header():
                 with open(file_path, 'w', encoding='utf-8') as fs:
                     for line in lines:
                         if keyword in line:
-                            line = line.replace(line, '\t\t{}\n\n\t{}\n'.format(new_line, keyword))
+                            line = line.replace(line, '        {}\n\n    {}\n'.format(new_line, keyword))
                         fs.write(line)
-                    print('Add parms to {} success.'. format(file_path))
+                    print('Add parms to {} success.'.format(file_path))
         else:
             print('Can not find the {}, please check the file integrity.'.format(file_path))
 

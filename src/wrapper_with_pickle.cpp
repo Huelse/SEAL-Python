@@ -71,7 +71,7 @@ T deserialize(py::tuple t)
 
 PYBIND11_MODULE(seal, m)
 {
-    m.doc() = "Microsoft SEAL (3.6) for Python, from https://github.com/Huelse/SEAL-Python";
+    m.doc() = "Microsoft SEAL (3.7) for Python, from https://github.com/Huelse/SEAL-Python";
 
     py::bind_vector<std::vector<double>>(m, "VectorDouble", py::buffer_protocol());
     py::bind_vector<std::vector<std::int64_t>>(m, "VectorInt", py::buffer_protocol());
