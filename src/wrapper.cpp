@@ -16,7 +16,7 @@ PYBIND11_MAKE_OPAQUE(std::vector<std::int64_t>);
 
 PYBIND11_MODULE(seal, m)
 {
-    m.doc() = "Microsoft SEAL (3.7) for Python, from https://github.com/Huelse/SEAL-Python";
+    m.doc() = "Microsoft SEAL (4.0) for Python, from https://github.com/Huelse/SEAL-Python";
 
     py::bind_vector<std::vector<double>>(m, "VectorDouble", py::buffer_protocol());
     py::bind_vector<std::vector<std::int64_t>>(m, "VectorInt", py::buffer_protocol());
@@ -142,7 +142,8 @@ PYBIND11_MODULE(seal, m)
     py::class_<CoeffModulus>(m, "CoeffModulus")
         .def_static("MaxBitCount", &CoeffModulus::MaxBitCount, py::arg(), py::arg()=sec_level_type::tc128)
         .def_static("BFVDefault", &CoeffModulus::BFVDefault, py::arg(), py::arg()=sec_level_type::tc128)
-        .def_static("Create", &CoeffModulus::Create);
+        .def_static("Create", py::overload_cast<std::size_t, std::vector<int>>(&CoeffModulus::Create));
+        .def_static("Create", py::overload_cast<std::size_t, const Modulus &, std::vector<int>>(&CoeffModulus::Create));
 
     // modulus.h
     py::class_<PlainModulus>(m, "PlainModulus")
