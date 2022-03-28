@@ -142,7 +142,7 @@ PYBIND11_MODULE(seal, m)
     py::class_<CoeffModulus>(m, "CoeffModulus")
         .def_static("MaxBitCount", &CoeffModulus::MaxBitCount, py::arg(), py::arg()=sec_level_type::tc128)
         .def_static("BFVDefault", &CoeffModulus::BFVDefault, py::arg(), py::arg()=sec_level_type::tc128)
-        .def_static("Create", py::overload_cast<std::size_t, std::vector<int>>(&CoeffModulus::Create));
+        .def_static("Create", py::overload_cast<std::size_t, std::vector<int>>(&CoeffModulus::Create))
         .def_static("Create", py::overload_cast<std::size_t, const Modulus &, std::vector<int>>(&CoeffModulus::Create));
 
     // modulus.h
