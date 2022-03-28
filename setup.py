@@ -11,13 +11,13 @@ cpp_args = ['-std=c++17']
 # include directories
 include_dirs = [py_include_dir, './pybind11/include', './SEAL/native/src', './SEAL/build/native/src']
 # library path
-extra_objects = ['./SEAL/build/lib/libseal-3.7.a']
+extra_objects = ['./SEAL/build/lib/libseal-4.0.a']
 # available wrapper: src/wrapper.cpp, src/wrapper_with_pickle.cpp
 wrapper_file = 'src/wrapper.cpp'
 
 if platform.system() == "Windows":
     cpp_args[0] = '/std:c++latest'  # /std:c++1z
-    extra_objects[0] = './SEAL/build/lib/seal-3.7.lib'
+    extra_objects[0] = './SEAL/build/lib/seal-4.0.lib'
 
 if not os.path.exists(extra_objects[0]):
     print('Can not find the seal lib,')
