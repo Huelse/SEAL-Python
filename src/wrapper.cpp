@@ -3,12 +3,9 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 #include "seal/seal.h"
-#include "base64.h"
-#include <iostream>
 #include <fstream>
 
 using namespace seal;
-
 namespace py = pybind11;
 
 PYBIND11_MAKE_OPAQUE(std::vector<double>);
@@ -25,7 +22,8 @@ PYBIND11_MODULE(seal, m)
     py::enum_<scheme_type>(m, "scheme_type")
         .value("none", scheme_type::none)
         .value("bfv", scheme_type::bfv)
-        .value("ckks", scheme_type::ckks);
+        .value("ckks", scheme_type::ckks)
+        .value("bgv", scheme_type::bgv);
 
     // encryptionparams.h
     py::class_<EncryptionParameters>(m, "EncryptionParameters")
@@ -48,28 +46,7 @@ PYBIND11_MODULE(seal, m)
             std::ifstream in(path, std::ifstream::binary);
             parms.load(in);
             in.close();
-        })
-        .def(py::pickle(
-            [](const EncryptionParameters &parms){
-                std::stringstream out_stream(std::ios::binary | std::ios::out);
-                parms.save(out_stream);
-                std::string str_buf = out_stream.str();
-                std::string encoded_str = base64_encode(reinterpret_cast<const unsigned char *>(str_buf.c_str()), (unsigned int)str_buf.length());
-                return py::make_tuple(encoded_str);
-            },
-            [](py::tuple t){
-                if (t.size() != 1)
-                    throw std::runtime_error("E002: Invalid state!");
-                
-                std::string encoded_str = t[0].cast<std::string>();
-                std::string decoded_str = base64_decode(encoded_str);
-                std::stringstream in_stream(std::ios::binary | std::ios::in);
-                in_stream.str(decoded_str);
-                EncryptionParameters parms;
-                parms.load(in_stream);
-                return parms;
-            }
-        ));
+        });
 
     // modulus.h
     py::enum_<sec_level_type>(m, "sec_level_type")
