@@ -16,8 +16,6 @@ cpp_args = ['/std:c++latest'] if platform.system() == "Windows" else ['-std=c++1
 if len(extra_objects) < 1 or not os.path.exists(extra_objects[0]):
     print('Not found the seal lib file, check the `SEAL/build/lib`')
     exit(0)
-elif len(extra_objects) > 1:
-    print('Exists unknown extra objects, may cause exception')
 
 ext_modules = [
     Pybind11Extension(
