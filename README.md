@@ -76,7 +76,7 @@ This is a python binding for the Microsoft SEAL library.
   python setup.py build_ext -i
   ```
 
-  In general, the Ninja generator is better than the "Visual Studio 16 2019" generator, and there is more information in the Microsoft SEAL official [docs](https://github.com/microsoft/SEAL#building-microsoft-seal-manually).
+  Microsoft SEAL official [docs](https://github.com/microsoft/SEAL#building-microsoft-seal-manually).
 
 
 * ### Docker
