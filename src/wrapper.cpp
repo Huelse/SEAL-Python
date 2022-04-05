@@ -144,8 +144,8 @@ PYBIND11_MODULE(seal, m)
         .def("nonzero_coeff_count", &Plaintext::nonzero_coeff_count)
         .def("to_string", &Plaintext::to_string)
         .def("is_ntt_form", &Plaintext::is_ntt_form)
-        .def("parms_id", py::overload_cast<>(&Plaintext::parms_id, py::const_), py::return_value_policy::reference)
-        .def("scale", py::overload_cast<>(&Plaintext::scale, py::const_), py::return_value_policy::reference)
+        .def("parms_id", py::overload_cast<>(&Plaintext::parms_id, py::const_))
+        .def("scale", py::overload_cast<>(&Plaintext::scale, py::const_))
         .def("scale", [](Plaintext &plain, double scale){
             plain.scale() = scale;
         })
@@ -176,8 +176,8 @@ PYBIND11_MODULE(seal, m)
         .def("size_capacity", &Ciphertext::size_capacity)
         .def("is_transparent", &Ciphertext::is_transparent)
         .def("is_ntt_form", py::overload_cast<>(&Ciphertext::is_ntt_form, py::const_))
-        .def("parms_id", py::overload_cast<>(&Ciphertext::parms_id, py::const_), py::return_value_policy::reference)
-        .def("scale", py::overload_cast<>(&Ciphertext::scale, py::const_), py::return_value_policy::reference)
+        .def("parms_id", py::overload_cast<>(&Ciphertext::parms_id, py::const_))
+        .def("scale", py::overload_cast<>(&Ciphertext::scale, py::const_))
         .def("scale", [](Ciphertext &cipher, double scale){
             cipher.scale() = scale;
         })
@@ -199,7 +199,7 @@ PYBIND11_MODULE(seal, m)
     py::class_<SecretKey>(m, "SecretKey")
         .def(py::init<>())
         .def(py::init<const SecretKey &>())
-        .def("parms_id", py::overload_cast<>(&SecretKey::parms_id, py::const_), py::return_value_policy::reference)
+        .def("parms_id", py::overload_cast<>(&SecretKey::parms_id, py::const_))
         .def("save", [](const SecretKey &sk, const std::string &path){
             std::ofstream out(path, std::ofstream::binary);
             sk.save(out);
@@ -215,7 +215,7 @@ PYBIND11_MODULE(seal, m)
     py::class_<PublicKey>(m, "PublicKey")
         .def(py::init<>())
         .def(py::init<const PublicKey &>())
-        .def("parms_id", py::overload_cast<>(&PublicKey::parms_id, py::const_), py::return_value_policy::reference)
+        .def("parms_id", py::overload_cast<>(&PublicKey::parms_id, py::const_))
         .def("save", [](const PublicKey &pk, const std::string &path){
             std::ofstream out(path, std::ofstream::binary);
             pk.save(out);
@@ -232,7 +232,7 @@ PYBIND11_MODULE(seal, m)
         .def(py::init<>())
         .def(py::init<const KSwitchKeys &>())
         .def("size", &KSwitchKeys::size)
-        .def("parms_id", py::overload_cast<>(&KSwitchKeys::parms_id, py::const_), py::return_value_policy::reference)
+        .def("parms_id", py::overload_cast<>(&KSwitchKeys::parms_id, py::const_))
         .def("save", [](const KSwitchKeys &ksk, const std::string &path){
             std::ofstream out(path, std::ofstream::binary);
             ksk.save(out);
@@ -249,7 +249,7 @@ PYBIND11_MODULE(seal, m)
         .def(py::init<>())
         .def(py::init<const RelinKeys::KSwitchKeys &>())
         .def("size", &RelinKeys::KSwitchKeys::size)
-        .def("parms_id", py::overload_cast<>(&RelinKeys::KSwitchKeys::parms_id, py::const_), py::return_value_policy::reference)
+        .def("parms_id", py::overload_cast<>(&RelinKeys::KSwitchKeys::parms_id, py::const_))
         .def_static("get_index", &RelinKeys::get_index)
         .def("has_key", &RelinKeys::has_key)
         .def("save", [](const RelinKeys &rk, const std::string &path){
@@ -268,7 +268,7 @@ PYBIND11_MODULE(seal, m)
         .def(py::init<>())
         .def(py::init<const GaloisKeys::KSwitchKeys &>())
         .def("size", &GaloisKeys::KSwitchKeys::size)
-        .def("parms_id", py::overload_cast<>(&GaloisKeys::KSwitchKeys::parms_id, py::const_), py::return_value_policy::reference)
+        .def("parms_id", py::overload_cast<>(&GaloisKeys::KSwitchKeys::parms_id, py::const_))
         .def_static("get_index", &GaloisKeys::get_index)
         .def("has_key", &GaloisKeys::has_key)
         .def("save", [](const GaloisKeys &gk, const std::string &path){
@@ -286,7 +286,7 @@ PYBIND11_MODULE(seal, m)
     py::class_<KeyGenerator>(m, "KeyGenerator")
         .def(py::init<const SEALContext &>())
         .def(py::init<const SEALContext &, const SecretKey &>())
-        .def("secret_key", &KeyGenerator::secret_key, py::return_value_policy::reference)
+        .def("secret_key", &KeyGenerator::secret_key)
         .def("create_public_key", py::overload_cast<PublicKey &>(&KeyGenerator::create_public_key, py::const_))
         .def("create_relin_keys", py::overload_cast<RelinKeys &>(&KeyGenerator::create_relin_keys))
         .def("create_galois_keys", py::overload_cast<const std::vector<int> &, GaloisKeys &>(&KeyGenerator::create_galois_keys))
