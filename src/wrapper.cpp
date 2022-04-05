@@ -13,7 +13,8 @@ PYBIND11_MAKE_OPAQUE(std::vector<std::int64_t>);
 
 PYBIND11_MODULE(seal, m)
 {
-    m.doc() = "Microsoft SEAL (4.0) for Python, from https://github.com/Huelse/SEAL-Python";
+    m.doc() = "Microsoft SEAL for Python, from https://github.com/Huelse/SEAL-Python";
+    m.attr("__version__")  = "4.0.0";
 
     py::bind_vector<std::vector<double>>(m, "VectorDouble", py::buffer_protocol());
     py::bind_vector<std::vector<std::int64_t>>(m, "VectorInt", py::buffer_protocol());

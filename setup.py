@@ -1,46 +1,46 @@
 import os
 import platform
-from setuptools import setup, Extension
+from glob import glob
+from setuptools import setup
 from distutils.sysconfig import get_python_inc
+from pybind11.setup_helpers import Pybind11Extension, build_ext
 
+__version__ = "4.0.0"
 
-# python include dir
-py_include_dir = os.path.join(get_python_inc())
-# cpp flags
-cpp_args = ['-std=c++17']
-# include directories
-include_dirs = [py_include_dir, './pybind11/include', './SEAL/native/src', './SEAL/build/native/src']
-# library path
-extra_objects = ['./SEAL/build/lib/libseal-4.0.a']
-# available wrapper: src/wrapper.cpp, src/wrapper_with_pickle.cpp
-wrapper_file = 'src/wrapper.cpp'
+include_dirs = [get_python_inc(), 'pybind11/include', 'SEAL/native/src', 'SEAL/build/native/src']
 
-if platform.system() == "Windows":
-    cpp_args[0] = '/std:c++latest'  # /std:c++1z
-    extra_objects[0] = './SEAL/build/lib/seal-4.0.lib'
+extra_objects = sorted(glob('SEAL/build/lib/*.lib') if platform.system() == "Windows" else glob('SEAL/build/lib/*.a'))
 
-if not os.path.exists(extra_objects[0]):
-    print('Not found the seal lib file')
+cpp_args = ['/std:c++latest'] if platform.system() == "Windows" else ['-std=c++17']
+
+if len(extra_objects) < 1 or not os.path.exists(extra_objects[0]):
+    print('Not found the seal lib file, check the `SEAL/build/lib`')
     exit(0)
+elif len(extra_objects) > 1:
+    print('Exists unknown extra objects, may cause exception')
 
 ext_modules = [
-    Extension(
-        name='seal',
-        sources=[wrapper_file],
+    Pybind11Extension(
+        "seal",
+        sorted(glob('src/*.cpp')),
         include_dirs=include_dirs,
-        language='c++',
         extra_compile_args=cpp_args,
         extra_objects=extra_objects,
+        define_macros = [('VERSION_INFO', __version__)],
     ),
 ]
 
 setup(
-    name='seal',
-    version='4.0',
-    author='Huelse',
-    author_email='huelse@oini.top',
-    description='Python wrapper for the Microsoft SEAL',
-    url='https://github.com/Huelse/SEAL-Python',
-    license='MIT',
+    name="seal",
+    version=__version__,
+    author="Huelse",
+    author_email="topmaxz@protonmail.com",
+    url="https://github.com/Huelse/SEAL-Python",
+    description="Python wrapper for the Microsoft SEAL",
+    long_description="",
     ext_modules=ext_modules,
+    cmdclass={"build_ext": build_ext},
+    zip_safe=False,
+    license='MIT',
+    python_requires=">=3.6",
 )
