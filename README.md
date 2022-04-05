@@ -20,9 +20,9 @@ This is a python binding for the Microsoft SEAL library.
 
 ## Build
 
-
 * ### Linux
-  Clang++ (>= 5.0) or GNU G++ (>= 6.0), CMake (>= 3.12)
+
+  Recommend: Clang++ (>= 10.0) or GNU G++ (>= 9.4), CMake (>= 3.16)
 
   ```shell
   # Optional
@@ -71,6 +71,7 @@ This is a python binding for the Microsoft SEAL library.
 
 
 * ### Docker
+
   requires: [Docker](https://www.docker.com/)
 
   To build source code into a docker image (from this directory):
@@ -87,8 +88,7 @@ This is a python binding for the Microsoft SEAL library.
 
 ## Note
 
-
-* ## Serialize
+* ### Serialize
 
   In most situations, you can use the SEAL's native serialize API to save the data, here is an example:
 
@@ -132,9 +132,14 @@ This is a python binding for the Microsoft SEAL library.
 
    The `.so` or `.pyd` file must be in the current directory, or you have `install` it already.
 
+5. Windows Error LNK2001, RuntimeLibrary and MT_StaticRelease mismatch
+
+   Only `x64` is supported, Choose `x64 Native Tools Command Prompt for VS`.
+
 
 
 ## Contributing
+
 * Professor: [Dr. Chen](https://zhigang-chen.github.io/)
 
 * [Contributors](https://github.com/Huelse/SEAL-Python/graphs/contributors)
