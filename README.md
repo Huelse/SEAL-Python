@@ -33,7 +33,7 @@ This is a python binding for the Microsoft SEAL library.
   cd SEAL-Python
 
   # Install dependencies
-  pip3 install -r numpy pybind11
+  pip3 install numpy pybind11
 
   # Init the SEAL and pybind11
   git submodule update --init --recursive
@@ -42,7 +42,7 @@ This is a python binding for the Microsoft SEAL library.
 
   # Build the SEAL lib
   cd SEAL
-  cmake -S . -B build -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF 
+  cmake -S . -B build -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF
   cmake --build build
   cd ..
 
@@ -50,7 +50,7 @@ This is a python binding for the Microsoft SEAL library.
   python3 setup.py build_ext -i
 
   # Test
-  cp  seal.*.so examples
+  cp seal.*.so examples
   python3 4_bgv_basics.py
   ```
 
