@@ -99,7 +99,7 @@ This is a python binding for the Microsoft SEAL library.
   load_cipher.load(context, 'cipher')  # work if the context is valid.
   ```
 
-  Supported classes: `Encryptionparams, Ciphertext, Plaintext, SecretKey, Publickey, Relinkeys, Galoiskeys`
+  Supported classes: `EncryptionParameters, Ciphertext, Plaintext, SecretKey, PublicKey, RelinKeys, GaloisKeys`
 
 
 * ### Other
