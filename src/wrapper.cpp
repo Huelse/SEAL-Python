@@ -105,7 +105,14 @@ PYBIND11_MODULE(seal, m)
         .def("parameters_set", &SEALContext::parameters_set)
         .def("first_parms_id", &SEALContext::first_parms_id)
         .def("last_parms_id", &SEALContext::last_parms_id)
-        .def("using_keyswitching", &SEALContext::using_keyswitching);
+        .def("using_keyswitching", &SEALContext::using_keyswitching)
+        .def("from_string", [](const SEALContext &context, const std::string &str){
+            Ciphertext cipher;
+            std::stringstream in(std::ios::binary | std::ios::in);
+            in.str(str);
+            cipher.load(context, in);
+            return cipher;
+        });
 
     // modulus.h
     py::class_<Modulus>(m, "Modulus")
@@ -183,17 +190,22 @@ PYBIND11_MODULE(seal, m)
             cipher.scale() = scale;
         })
         .def("save", [](const Ciphertext &cipher, const std::string &path){
-            std::ofstream out(path, std::ofstream::binary);
+            std::ofstream out(path, std::ios::binary);
             cipher.save(out);
             out.close();
         })
         .def("load", [](Ciphertext &cipher, const SEALContext &context, const std::string &path){
-            std::ifstream in(path, std::ifstream::binary);
+            std::ifstream in(path, std::ios::binary);
             cipher.load(context, in);
             in.close();
         })
         .def("save_size", [](const Ciphertext &cipher){
             return cipher.save_size();
+        })
+        .def("to_string", [](const Ciphertext &cipher){
+            std::stringstream out(std::ios::binary | std::ios::out);
+            cipher.save(out);
+            return py::bytes(out.str());
         });
 
     // secretkey.h
