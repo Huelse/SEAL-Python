@@ -106,12 +106,47 @@ PYBIND11_MODULE(seal, m)
         .def("first_parms_id", &SEALContext::first_parms_id)
         .def("last_parms_id", &SEALContext::last_parms_id)
         .def("using_keyswitching", &SEALContext::using_keyswitching)
-        .def("from_string", [](const SEALContext &context, const std::string &str){
+        .def("from_cipher_str", [](const SEALContext &context, const std::string &str){
             Ciphertext cipher;
             std::stringstream in(std::ios::binary | std::ios::in);
             in.str(str);
             cipher.load(context, in);
             return cipher;
+        })
+        .def("from_plain_str", [](const SEALContext &context, const std::string &str){
+            Plaintext plain;
+            std::stringstream in(std::ios::binary | std::ios::in);
+            in.str(str);
+            plain.load(context, in);
+            return plain;
+        })
+        .def("from_secret_str", [](const SEALContext &context, const std::string &str){
+            SecretKey secret;
+            std::stringstream in(std::ios::binary | std::ios::in);
+            in.str(str);
+            secret.load(context, in);
+            return secret;
+        })
+        .def("from_public_str", [](const SEALContext &context, const std::string &str){
+            PublicKey public1;
+            std::stringstream in(std::ios::binary | std::ios::in);
+            in.str(str);
+            public1.load(context, in);
+            return public1;
+        })
+        .def("from_relin_str", [](const SEALContext &context, const std::string &str){
+            RelinKeys relin;
+            std::stringstream in(std::ios::binary | std::ios::in);
+            in.str(str);
+            relin.load(context, in);
+            return relin;
+        })
+        .def("from_galois_str", [](const SEALContext &context, const std::string &str){
+            GaloisKeys galois;
+            std::stringstream in(std::ios::binary | std::ios::in);
+            in.str(str);
+            galois.load(context, in);
+            return galois;
         });
 
     // modulus.h
@@ -257,7 +292,7 @@ PYBIND11_MODULE(seal, m)
             in.close();
         });
 
-    // relinKeys.h
+    // relinkeys.h
     py::class_<RelinKeys, KSwitchKeys>(m, "RelinKeys")
         .def(py::init<>())
         .def(py::init<const RelinKeys::KSwitchKeys &>())
@@ -276,7 +311,7 @@ PYBIND11_MODULE(seal, m)
             in.close();
         });
 
-    // galoisKeys.h
+    // galoiskeys.h
     py::class_<GaloisKeys, KSwitchKeys>(m, "GaloisKeys")
         .def(py::init<>())
         .def(py::init<const GaloisKeys::KSwitchKeys &>())
