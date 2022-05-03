@@ -19,8 +19,10 @@ This is a python binding for the Microsoft SEAL library.
 
 
 ## Build
-* #### Linux
-  Clang++ (>= 5.0) or GNU G++ (>= 6.0), CMake (>= 3.12)
+
+* ### Linux
+
+  Recommend: Clang++ (>= 10.0) or GNU G++ (>= 9.4), CMake (>= 3.16)
 
   ```shell
   # Optional
@@ -30,8 +32,8 @@ This is a python binding for the Microsoft SEAL library.
   git clone https://github.com/Huelse/SEAL-Python.git
   cd SEAL-Python
 
-  # Numpy is essential
-  pip3 install -r requirements.txt
+  # Install dependencies
+  pip3 install numpy pybind11
 
   # Init the SEAL and pybind11
   git submodule update --init --recursive
@@ -40,34 +42,45 @@ This is a python binding for the Microsoft SEAL library.
 
   # Build the SEAL lib
   cd SEAL
-  cmake -S . -B build -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF -DSEAL_USE_ZSTD=OFF
+  cmake -S . -B build -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF
   cmake --build build
   cd ..
 
   # Run the setup.py
   python3 setup.py build_ext -i
+
+  # Test
+  cp seal.*.so examples
+  python3 4_bgv_basics.py
   ```
-  
-  CMake Options: `-DSEAL_BUILD_EXAMPLES=ON` and [more](https://github.com/microsoft/SEAL#basic-cmake-options)
 
-* #### Windows
+  Build examples (after `cmake -S . -B`): `-DSEAL_BUILD_EXAMPLES=ON` 
 
-  Visual Studio 2019 or newer is required. And use the **x64 Native Tools Command Prompt for Visual Studio 2019**  command prompt to configure and build the Microsoft SEAL library. It's usually can be found in your Start Menu.
+  Zstandard compression off: `-DSEAL_USE_ZSTD=OFF`
+
+  [More cmake options](https://github.com/microsoft/SEAL#basic-cmake-options)
+
+
+* ### Windows
+
+  Visual Studio 2019 or newer is required. And use the **x64 Native Tools Command Prompt for VS**  command prompt to configure and build the Microsoft SEAL library. It's usually can be found in your Start Menu.
 
   ```shell
   # Same as above
-  # Build the SEAL library
-  cmake -S . -B build -G Ninja -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF -DSEAL_USE_ZSTD=OFF
+  # Run in "x64 Native Tools Command Prompt for VS" command prompt
+  cmake -S . -B build -G Ninja -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF
   cmake --build build
 
-  # Run the setup.py
+  pip install numpy pybind11
+
   python setup.py build_ext -i
   ```
 
-  In general, the Ninja generator is better than the "Visual Studio 16 2019" generator, and there is more information in the Microsoft SEAL official [illustrate](https://github.com/microsoft/SEAL#building-microsoft-seal-manually).
+  Microsoft SEAL official [docs](https://github.com/microsoft/SEAL#building-microsoft-seal-manually).
 
 
-* #### Docker
+* ### Docker
+
   requires: [Docker](https://www.docker.com/)
 
   To build source code into a docker image (from this directory):
@@ -80,9 +93,11 @@ This is a python binding for the Microsoft SEAL library.
   docker run -it huelse/seal
   ```
 
+
+
 ## Note
 
-* #### Serialize
+* ### Serialize
 
   In most situations, you can use the SEAL's native serialize API to save the data, here is an example:
 
@@ -93,34 +108,12 @@ This is a python binding for the Microsoft SEAL library.
   load_cipher.load(context, 'cipher')  # work if the context is valid.
   ```
 
-  Support type: `Encryptionparams, Ciphertext, Plaintext, SecretKey, Publickey, Relinkeys, Galoiskeys`
+  Supported classes: `EncryptionParameters, Ciphertext, Plaintext, SecretKey, PublicKey, RelinKeys, GaloisKeys`
 
-  If you want to use the pickle to serialize your data, you need to do these things below:
 
-  ```shell
-  # 1. Modify the serializable object's header file in SEAL and switch the wrapper.
-  python helper.py
+* ### Other
 
-  # 2. Rebuild the SEAL lib like above
-  cmake --build build
-
-  # 3. Run the setup.py
-  python setup.py build_ext -i
-  ```
-
-  And serialize the data object like this:
-
-  ```python
-  import pickle
-
-  cipher.set_parms(parms)  # necessary
-  cipher_dump = pickle.dumps(cipher)
-  cipher_load = pickle.loads(cipher_dump)
-  ```
-
-* #### Other
-
-  There are a lot of changes in the latest SEAL lib, we try to make the API in python can be used easier, it may remain some problems we unknown, if any problems(bugs), [Issue](https://github.com/Huelse/SEAL-Python/issues) please.
+  There are a lot of changes in the latest SEAL lib, we try to make the API in python can be used easier, but it may remain some problems unknown, if any problems or bugs, report [issues](https://github.com/Huelse/SEAL-Python/issues).
 
   Email: [topmaxz@protonmail.com](mailto:topmaxz@protonmail.com?subject=Github-SEAL-Python-Issues)
 
@@ -148,9 +141,14 @@ This is a python binding for the Microsoft SEAL library.
 
    The `.so` or `.pyd` file must be in the current directory, or you have `install` it already.
 
+5. Windows Error LNK2001, RuntimeLibrary and MT_StaticRelease mismatch
+
+   Only `x64` is supported, Choose `x64 Native Tools Command Prompt for VS`.
+
 
 
 ## Contributing
+
 * Professor: [Dr. Chen](https://zhigang-chen.github.io/)
 
 * [Contributors](https://github.com/Huelse/SEAL-Python/graphs/contributors)
