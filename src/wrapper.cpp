@@ -209,12 +209,12 @@ PYBIND11_MODULE(seal, m)
             plain.scale() = scale;
         })
         .def("save", [](const Plaintext &plain, const std::string &path){
-            std::ofstream out(path, std::ofstream::binary);
+            std::ofstream out(path, std::ios::binary);
             plain.save(out);
             out.close();
         })
         .def("load", [](Plaintext &plain, const SEALContext &context, const std::string &path){
-            std::ifstream in(path, std::ifstream::binary);
+            std::ifstream in(path, std::ios::binary);
             plain.load(context, in);
             in.close();
         })
@@ -270,12 +270,12 @@ PYBIND11_MODULE(seal, m)
         .def(py::init<const SecretKey &>())
         .def("parms_id", py::overload_cast<>(&SecretKey::parms_id, py::const_))
         .def("save", [](const SecretKey &sk, const std::string &path){
-            std::ofstream out(path, std::ofstream::binary);
+            std::ofstream out(path, std::ios::binary);
             sk.save(out);
             out.close();
         })
         .def("load", [](SecretKey &sk, const SEALContext &context, const std::string &path){
-            std::ifstream in(path, std::ifstream::binary);
+            std::ifstream in(path, std::ios::binary);
             sk.load(context, in);
             in.close();
         })
@@ -291,12 +291,12 @@ PYBIND11_MODULE(seal, m)
         .def(py::init<const PublicKey &>())
         .def("parms_id", py::overload_cast<>(&PublicKey::parms_id, py::const_))
         .def("save", [](const PublicKey &pk, const std::string &path){
-            std::ofstream out(path, std::ofstream::binary);
+            std::ofstream out(path, std::ios::binary);
             pk.save(out);
             out.close();
         })
         .def("load", [](PublicKey &pk, const SEALContext &context, const std::string &path){
-            std::ifstream in(path, std::ifstream::binary);
+            std::ifstream in(path, std::ios::binary);
             pk.load(context, in);
             in.close();
         })
@@ -313,12 +313,12 @@ PYBIND11_MODULE(seal, m)
         .def("size", &KSwitchKeys::size)
         .def("parms_id", py::overload_cast<>(&KSwitchKeys::parms_id, py::const_))
         .def("save", [](const KSwitchKeys &ksk, const std::string &path){
-            std::ofstream out(path, std::ofstream::binary);
+            std::ofstream out(path, std::ios::binary);
             ksk.save(out);
             out.close();
         })
         .def("load", [](KSwitchKeys &ksk, const SEALContext &context, const std::string &path){
-            std::ifstream in(path, std::ifstream::binary);
+            std::ifstream in(path, std::ios::binary);
             ksk.load(context, in);
             in.close();
         });
@@ -332,12 +332,12 @@ PYBIND11_MODULE(seal, m)
         .def_static("get_index", &RelinKeys::get_index)
         .def("has_key", &RelinKeys::has_key)
         .def("save", [](const RelinKeys &rk, const std::string &path){
-            std::ofstream out(path, std::ofstream::binary);
+            std::ofstream out(path, std::ios::binary);
             rk.save(out);
             out.close();
         })
         .def("load", [](RelinKeys &rk, const SEALContext &context, const std::string &path){
-            std::ifstream in(path, std::ifstream::binary);
+            std::ifstream in(path, std::ios::binary);
             rk.load(context, in);
             in.close();
         })
@@ -356,12 +356,12 @@ PYBIND11_MODULE(seal, m)
         .def_static("get_index", &GaloisKeys::get_index)
         .def("has_key", &GaloisKeys::has_key)
         .def("save", [](const GaloisKeys &gk, const std::string &path){
-            std::ofstream out(path, std::ofstream::binary);
+            std::ofstream out(path, std::ios::binary);
             gk.save(out);
             out.close();
         })
         .def("load", [](GaloisKeys &gk, const SEALContext &context, const std::string &path){
-            std::ifstream in(path, std::ifstream::binary);
+            std::ifstream in(path, std::ios::binary);
             gk.load(context, in);
             in.close();
         })
