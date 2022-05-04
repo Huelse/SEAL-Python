@@ -39,15 +39,31 @@ PYBIND11_MODULE(seal, m)
         .def("coeff_modulus", &EncryptionParameters::coeff_modulus)
         .def("plain_modulus", &EncryptionParameters::plain_modulus)
         .def("save", [](const EncryptionParameters &parms, std::string &path){
-            std::ofstream out(path, std::ofstream::binary);
+            std::ofstream out(path, std::ios::binary);
             parms.save(out);
             out.close();
         })
         .def("load", [](EncryptionParameters &parms, std::string &path){
-            std::ifstream in(path, std::ifstream::binary);
+            std::ifstream in(path, std::ios::binary);
             parms.load(in);
             in.close();
-        });
+        })
+        .def(py::pickle(
+            [](const EncryptionParameters &parms){
+                std::stringstream out(std::ios::binary | std::ios::out);
+                parms.save(out);
+                return py::make_tuple(py::bytes(out.str()));
+            },
+            [](py::tuple t){
+                if (t.size() != 1)
+                    throw std::runtime_error("(Pickle) Invalid input tuple!");
+                std::string str = t[0].cast<std::string>();
+                std::stringstream in(std::ios::binary | std::ios::in);
+                EncryptionParameters parms;
+                parms.load(in);
+                return parms;
+            }
+        ));
 
     // modulus.h
     py::enum_<sec_level_type>(m, "sec_level_type")
@@ -128,11 +144,11 @@ PYBIND11_MODULE(seal, m)
             return secret;
         })
         .def("from_public_str", [](const SEALContext &context, const std::string &str){
-            PublicKey public1;
+            PublicKey public_;
             std::stringstream in(std::ios::binary | std::ios::in);
             in.str(str);
-            public1.load(context, in);
-            return public1;
+            public_.load(context, in);
+            return public_;
         })
         .def("from_relin_str", [](const SEALContext &context, const std::string &str){
             RelinKeys relin;
@@ -204,6 +220,11 @@ PYBIND11_MODULE(seal, m)
         })
         .def("save_size", [](const Plaintext &plain){
             return plain.save_size();
+        })
+        .def("to_string", [](const Plaintext &plain){
+            std::stringstream out(std::ios::binary | std::ios::out);
+            plain.save(out);
+            return py::bytes(out.str());
         });
 
     // ciphertext.h
@@ -257,6 +278,11 @@ PYBIND11_MODULE(seal, m)
             std::ifstream in(path, std::ifstream::binary);
             sk.load(context, in);
             in.close();
+        })
+        .def("to_string", [](const SecretKey &secret){
+            std::stringstream out(std::ios::binary | std::ios::out);
+            secret.save(out);
+            return py::bytes(out.str());
         });
 
     // publickey.h
@@ -273,6 +299,11 @@ PYBIND11_MODULE(seal, m)
             std::ifstream in(path, std::ifstream::binary);
             pk.load(context, in);
             in.close();
+        })
+        .def("to_string", [](const PublicKey &public_){
+            std::stringstream out(std::ios::binary | std::ios::out);
+            public_.save(out);
+            return py::bytes(out.str());
         });
 
     // kswitchkeys.h
@@ -309,6 +340,11 @@ PYBIND11_MODULE(seal, m)
             std::ifstream in(path, std::ifstream::binary);
             rk.load(context, in);
             in.close();
+        })
+        .def("to_string", [](const RelinKeys &relin){
+            std::stringstream out(std::ios::binary | std::ios::out);
+            relin.save(out);
+            return py::bytes(out.str());
         });
 
     // galoiskeys.h
@@ -328,6 +364,11 @@ PYBIND11_MODULE(seal, m)
             std::ifstream in(path, std::ifstream::binary);
             gk.load(context, in);
             in.close();
+        })
+        .def("to_string", [](const GaloisKeys &galois){
+            std::stringstream out(std::ios::binary | std::ios::out);
+            galois.save(out);
+            return py::bytes(out.str());
         });
 
     // keygenerator.h
