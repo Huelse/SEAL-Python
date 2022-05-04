@@ -63,7 +63,7 @@ This is a python binding for the Microsoft SEAL library.
 
 * ### Windows
 
-  Visual Studio 2019 or newer is required. And use the **x64 Native Tools Command Prompt for VS**  command prompt to configure and build the Microsoft SEAL library. It's usually can be found in your Start Menu.
+  Visual Studio 2019 or newer is required. x64 support only! And use the **x64 Native Tools Command Prompt for VS**  command prompt to configure and build the Microsoft SEAL library. It's usually can be found in your Start Menu.
 
   ```shell
   # Same as above
@@ -74,6 +74,8 @@ This is a python binding for the Microsoft SEAL library.
   pip install numpy pybind11
 
   python setup.py build_ext -i
+
+  cp *.so examples
   ```
 
   Microsoft SEAL official [docs](https://github.com/microsoft/SEAL#building-microsoft-seal-manually).
