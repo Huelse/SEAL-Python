@@ -51,6 +51,7 @@ This is a python binding for the Microsoft SEAL library.
 
   # Test
   cp seal.*.so examples
+  cd examples
   python3 4_bgv_basics.py
   ```
 
@@ -63,17 +64,21 @@ This is a python binding for the Microsoft SEAL library.
 
 * ### Windows
 
-  Visual Studio 2019 or newer is required. And use the **x64 Native Tools Command Prompt for VS**  command prompt to configure and build the Microsoft SEAL library. It's usually can be found in your Start Menu.
+  Visual Studio 2019 or newer is required. x64 support only! And use the **x64 Native Tools Command Prompt for VS**  command prompt to configure and build the Microsoft SEAL library. It's usually can be found in your Start Menu.
 
   ```shell
-  # Same as above
   # Run in "x64 Native Tools Command Prompt for VS" command prompt
   cmake -S . -B build -G Ninja -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF
   cmake --build build
 
+  # Build
   pip install numpy pybind11
-
   python setup.py build_ext -i
+
+  # Test
+  cp seal.*.pyd examples
+  cd examples
+  python 4_bgv_basics.py
   ```
 
   Microsoft SEAL official [docs](https://github.com/microsoft/SEAL#building-microsoft-seal-manually).
@@ -99,11 +104,10 @@ This is a python binding for the Microsoft SEAL library.
 
 * ### Serialize
 
-  In most situations, you can use the SEAL's native serialize API to save the data, here is an example:
+  See more in `examples/7_serialization.py`, here is a simple example:
 
   ```python
   cipher.save('cipher')
-
   load_cipher = Ciphertext()
   load_cipher.load(context, 'cipher')  # work if the context is valid.
   ```
