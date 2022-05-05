@@ -104,11 +104,10 @@ This is a python binding for the Microsoft SEAL library.
 
 * ### Serialize
 
-  In most situations, you can use the SEAL's native serialize API to save the data, here is an example:
+  See more in `examples/7_serialization.py`, here is a simple example:
 
   ```python
   cipher.save('cipher')
-
   load_cipher = Ciphertext()
   load_cipher.load(context, 'cipher')  # work if the context is valid.
   ```
