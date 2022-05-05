@@ -41,3 +41,4 @@ build
 *.pyc
 temp
 .idea
+*.bin
