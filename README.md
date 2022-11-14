@@ -55,7 +55,7 @@ This is a python binding for the Microsoft SEAL library.
   python3 4_bgv_basics.py
   ```
 
-  Build examples (after `cmake -S . -B`): `-DSEAL_BUILD_EXAMPLES=ON` 
+  Build examples: `-DSEAL_BUILD_EXAMPLES=ON` 
 
   Zstandard compression off: `-DSEAL_USE_ZSTD=OFF`
 
@@ -131,6 +131,7 @@ This is a python binding for the Microsoft SEAL library.
 
    then change the path in `setup.py`, and rebuild.
 
+
 2. ImportError: libseal.so... cannot find
 
    a. `sudo ln -s /path/to/libseal.so  /usr/lib`
@@ -139,15 +140,29 @@ This is a python binding for the Microsoft SEAL library.
 
    c. build in cmake.
 
-3. BuildError: C++17 at least
+
+3. BuildError:
+
+   1. C++17 at least
+   
+   2. x86_64 is required, which `x86_32` is not supported
+
 
 4. ModuleNotFoundError: No module named 'seal'
 
    The `.so` or `.pyd` file must be in the current directory, or you have `install` it already.
 
+
 5. Windows Error LNK2001, RuntimeLibrary and MT_StaticRelease mismatch
 
    Only `x64` is supported, Choose `x64 Native Tools Command Prompt for VS`.
+
+
+6. Warning about building the dynamic library with static library in MacOS, etc.
+
+   1. Build a shared SEAL library by adding a CMake option `-DBUILD_SHARED_LIBS=ON`
+
+   2. Edit `extra_objects` in setup.py to `*.dylib` or else.
 
 
 
