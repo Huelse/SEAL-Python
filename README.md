@@ -46,7 +46,7 @@ This is a python binding for the Microsoft SEAL library.
   cmake --build build
   cd ..
 
-  # Run the setup.py
+  # Run the setup.py, the dynamic library will be generated in the current directory
   python3 setup.py build_ext -i
 
   # Test
