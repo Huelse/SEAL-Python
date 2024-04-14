@@ -412,8 +412,12 @@ PYBIND11_MODULE(seal, m)
             Ciphertext encrypted;
             encryptor.encrypt(plain, encrypted);
             return encrypted;
+        })
+        .def("encrypt_symmetric", [](const Encryptor &encryptor, const Plaintext &plain){
+            Ciphertext encrypted;
+            encryptor.encrypt_symmetric(plain, encrypted);
+            return encrypted;
         });
-        // symmetric
 
     // evaluator.h
     py::class_<Evaluator>(m, "Evaluator")
