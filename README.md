@@ -40,9 +40,9 @@ This is a python binding for the Microsoft SEAL library.
   # Get the newest repositories (dev only)
   # git submodule update --remote
 
-  # Build the SEAL lib
+  # Build the SEAL lib without the msgsl zlib and zstandard compression
   cd SEAL
-  cmake -S . -B build -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF
+  cmake -S . -B build -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF -DSEAL_USE_ZSTD=OFF
   cmake --build build
   cd ..
 
@@ -56,8 +56,6 @@ This is a python binding for the Microsoft SEAL library.
   ```
 
   Build examples: `-DSEAL_BUILD_EXAMPLES=ON` 
-
-  Zstandard compression off: `-DSEAL_USE_ZSTD=OFF`
 
   [More cmake options](https://github.com/microsoft/SEAL#basic-cmake-options)
 
