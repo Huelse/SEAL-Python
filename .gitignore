@@ -42,3 +42,4 @@ build
 temp
 .idea
 *.bin
+dist

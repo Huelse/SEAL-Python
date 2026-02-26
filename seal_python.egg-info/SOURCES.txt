@@ -1,0 +1,13 @@
+LICENSE
+MANIFEST.in
+README.md
+py.typed
+pyproject.toml
+seal.pyi
+setup.py
+seal_python.egg-info/PKG-INFO
+seal_python.egg-info/SOURCES.txt
+seal_python.egg-info/dependency_links.txt
+seal_python.egg-info/not-zip-safe
+seal_python.egg-info/top_level.txt
+src/wrapper.cpp
