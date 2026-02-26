@@ -3,6 +3,7 @@ import platform
 from glob import glob
 from pathlib import Path
 from shutil import copy2
+import sys
 from setuptools import setup
 from distutils.sysconfig import get_python_inc
 from pybind11.setup_helpers import Pybind11Extension, build_ext
@@ -12,13 +13,20 @@ BASE_DIR = Path(__file__).resolve().parent
 
 include_dirs = [get_python_inc(), 'pybind11/include', 'SEAL/native/src', 'SEAL/build/native/src']
 
-extra_objects = sorted(glob('SEAL/build/lib/*.lib') if platform.system() == "Windows" else glob('SEAL/build/lib/*.a'))
+if platform.system() == "Windows":
+    extra_objects = sorted(
+        glob('SEAL/build/lib/*.lib')
+        + glob('SEAL/build/lib/Release/*.lib')
+        + glob('SEAL/build/**/libseal*.lib', recursive=True)
+    )
+else:
+    extra_objects = sorted(glob('SEAL/build/lib/*.a'))
 
 cpp_args = ['/std:c++latest'] if platform.system() == "Windows" else ['-std=c++17']
 
 if len(extra_objects) < 1 or not os.path.exists(extra_objects[0]):
     print('Not found the seal lib file, check the `SEAL/build/lib`')
-    exit(0)
+    sys.exit(1)
 
 
 class build_ext_with_typing(build_ext):

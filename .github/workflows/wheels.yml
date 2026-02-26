@@ -36,6 +36,7 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
         env:
+          CIBW_BUILD_VERBOSITY: "1"
           CIBW_BUILD: "cp38-* cp39-* cp310-* cp311-* cp312-* cp313-*"
           CIBW_SKIP: "*-musllinux_* pp*"
           CIBW_ARCHS_LINUX: "x86_64"
@@ -45,7 +46,8 @@ jobs:
           CIBW_BEFORE_BUILD: >
             python -m pip install --upgrade pip cmake &&
             cmake -S SEAL -B SEAL/build -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF -DSEAL_USE_ZSTD=OFF &&
-            cmake --build SEAL/build --config Release
+            cmake --build SEAL/build --config Release &&
+            python -c "import glob; print('SEAL libs:', glob.glob('SEAL/build/**/*.lib', recursive=True)[:50])"
 
       - name: Upload wheel artifacts
         uses: actions/upload-artifact@v4
