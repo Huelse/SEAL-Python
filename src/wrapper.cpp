@@ -9,6 +9,7 @@ using namespace seal;
 namespace py = pybind11;
 
 PYBIND11_MAKE_OPAQUE(std::vector<double>);
+PYBIND11_MAKE_OPAQUE(std::vector<std::complex<double>>);
 PYBIND11_MAKE_OPAQUE(std::vector<std::uint64_t>);
 PYBIND11_MAKE_OPAQUE(std::vector<std::int64_t>);
 
@@ -18,6 +19,7 @@ PYBIND11_MODULE(seal, m)
     m.attr("__version__")  = "4.1.2";
 
     py::bind_vector<std::vector<double>>(m, "VectorDouble", py::buffer_protocol());
+    py::bind_vector<std::vector<std::complex<double>>>(m, "VectorComplex", py::buffer_protocol());
     py::bind_vector<std::vector<std::uint64_t>>(m, "VectorUInt", py::buffer_protocol());
     py::bind_vector<std::vector<std::int64_t>>(m, "VectorInt", py::buffer_protocol());
 
@@ -706,8 +708,52 @@ PYBIND11_MODULE(seal, m)
     py::class_<CKKSEncoder>(m, "CKKSEncoder")
         .def(py::init<const SEALContext &>())
         .def("slot_count", &CKKSEncoder::slot_count)
+        .def("encode_complex", [](CKKSEncoder &encoder, const std::vector<std::complex<double>> &values, double scale, Plaintext &destination){
+            encoder.encode(values, scale, destination);
+        })
         .def("encode", [](CKKSEncoder &encoder, const std::vector<double> &values, double scale, Plaintext &destination){
             encoder.encode(values, scale, destination);
+        })
+        .def("encode_complex", [](CKKSEncoder &encoder, py::array_t<std::complex<double>> values, double scale){
+            py::buffer_info buf = values.request();
+            if (buf.ndim == 0)
+            {
+                auto *ptr = static_cast<std::complex<double> *>(buf.ptr);
+                Plaintext pt;
+                encoder.encode(ptr[0], scale, pt);
+                return pt;
+            }
+            if (buf.ndim != 1)
+                throw std::runtime_error("E101: Number of dimensions must be one");
+
+            auto *ptr = static_cast<std::complex<double> *>(buf.ptr);
+            std::vector<std::complex<double>> vec(static_cast<std::size_t>(buf.shape[0]));
+
+            for (py::ssize_t i = 0; i < buf.shape[0]; i++)
+                vec[static_cast<std::size_t>(i)] = ptr[i];
+
+            Plaintext pt;
+            encoder.encode(vec, scale, pt);
+            return pt;
+        })
+        .def("encode_complex", [](CKKSEncoder &encoder, py::array_t<std::complex<double>> values, double scale, Plaintext &destination){
+            py::buffer_info buf = values.request();
+            if (buf.ndim == 0)
+            {
+                auto *ptr = static_cast<std::complex<double> *>(buf.ptr);
+                encoder.encode(ptr[0], scale, destination);
+                return;
+            }
+            if (buf.ndim != 1)
+                throw std::runtime_error("E101: Number of dimensions must be one");
+
+            auto *ptr = static_cast<std::complex<double> *>(buf.ptr);
+            std::vector<std::complex<double>> vec(static_cast<std::size_t>(buf.shape[0]));
+
+            for (py::ssize_t i = 0; i < buf.shape[0]; i++)
+                vec[static_cast<std::size_t>(i)] = ptr[i];
+
+            encoder.encode(vec, scale, destination);
         })
         .def("encode", [](CKKSEncoder &encoder, py::array_t<double> values, double scale){
             py::buffer_info buf = values.request();
@@ -723,6 +769,23 @@ PYBIND11_MODULE(seal, m)
             Plaintext pt;
             encoder.encode(vec, scale, pt);
             return pt;
+        })
+        .def("encode_complex", [](CKKSEncoder &encoder, py::iterable values, double scale){
+            std::vector<std::complex<double>> vec;
+            vec.reserve(py::len(values));
+            for (const auto &value : values)
+                vec.push_back(py::cast<std::complex<double>>(value));
+
+            Plaintext pt;
+            encoder.encode(vec, scale, pt);
+            return pt;
+        })
+        .def("encode_complex", [](CKKSEncoder &encoder, py::iterable values, double scale, Plaintext &destination){
+            std::vector<std::complex<double>> vec;
+            vec.reserve(py::len(values));
+            for (const auto &value : values)
+                vec.push_back(py::cast<std::complex<double>>(value));
+            encoder.encode(vec, scale, destination);
         })
         .def("encode", [](CKKSEncoder &encoder, py::iterable values, double scale){
             std::vector<double> vec;
@@ -749,6 +812,14 @@ PYBIND11_MODULE(seal, m)
         .def("encode", [](CKKSEncoder &encoder, double value, double scale, Plaintext &destination){
             encoder.encode(value, scale, destination);
         })
+        .def("encode_complex", [](CKKSEncoder &encoder, std::complex<double> value, double scale){
+            Plaintext pt;
+            encoder.encode(value, scale, pt);
+            return pt;
+        })
+        .def("encode_complex", [](CKKSEncoder &encoder, std::complex<double> value, double scale, Plaintext &destination){
+            encoder.encode(value, scale, destination);
+        })
         .def("encode", [](CKKSEncoder &encoder, std::int64_t value){
             Plaintext pt;
             encoder.encode(value, pt);
@@ -767,6 +838,19 @@ PYBIND11_MODULE(seal, m)
 
             for (auto i = 0; i < buf.shape[0]; i++)
                 ptr[i] = destination[i];
+
+            return values;
+        })
+        .def("decode_complex", [](CKKSEncoder &encoder, const Plaintext &plain){
+            std::vector<std::complex<double>> destination;
+            encoder.decode(plain, destination);
+
+            py::array_t<std::complex<double>> values(destination.size());
+            py::buffer_info buf = values.request();
+            auto *ptr = static_cast<std::complex<double> *>(buf.ptr);
+
+            for (py::ssize_t i = 0; i < buf.shape[0]; i++)
+                ptr[i] = destination[static_cast<std::size_t>(i)];
 
             return values;
         });
