@@ -9,14 +9,16 @@ using namespace seal;
 namespace py = pybind11;
 
 PYBIND11_MAKE_OPAQUE(std::vector<double>);
+PYBIND11_MAKE_OPAQUE(std::vector<std::uint64_t>);
 PYBIND11_MAKE_OPAQUE(std::vector<std::int64_t>);
 
 PYBIND11_MODULE(seal, m)
 {
     m.doc() = "Microsoft SEAL for Python, from https://github.com/Huelse/SEAL-Python";
-    m.attr("__version__")  = "4.0.0";
+    m.attr("__version__")  = "4.1.2";
 
     py::bind_vector<std::vector<double>>(m, "VectorDouble", py::buffer_protocol());
+    py::bind_vector<std::vector<std::uint64_t>>(m, "VectorUInt", py::buffer_protocol());
     py::bind_vector<std::vector<std::int64_t>>(m, "VectorInt", py::buffer_protocol());
 
     // encryptionparams.h
@@ -25,6 +27,37 @@ PYBIND11_MODULE(seal, m)
         .value("bfv", scheme_type::bfv)
         .value("ckks", scheme_type::ckks)
         .value("bgv", scheme_type::bgv);
+
+    // serialization.h
+    py::enum_<compr_mode_type>(m, "compr_mode_type")
+        .value("none", compr_mode_type::none)
+#ifdef SEAL_USE_ZLIB
+        .value("zlib", compr_mode_type::zlib)
+#endif
+#ifdef SEAL_USE_ZSTD
+        .value("zstd", compr_mode_type::zstd)
+#endif
+        ;
+
+    // memorymanager.h
+    py::class_<MemoryPoolHandle>(m, "MemoryPoolHandle")
+        .def(py::init<>())
+        .def_static("Global", &MemoryPoolHandle::Global)
+#ifndef _M_CEE
+        .def_static("ThreadLocal", &MemoryPoolHandle::ThreadLocal)
+#endif
+        .def_static("New", &MemoryPoolHandle::New, py::arg("clear_on_destruction") = false)
+        .def("pool_count", &MemoryPoolHandle::pool_count)
+        .def("alloc_byte_count", &MemoryPoolHandle::alloc_byte_count)
+        .def("use_count", &MemoryPoolHandle::use_count)
+        .def("is_initialized", [](const MemoryPoolHandle &pool){
+            return static_cast<bool>(pool);
+        });
+
+    py::class_<MemoryManager>(m, "MemoryManager")
+        .def_static("GetPool", [](){
+            return MemoryManager::GetPool();
+        });
 
     // encryptionparams.h
     py::class_<EncryptionParameters>(m, "EncryptionParameters")
@@ -43,11 +76,27 @@ PYBIND11_MODULE(seal, m)
             parms.save(out);
             out.close();
         })
+        .def("save", [](const EncryptionParameters &parms, std::string &path, compr_mode_type compr_mode){
+            std::ofstream out(path, std::ios::binary);
+            parms.save(out, compr_mode);
+            out.close();
+        })
         .def("load", [](EncryptionParameters &parms, std::string &path){
             std::ifstream in(path, std::ios::binary);
             parms.load(in);
             in.close();
         })
+        .def("load_bytes", [](EncryptionParameters &parms, py::bytes data){
+            std::string raw = data;
+            parms.load(reinterpret_cast<const seal_byte *>(raw.data()), raw.size());
+        })
+        .def("save_size", py::overload_cast<compr_mode_type>(&EncryptionParameters::save_size, py::const_),
+            py::arg("compr_mode")=Serialization::compr_mode_default)
+        .def("to_bytes", [](const EncryptionParameters &parms, compr_mode_type compr_mode){
+            std::stringstream out(std::ios::binary | std::ios::out);
+            parms.save(out, compr_mode);
+            return py::bytes(out.str());
+        }, py::arg("compr_mode")=Serialization::compr_mode_default)
         .def(py::pickle(
             [](const EncryptionParameters &parms){
                 std::stringstream out(std::ios::binary | std::ios::out);
@@ -59,6 +108,7 @@ PYBIND11_MODULE(seal, m)
                     throw std::runtime_error("(Pickle) Invalid input tuple!");
                 std::string str = t[0].cast<std::string>();
                 std::stringstream in(std::ios::binary | std::ios::in);
+                in.str(str);
                 EncryptionParameters parms;
                 parms.load(in);
                 return parms;
@@ -94,6 +144,9 @@ PYBIND11_MODULE(seal, m)
     // context.h
     py::class_<EncryptionParameterQualifiers, std::unique_ptr<EncryptionParameterQualifiers, py::nodelete>>(m, "EncryptionParameterQualifiers")
         .def("parameters_set", &EncryptionParameterQualifiers::parameters_set)
+        .def_readwrite("parameter_error", &EncryptionParameterQualifiers::parameter_error)
+        .def("parameter_error_name", &EncryptionParameterQualifiers::parameter_error_name)
+        .def("parameter_error_message", &EncryptionParameterQualifiers::parameter_error_message)
         .def_readwrite("using_fft", &EncryptionParameterQualifiers::using_fft)
         .def_readwrite("using_ntt", &EncryptionParameterQualifiers::using_ntt)
         .def_readwrite("using_batching", &EncryptionParameterQualifiers::using_batching)
@@ -119,6 +172,8 @@ PYBIND11_MODULE(seal, m)
         .def("first_context_data", &SEALContext::first_context_data)
         .def("last_context_data", &SEALContext::last_context_data)
         .def("parameters_set", &SEALContext::parameters_set)
+        .def("parameter_error_name", &SEALContext::parameter_error_name)
+        .def("parameter_error_message", &SEALContext::parameter_error_message)
         .def("first_parms_id", &SEALContext::first_parms_id)
         .def("last_parms_id", &SEALContext::last_parms_id)
         .def("using_keyswitching", &SEALContext::using_keyswitching)
@@ -171,7 +226,8 @@ PYBIND11_MODULE(seal, m)
         .def("bit_count", &Modulus::bit_count)
         .def("value", &Modulus::value)
         .def("is_zero", &Modulus::is_zero)
-        .def("is_prime", &Modulus::is_prime);
+        .def("is_prime", &Modulus::is_prime)
+        .def("reduce", &Modulus::reduce);
         //save & load
 
     // modulus.h
@@ -213,19 +269,30 @@ PYBIND11_MODULE(seal, m)
             plain.save(out);
             out.close();
         })
+        .def("save", [](const Plaintext &plain, const std::string &path, compr_mode_type compr_mode){
+            std::ofstream out(path, std::ios::binary);
+            plain.save(out, compr_mode);
+            out.close();
+        })
         .def("load", [](Plaintext &plain, const SEALContext &context, const std::string &path){
             std::ifstream in(path, std::ios::binary);
             plain.load(context, in);
             in.close();
         })
+        .def("load_bytes", [](Plaintext &plain, const SEALContext &context, py::bytes data){
+            std::string raw = data;
+            plain.load(context, reinterpret_cast<const seal_byte *>(raw.data()), raw.size());
+        })
         .def("save_size", [](const Plaintext &plain){
             return plain.save_size();
         })
-        .def("to_string", [](const Plaintext &plain){
+        .def("save_size", py::overload_cast<compr_mode_type>(&Plaintext::save_size, py::const_),
+            py::arg("compr_mode")=Serialization::compr_mode_default)
+        .def("to_bytes", [](const Plaintext &plain, compr_mode_type compr_mode){
             std::stringstream out(std::ios::binary | std::ios::out);
-            plain.save(out);
+            plain.save(out, compr_mode);
             return py::bytes(out.str());
-        });
+        }, py::arg("compr_mode")=Serialization::compr_mode_default);
 
     // ciphertext.h
     py::class_<Ciphertext>(m, "Ciphertext")
@@ -250,19 +317,30 @@ PYBIND11_MODULE(seal, m)
             cipher.save(out);
             out.close();
         })
+        .def("save", [](const Ciphertext &cipher, const std::string &path, compr_mode_type compr_mode){
+            std::ofstream out(path, std::ios::binary);
+            cipher.save(out, compr_mode);
+            out.close();
+        })
         .def("load", [](Ciphertext &cipher, const SEALContext &context, const std::string &path){
             std::ifstream in(path, std::ios::binary);
             cipher.load(context, in);
             in.close();
         })
+        .def("load_bytes", [](Ciphertext &cipher, const SEALContext &context, py::bytes data){
+            std::string raw = data;
+            cipher.load(context, reinterpret_cast<const seal_byte *>(raw.data()), raw.size());
+        })
         .def("save_size", [](const Ciphertext &cipher){
             return cipher.save_size();
         })
-        .def("to_string", [](const Ciphertext &cipher){
+        .def("save_size", py::overload_cast<compr_mode_type>(&Ciphertext::save_size, py::const_),
+            py::arg("compr_mode")=Serialization::compr_mode_default)
+        .def("to_string", [](const Ciphertext &cipher, compr_mode_type compr_mode){
             std::stringstream out(std::ios::binary | std::ios::out);
-            cipher.save(out);
+            cipher.save(out, compr_mode);
             return py::bytes(out.str());
-        });
+        }, py::arg("compr_mode")=Serialization::compr_mode_default);
 
     // secretkey.h
     py::class_<SecretKey>(m, "SecretKey")
@@ -408,15 +486,32 @@ PYBIND11_MODULE(seal, m)
             encryptor.encrypt_zero(encrypted);
             return encrypted;
         })
+        .def("encrypt_zero", [](const Encryptor &encryptor, Ciphertext &destination){
+            encryptor.encrypt_zero(destination);
+        })
+        .def("encrypt_zero", [](const Encryptor &encryptor, parms_id_type parms_id){
+            Ciphertext encrypted;
+            encryptor.encrypt_zero(parms_id, encrypted);
+            return encrypted;
+        })
+        .def("encrypt_zero", [](const Encryptor &encryptor, parms_id_type parms_id, Ciphertext &destination){
+            encryptor.encrypt_zero(parms_id, destination);
+        })
         .def("encrypt", [](const Encryptor &encryptor, const Plaintext &plain){
             Ciphertext encrypted;
             encryptor.encrypt(plain, encrypted);
             return encrypted;
         })
+        .def("encrypt", [](const Encryptor &encryptor, const Plaintext &plain, Ciphertext &destination){
+            encryptor.encrypt(plain, destination);
+        })
         .def("encrypt_symmetric", [](const Encryptor &encryptor, const Plaintext &plain){
             Ciphertext encrypted;
             encryptor.encrypt_symmetric(plain, encrypted);
             return encrypted;
+        })
+        .def("encrypt_symmetric", [](const Encryptor &encryptor, const Plaintext &plain, Ciphertext &destination){
+            encryptor.encrypt_symmetric(plain, destination);
         });
 
     // evaluator.h
@@ -611,6 +706,9 @@ PYBIND11_MODULE(seal, m)
     py::class_<CKKSEncoder>(m, "CKKSEncoder")
         .def(py::init<const SEALContext &>())
         .def("slot_count", &CKKSEncoder::slot_count)
+        .def("encode", [](CKKSEncoder &encoder, const std::vector<double> &values, double scale, Plaintext &destination){
+            encoder.encode(values, scale, destination);
+        })
         .def("encode", [](CKKSEncoder &encoder, py::array_t<double> values, double scale){
             py::buffer_info buf = values.request();
             if (buf.ndim != 1)
@@ -626,10 +724,38 @@ PYBIND11_MODULE(seal, m)
             encoder.encode(vec, scale, pt);
             return pt;
         })
+        .def("encode", [](CKKSEncoder &encoder, py::iterable values, double scale){
+            std::vector<double> vec;
+            vec.reserve(py::len(values));
+            for (const auto &value : values)
+                vec.push_back(py::cast<double>(value));
+
+            Plaintext pt;
+            encoder.encode(vec, scale, pt);
+            return pt;
+        })
+        .def("encode", [](CKKSEncoder &encoder, py::iterable values, double scale, Plaintext &destination){
+            std::vector<double> vec;
+            vec.reserve(py::len(values));
+            for (const auto &value : values)
+                vec.push_back(py::cast<double>(value));
+            encoder.encode(vec, scale, destination);
+        })
         .def("encode", [](CKKSEncoder &encoder, double value, double scale){
             Plaintext pt;
             encoder.encode(value, scale, pt);
             return pt;
+        })
+        .def("encode", [](CKKSEncoder &encoder, double value, double scale, Plaintext &destination){
+            encoder.encode(value, scale, destination);
+        })
+        .def("encode", [](CKKSEncoder &encoder, std::int64_t value){
+            Plaintext pt;
+            encoder.encode(value, pt);
+            return pt;
+        })
+        .def("encode", [](CKKSEncoder &encoder, std::int64_t value, Plaintext &destination){
+            encoder.encode(value, destination);
         })
         .def("decode", [](CKKSEncoder &encoder, const Plaintext &plain){
             std::vector<double> destination;
@@ -660,6 +786,12 @@ PYBIND11_MODULE(seal, m)
     py::class_<BatchEncoder>(m, "BatchEncoder")
         .def(py::init<const SEALContext &>())
         .def("slot_count", &BatchEncoder::slot_count)
+        .def("encode", [](BatchEncoder &encoder, const std::vector<std::int64_t> &values, Plaintext &destination){
+            encoder.encode(values, destination);
+        })
+        .def("encode", [](BatchEncoder &encoder, const std::vector<std::uint64_t> &values, Plaintext &destination){
+            encoder.encode(values, destination);
+        })
         .def("encode", [](BatchEncoder &encoder, py::array_t<std::int64_t> values){
             py::buffer_info buf = values.request();
             if (buf.ndim != 1)
@@ -674,6 +806,44 @@ PYBIND11_MODULE(seal, m)
             Plaintext pt;
             encoder.encode(vec, pt);
             return pt;
+        })
+        .def("encode", [](BatchEncoder &encoder, py::array_t<std::uint64_t> values){
+            py::buffer_info buf = values.request();
+            if (buf.ndim != 1)
+                throw std::runtime_error("E101: Number of dimensions must be one");
+
+            auto *ptr = static_cast<std::uint64_t *>(buf.ptr);
+            std::vector<std::uint64_t> vec(static_cast<std::size_t>(buf.shape[0]));
+
+            for (py::ssize_t i = 0; i < buf.shape[0]; i++)
+                vec[static_cast<std::size_t>(i)] = ptr[i];
+
+            Plaintext pt;
+            encoder.encode(vec, pt);
+            return pt;
+        })
+        .def("encode", [](BatchEncoder &encoder, py::iterable values){
+            std::vector<std::int64_t> vec;
+            vec.reserve(py::len(values));
+            for (const auto &value : values)
+                vec.push_back(py::cast<std::int64_t>(value));
+
+            Plaintext pt;
+            encoder.encode(vec, pt);
+            return pt;
+        })
+        .def("decode_uint64", [](BatchEncoder &encoder, const Plaintext &plain){
+            std::vector<std::uint64_t> destination;
+            encoder.decode(plain, destination);
+
+            py::array_t<std::uint64_t> values(destination.size());
+            py::buffer_info buf = values.request();
+            auto *ptr = static_cast<std::uint64_t *>(buf.ptr);
+
+            for (py::ssize_t i = 0; i < buf.shape[0]; i++)
+                ptr[i] = destination[static_cast<std::size_t>(i)];
+
+            return values;
         })
         .def("decode", [](BatchEncoder &encoder, const Plaintext &plain){
             std::vector<std::int64_t> destination;
