@@ -38,7 +38,7 @@ python3 -m twine upload dist/*
 ```bash
 python3 -m venv /tmp/seal-publish-test
 source /tmp/seal-publish-test/bin/activate
-python -m pip install pyseal
+python -m pip install seal-python
 python - <<'PY'
 import seal
 print("seal version:", seal.__version__)

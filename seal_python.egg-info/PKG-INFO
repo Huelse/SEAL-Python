@@ -1,5 +1,5 @@
 Metadata-Version: 2.4
-Name: pyseal
+Name: seal-python
 Version: 4.1.2
 Summary: Python wrapper for the Microsoft SEAL
 Home-page: https://github.com/Huelse/SEAL-Python

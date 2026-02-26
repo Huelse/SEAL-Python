@@ -57,7 +57,7 @@ ext_modules = [
 ]
 
 setup(
-    name="pyseal",
+    name="seal-python",
     version=__version__,
     author="Huelse",
     author_email="topmaxz@protonmail.com",
