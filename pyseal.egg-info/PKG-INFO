@@ -1,3 +1,41 @@
+Metadata-Version: 2.4
+Name: pyseal
+Version: 4.1.2
+Summary: Python wrapper for the Microsoft SEAL
+Home-page: https://github.com/Huelse/SEAL-Python
+Author: Huelse
+Author-email: topmaxz@protonmail.com
+License: MIT
+Project-URL: Repository, https://github.com/Huelse/SEAL-Python
+Project-URL: Issues, https://github.com/Huelse/SEAL-Python/issues
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: C++
+Classifier: Topic :: Security :: Cryptography
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: license
+Dynamic: license-file
+Dynamic: project-url
+Dynamic: requires-python
+Dynamic: summary
+
 ## Microsoft SEAL For Python
 
 Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-source ([MIT licensed](https://github.com/microsoft/SEAL/blob/master/LICENSE)) homomorphic encryption library developed by the Cryptography Research group at Microsoft.
