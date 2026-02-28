@@ -6,10 +6,13 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 
 This is a python binding for the Microsoft SEAL library.
 
+[![Supported Versions](https://img.shields.io/pypi/pyversions/SEAL-Python.svg)](https://github.com/Huelse/SEAL-Python)
+
 
 
 ## Contents
 
+* [Install](#install)
 * [Build](#build)
 * [Typing](#typing)
 * [Note](#note)
@@ -17,6 +20,16 @@ This is a python binding for the Microsoft SEAL library.
   * [Other](#other)
 * [FAQ](#faq)
 * [Release](#release)
+
+
+
+## Install
+
+SEAL-Python is available on PyPI:
+
+```shell
+python -m pip install seal-python
+```
 
 
 
