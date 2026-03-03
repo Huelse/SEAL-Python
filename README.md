@@ -25,7 +25,7 @@ This is a python binding for the Microsoft SEAL library.
 
 ## Install
 
-SEAL-Python is available on PyPI:
+SEAL-Python is available on [PyPI](https://pypi.org/project/seal-python/):
 
 ```shell
 python -m pip install seal-python
