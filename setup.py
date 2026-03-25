@@ -6,12 +6,13 @@ from shutil import copy2
 import sys
 from setuptools import setup
 from distutils.sysconfig import get_python_inc
+import pybind11
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 
 __version__ = "4.1.2"
 BASE_DIR = Path(__file__).resolve().parent
 
-include_dirs = [get_python_inc(), 'pybind11/include', 'SEAL/native/src', 'SEAL/build/native/src']
+include_dirs = [get_python_inc(), pybind11.get_include(), 'SEAL/native/src', 'SEAL/build/native/src']
 
 if platform.system() == "Windows":
     extra_objects = sorted(
@@ -22,10 +23,10 @@ if platform.system() == "Windows":
 else:
     extra_objects = sorted(glob('SEAL/build/lib/*.a'))
 
-cpp_args = ['/std:c++latest'] if platform.system() == "Windows" else ['-std=c++17']
+cpp_args = ['/std:c++17', '/utf-8', '/bigobj'] if platform.system() == "Windows" else ['-std=c++17']
 
 if len(extra_objects) < 1 or not os.path.exists(extra_objects[0]):
-    print('Not found the seal lib file, check the `SEAL/build/lib`')
+    print('Not found the seal lib file, check the "SEAL/build/lib"')
     sys.exit(1)
 
 
@@ -60,7 +61,7 @@ ext_modules = [
         include_dirs=include_dirs,
         extra_compile_args=cpp_args,
         extra_objects=extra_objects,
-        define_macros = [('VERSION_INFO', __version__)],
+        define_macros=[('VERSION_INFO', __version__)],
     ),
 ]
 

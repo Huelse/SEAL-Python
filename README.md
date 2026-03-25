@@ -81,8 +81,8 @@ python -m pip install seal-python
 
   ```shell
   # Run in "x64 Native Tools Command Prompt for VS" command prompt
-  cmake -S . -B build -G Ninja -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF
-  cmake --build build
+  cmake -S . -B build -G Ninja -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF -DSEAL_USE_ZSTD=OFF
+  cmake --build build --config Release
 
   # Build
   pip install numpy pybind11
