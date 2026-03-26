@@ -4,6 +4,7 @@ from glob import glob
 from pathlib import Path
 from shutil import copy2
 import sys
+import sysconfig
 from setuptools import setup
 from distutils.sysconfig import get_python_inc
 import pybind11
@@ -24,6 +25,17 @@ else:
     extra_objects = sorted(glob('SEAL/build/lib/*.a'))
 
 cpp_args = ['/std:c++17', '/utf-8', '/bigobj'] if platform.system() == "Windows" else ['-std=c++17']
+link_args = []
+
+if platform.system() == "Darwin":
+    deployment_target = os.environ.get("MACOSX_DEPLOYMENT_TARGET") or sysconfig.get_config_var(
+        "MACOSX_DEPLOYMENT_TARGET"
+    )
+    if deployment_target:
+        deployment_flag = f"-mmacosx-version-min={deployment_target}"
+        os.environ.setdefault("MACOSX_DEPLOYMENT_TARGET", deployment_target)
+        cpp_args.append(deployment_flag)
+        link_args.append(deployment_flag)
 
 if len(extra_objects) < 1 or not os.path.exists(extra_objects[0]):
     print('Not found the seal lib file, check the "SEAL/build/lib"')
@@ -60,6 +72,7 @@ ext_modules = [
         sorted(glob('src/*.cpp')),
         include_dirs=include_dirs,
         extra_compile_args=cpp_args,
+        extra_link_args=link_args,
         extra_objects=extra_objects,
         define_macros=[('VERSION_INFO', __version__)],
     ),
@@ -83,7 +96,6 @@ setup(
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
-        "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.8",
