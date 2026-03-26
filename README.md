@@ -1,10 +1,10 @@
 ## Microsoft SEAL For Python
 
+This is a python binding for the Microsoft SEAL library.
+
 Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-source ([MIT licensed](https://github.com/microsoft/SEAL/blob/master/LICENSE)) homomorphic encryption library developed by the Cryptography Research group at Microsoft.
 
 [**pybind11**](https://github.com/pybind/pybind11) is a lightweight header-only library that exposes C++ types in Python and vice versa, mainly to create Python bindings of existing C++ code.
-
-This is a python binding for the Microsoft SEAL library.
 
 [![Supported Versions](https://img.shields.io/pypi/pyversions/SEAL-Python.svg)](https://github.com/Huelse/SEAL-Python)
 
@@ -35,6 +35,16 @@ python -m pip install seal-python
 
 ## Build
 
+On macOS, use the same deployment target for both the SEAL static library and the Python extension to avoid linker warnings about mismatched macOS versions:
+
+```shell
+export MACOSX_DEPLOYMENT_TARGET=$(python3 - <<'PY'
+import sysconfig
+print(sysconfig.get_config_var("MACOSX_DEPLOYMENT_TARGET") or "15.0")
+PY
+)
+```
+
 * ### Linux
 
   Recommend: Clang++ (>= 10.0) or GNU G++ (>= 9.4), CMake (>= 3.16)
@@ -58,6 +68,8 @@ python -m pip install seal-python
   # Build the SEAL lib without the msgsl zlib and zstandard compression
   cd SEAL
   cmake -S . -B build -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF -DSEAL_USE_ZSTD=OFF
+  # macOS:
+  cmake -S . -B build -DSEAL_USE_MSGSL=OFF -DSEAL_USE_ZLIB=OFF -DSEAL_USE_ZSTD=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET}
   cmake --build build
   cd ..
 
