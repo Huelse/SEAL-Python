@@ -60,7 +60,7 @@ PY
   # Install dependencies
   pip3 install numpy pybind11
 
-  # Init the SEAL and pybind11
+  # Pull the SEAL
   git submodule update --init --recursive
   # Get the newest repositories (dev only)
   # git submodule update --remote
