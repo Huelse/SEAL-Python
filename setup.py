@@ -10,7 +10,7 @@ from distutils.sysconfig import get_python_inc
 import pybind11
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 
-__version__ = "4.1.2"
+__version__ = "4.1.2.1"
 BASE_DIR = Path(__file__).resolve().parent
 
 include_dirs = [get_python_inc(), pybind11.get_include(), 'SEAL/native/src', 'SEAL/build/native/src']
@@ -85,7 +85,7 @@ setup(
     author_email="topmaxz@protonmail.com",
     url="https://github.com/Huelse/SEAL-Python",
     description="Python wrapper for the Microsoft SEAL",
-    long_description=(BASE_DIR / "README.md").read_text(encoding="utf-8")[:528],
+    long_description=(BASE_DIR / "README.md").read_text(encoding="utf-8"),
     long_description_content_type="text/markdown",
     ext_modules=ext_modules,
     cmdclass={"build_ext": build_ext_with_typing},
