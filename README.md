@@ -9,7 +9,6 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 [![Supported Versions](https://img.shields.io/pypi/pyversions/SEAL-Python.svg)](https://github.com/Huelse/SEAL-Python)
 
 
-
 ## Contents
 
 * [Install](#install)
@@ -22,7 +21,6 @@ Microsoft [**SEAL**](https://github.com/microsoft/SEAL) is an easy-to-use open-s
 * [Release](#release)
 
 
-
 ## Install
 
 SEAL-Python is available on [PyPI](https://pypi.org/project/seal-python/):
@@ -30,7 +28,6 @@ SEAL-Python is available on [PyPI](https://pypi.org/project/seal-python/):
 ```shell
 python -m pip install seal-python
 ```
-
 
 
 ## Build
@@ -124,7 +121,6 @@ PY
   ```
 
 
-
 ## Note
 
 * ### Serialize
@@ -142,10 +138,7 @@ PY
 
 * ### Other
 
-  There are a lot of changes in the latest SEAL lib, we try to make the API in python can be used easier, but it may remain some problems unknown, if any problems or bugs, report [issues](https://github.com/Huelse/SEAL-Python/issues).
-
-  Email: [topmaxz@protonmail.com](mailto:topmaxz@protonmail.com?subject=Github-SEAL-Python-Issues)
-
+  The latest SEAL library includes many changes. We’ve tried to make the Python API easier to use, but some issues may still exist. If you encounter any problems or bugs, please report them on [issues](https://github.com/Huelse/SEAL-Python/issues).
 
 
 ## FAQ
@@ -169,7 +162,7 @@ PY
 3. BuildError:
 
    1. C++17 at least
-   
+
    2. x86_64 is required, which `x86_32` is not supported
 
 
@@ -208,7 +201,6 @@ python3 setup.py sdist bdist_wheel
 python3 -m twine check dist/*
 python3 -m twine upload dist/*
 ```
-
 
 
 ## Contributing
