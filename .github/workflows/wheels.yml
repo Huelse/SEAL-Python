@@ -19,8 +19,10 @@ jobs:
         include:
           - os: ubuntu-latest
           - os: windows-latest
+          # macos-latest (macOS 26) and macos-15 are both arm64, so with
+          # CIBW_ARCHS_MACOS=auto64 they build identically named wheels.
+          # Keep a single arm64 runner; add macos-15-intel for x86_64 wheels.
           - os: macos-latest
-          - os: macos-15
 
     steps:
       - name: Checkout repository
@@ -99,50 +101,165 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Download wheel artifacts
+      # Each artifact lands in its own subdirectory. Never merge into one
+      # directory here: two artifacts holding the same file name would be
+      # written concurrently to the same path and corrupt each other.
+      - name: Download build artifacts
         uses: actions/download-artifact@v8
         with:
-          path: dist
-          pattern: wheels-*
-          merge-multiple: true
+          path: artifacts
 
-      - name: Download sdist artifact
-        uses: actions/download-artifact@v8
-        with:
-          path: dist
-          name: sdist
+      - name: Collect distributions
+        run: |
+          python - <<'PY'
+          import collections
+          import pathlib
+          import shutil
+          import sys
+
+          src = pathlib.Path("artifacts")
+          dst = pathlib.Path("dist")
+          dst.mkdir(exist_ok=True)
+
+          found = sorted(
+              p for p in src.rglob("*")
+              if p.is_file() and (p.suffix == ".whl" or p.name.endswith(".tar.gz"))
+          )
+          if not found:
+              sys.exit("No distributions found under artifacts/")
+
+          by_name = collections.defaultdict(list)
+          for p in found:
+              by_name[p.name].append(p)
+
+          clashes = {n: v for n, v in by_name.items() if len(v) > 1}
+          if clashes:
+              print("Same file name produced by more than one build job:")
+              for name, paths in sorted(clashes.items()):
+                  print(f"  {name}")
+                  for p in paths:
+                      print(f"    - {p} ({p.stat().st_size} bytes)")
+              sys.exit(
+                  "Build matrix produces duplicate distribution names; "
+                  "fix the matrix so every job emits distinct wheels."
+              )
+
+          for p in found:
+              shutil.copy2(p, dst / p.name)
+              print(f"{p.name}  {p.stat().st_size} bytes")
+          PY
 
       - name: Validate distribution archives
         run: |
           python -m pip install --upgrade pip twine
           python - <<'PY'
           import glob
-          import zipfile
+          import struct
           import sys
+          import zipfile
 
-          wheels = sorted(glob.glob("dist/**/*.whl", recursive=True))
-          if not wheels:
-              print("No wheel files found under dist/")
-              sys.exit(1)
+          # Mirrors the checks PyPI applies on upload (see docs.pypi.org/archives).
+          # zipfile.testzip() alone reads through the central directory only, so it
+          # misses local-header/central-directory disagreement and trailing data.
+          LFH = 0x04034B50
+          ZIP64 = 0xFFFFFFFF
 
-          bad = []
-          for whl in wheels:
+
+          def check(path):
               try:
-                  with zipfile.ZipFile(whl) as zf:
-                      zf.testzip()
-              except Exception as exc:
-                  bad.append((whl, repr(exc)))
+                  return inspect(path)
+              except Exception as exc:  # unreadable archive is itself the finding
+                  return [repr(exc)]
 
-          if bad:
-              print("Corrupted wheel(s) detected:")
-              for p, e in bad:
-                  print(f"  - {p}: {e}")
-              sys.exit(1)
 
-          print("All wheels passed ZIP integrity check.")
+          def inspect(path):
+              problems = []
+              with open(path, "rb") as fh:
+                  raw = fh.read()
+
+              with zipfile.ZipFile(path) as zf:
+                  bad = zf.testzip()
+                  if bad is not None:
+                      problems.append(f"CRC mismatch in entry {bad!r}")
+
+                  infos = zf.infolist()
+                  names = [i.filename for i in infos]
+                  dupes = sorted({n for n in names if names.count(n) > 1})
+                  if dupes:
+                      problems.append(f"duplicate entries: {dupes}")
+
+                  for info in infos:
+                      off = info.header_offset
+                      head = raw[off:off + 30]
+                      if len(head) < 30:
+                          problems.append(f"{info.filename}: truncated local header")
+                          continue
+                      sig, _, flags, _, _, _, crc, csize, usize, nlen, elen = struct.unpack(
+                          "<IHHHHHIIIHH", head
+                      )
+                      if sig != LFH:
+                          problems.append(f"{info.filename}: bad local header signature")
+                          continue
+                      local_name = raw[off + 30:off + 30 + nlen]
+                      if local_name != info.orig_filename.encode(
+                          "utf-8" if info.flag_bits & 0x800 else "cp437", "replace"
+                      ):
+                          problems.append(f"{info.filename}: local header name differs")
+                      # Bit 3 puts the sizes in a trailing data descriptor, which
+                      # PyPI rejects outright. ZIP64 sentinels mean the real
+                      # values live in an extra field, so skip those comparisons.
+                      if flags & 0x08:
+                          problems.append(f"{info.filename}: uses a data descriptor")
+                      else:
+                          if crc != info.CRC:
+                              problems.append(f"{info.filename}: CRC {crc} != {info.CRC}")
+                          if csize != ZIP64 and csize != info.compress_size:
+                              problems.append(
+                                  f"{info.filename}: compressed size {csize} != {info.compress_size}"
+                              )
+                          if usize != ZIP64 and usize != info.file_size:
+                              problems.append(
+                                  f"{info.filename}: data size {usize} != {info.file_size}"
+                              )
+
+              eocd = raw.rfind(b"PK\x05\x06")
+              if eocd < 0:
+                  problems.append("no end-of-central-directory record")
+              else:
+                  cd_size, cd_offset, comment_len = struct.unpack(
+                      "<IIH", raw[eocd + 12:eocd + 22]
+                  )
+                  if eocd + 22 + comment_len != len(raw):
+                      problems.append(
+                          f"trailing data: {len(raw) - (eocd + 22 + comment_len)} bytes after EOCD"
+                      )
+                  if cd_offset != ZIP64 and cd_size != ZIP64 and cd_offset + cd_size != eocd:
+                      problems.append(
+                          f"central directory ends at {cd_offset + cd_size}, EOCD at {eocd}"
+                      )
+              return problems
+
+
+          wheels = sorted(glob.glob("dist/*.whl"))
+          if not wheels:
+              sys.exit("No wheel files found under dist/")
+
+          failed = False
+          for whl in wheels:
+              problems = check(whl)
+              if problems:
+                  failed = True
+                  print(f"FAIL {whl}")
+                  for p in problems:
+                      print(f"     {p}")
+              else:
+                  print(f"ok   {whl}")
+
+          if failed:
+              sys.exit("Malformed wheel(s); PyPI would reject these.")
+          print(f"All {len(wheels)} wheels passed ZIP structure checks.")
           PY
-          find dist -type f \( -name "*.whl" -o -name "*.tar.gz" \) -print
-          python -m twine check $(find dist -type f \( -name "*.whl" -o -name "*.tar.gz" \))
+          python -m twine check dist/*.whl dist/*.tar.gz
 
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@v1.13.0
