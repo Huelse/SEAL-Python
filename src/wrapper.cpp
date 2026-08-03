@@ -18,7 +18,7 @@ PYBIND11_MAKE_OPAQUE(std::vector<std::int64_t>);
 PYBIND11_MODULE(seal, m)
 {
     m.doc() = "Microsoft SEAL for Python, from https://github.com/Huelse/SEAL-Python";
-    m.attr("__version__")  = "4.1.2.1";
+    m.attr("__version__")  = "4.4.0";
 
     py::bind_vector<std::vector<double>>(
         m, "VectorDouble", py::buffer_protocol(),
@@ -173,7 +173,8 @@ PYBIND11_MODULE(seal, m)
         .value("invalid_plain_modulus_coprimality", EncryptionParameterQualifiers::error_type::invalid_plain_modulus_coprimality)
         .value("invalid_plain_modulus_too_large", EncryptionParameterQualifiers::error_type::invalid_plain_modulus_too_large)
         .value("invalid_plain_modulus_nonzero", EncryptionParameterQualifiers::error_type::invalid_plain_modulus_nonzero)
-        .value("failed_creating_rns_tool", EncryptionParameterQualifiers::error_type::failed_creating_rns_tool);
+        .value("failed_creating_rns_tool", EncryptionParameterQualifiers::error_type::failed_creating_rns_tool)
+        .value("invalid_coeff_modulus_non_prime", EncryptionParameterQualifiers::error_type::invalid_coeff_modulus_non_prime);
 
     // context.h
     py::class_<EncryptionParameterQualifiers, std::unique_ptr<EncryptionParameterQualifiers, py::nodelete>>(
@@ -403,6 +404,7 @@ PYBIND11_MODULE(seal, m)
         .def("size", &Ciphertext::size, SEAL_DOC("Return the number of polynomials in the ciphertext."))
         .def("size_capacity", &Ciphertext::size_capacity, SEAL_DOC("Return the allocated ciphertext capacity measured in polynomials."))
         .def("is_transparent", &Ciphertext::is_transparent, SEAL_DOC("Return True if the ciphertext is transparent, which is generally insecure."))
+        .def("contains_seed", &Ciphertext::contains_seed, SEAL_DOC("Return True if the ciphertext holds a seeded, serialization-only representation that is not valid for homomorphic computation."))
         .def("is_ntt_form", py::overload_cast<>(&Ciphertext::is_ntt_form, py::const_),
             SEAL_DOC("Return True if the ciphertext is stored in NTT form."))
         .def("parms_id", py::overload_cast<>(&Ciphertext::parms_id, py::const_),
@@ -1087,7 +1089,9 @@ PYBIND11_MODULE(seal, m)
         .def("decrypt", &Decryptor::decrypt, py::arg("encrypted"), py::arg("destination"),
             SEAL_DOC("Decrypt a ciphertext into destination."))
         .def("invariant_noise_budget", &Decryptor::invariant_noise_budget, py::arg("encrypted"),
-            SEAL_DOC("Return the invariant noise budget of a ciphertext in bits."))
+            SEAL_DOC("Return the invariant noise budget of a ciphertext in bits. Warning: the result depends on the "
+                "secret key, so calling this on ciphertexts of unverified provenance can leak the secret key; only "
+                "use it as a diagnostic on ciphertexts produced by the caller's own computation."))
         .def("decrypt", [](Decryptor &decryptor, const Ciphertext &encrypted){
             Plaintext pt;
             decryptor.decrypt(encrypted, pt);

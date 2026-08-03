@@ -51,6 +51,7 @@ class error_type(IntEnum):
     invalid_plain_modulus_too_large: int
     invalid_plain_modulus_nonzero: int
     failed_creating_rns_tool: int
+    invalid_coeff_modulus_non_prime: int
 
 
 class VectorDouble(list[float]): ...
@@ -540,6 +541,10 @@ class Ciphertext:
 
     def is_transparent(self) -> bool:
         """Return whether the ciphertext is transparent."""
+        ...
+
+    def contains_seed(self) -> bool:
+        """Return whether the ciphertext holds a seeded, serialization-only representation that is not valid for homomorphic computation."""
         ...
 
     def is_ntt_form(self) -> bool:
@@ -1158,7 +1163,9 @@ class Decryptor:
         ...
 
     def invariant_noise_budget(self, encrypted: Ciphertext) -> int:
-        """Return the invariant noise budget of a ciphertext in bits."""
+        """Return the invariant noise budget of a ciphertext in bits. Warning: the result depends on the
+        secret key, so calling this on ciphertexts of unverified provenance can leak the secret key; only
+        use it as a diagnostic on ciphertexts produced by the caller's own computation."""
         ...
 
 

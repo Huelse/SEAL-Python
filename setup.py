@@ -10,7 +10,7 @@ from distutils.sysconfig import get_python_inc
 import pybind11
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 
-__version__ = "4.1.2.1"
+__version__ = "4.4.0"
 BASE_DIR = Path(__file__).resolve().parent
 
 include_dirs = [get_python_inc(), pybind11.get_include(), 'SEAL/native/src', 'SEAL/build/native/src']
