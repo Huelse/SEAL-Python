@@ -40,7 +40,9 @@ jobs:
         env:
           CIBW_BUILD_VERBOSITY: "1"
           CIBW_BUILD: "cp38-* cp39-* cp310-* cp311-* cp312-* cp313-* cp314-*"
-          CIBW_SKIP: "*-musllinux_* pp* cp38-macosx_arm64"
+          # No pp* here: PyPy is opt-in via CIBW_ENABLE since cibuildwheel 3.x,
+          # so skipping it matches a disabled group and only warns.
+          CIBW_SKIP: "*-musllinux_* cp38-macosx_arm64"
           CIBW_ARCHS_LINUX: "x86_64"
           CIBW_ARCHS_WINDOWS: "AMD64"
           CIBW_ARCHS_MACOS: "auto64"
